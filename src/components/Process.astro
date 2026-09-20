@@ -3,36 +3,59 @@
 // Numbers ride a real circle arc; connector is one smooth curve, black below the
 // active disc and grey above, running off both edges. Eased scroll, revolver-style
 // click + haptic on each step. Icons are placeholder 3D assets — swap for your own.
+// Custom duotone icons — hand-drawn SVG, no external assets.
+const ICON = {
+  magnifier: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="30" fill="#e4dfd5" stroke="#171512" stroke-width="5"/>
+    <circle cx="50" cy="50" r="17" fill="#ffffff" fill-opacity=".55"/>
+    <path d="M71 71 96 96" stroke="#171512" stroke-width="9" stroke-linecap="round"/></svg>`,
+  pen: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M28 92 74 46 88 60 42 106 24 108Z" fill="#e4dfd5" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M74 46 84 36a10 10 0 0 1 14 14l-10 10" fill="#b9b2a4" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M28 92 42 106" stroke="#171512" stroke-width="5" stroke-linecap="round"/></svg>`,
+  code: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="16" y="26" width="88" height="72" rx="13" fill="#e4dfd5" stroke="#171512" stroke-width="5"/>
+    <path d="M46 52 33 62 46 72" stroke="#171512" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M74 52 87 62 74 72" stroke="#171512" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M65 48 55 76" stroke="#171512" stroke-width="6" stroke-linecap="round"/></svg>`,
+  rocket: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 16c15 13 21 32 21 51H39c0-19 6-38 21-51Z" fill="#e4dfd5" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="60" cy="46" r="9" fill="#b9b2a4" stroke="#171512" stroke-width="5"/>
+    <path d="M39 67 26 84 44 78" fill="#e4dfd5" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M81 67 94 84 76 78" fill="#e4dfd5" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M52 80c2 12 14 12 16 0" stroke="#171512" stroke-width="5" stroke-linecap="round"/></svg>`,
+  key: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="44" cy="44" r="23" fill="#e4dfd5" stroke="#171512" stroke-width="5"/>
+    <circle cx="44" cy="44" r="8" fill="#f2f0ec" stroke="#171512" stroke-width="5"/>
+    <path d="M60 60 96 96" stroke="#171512" stroke-width="7" stroke-linecap="round"/>
+    <path d="M85 85 95 75M74 74 82 82" stroke="#171512" stroke-width="7" stroke-linecap="round"/></svg>`,
+};
+
 const phases = [
   {
     n: "01", kick: "Phase 01", title: ["Discovery", "& Scope"],
-    body: "We start with your goals, users, and the outcome you need — turning a fuzzy idea into a tight, shared scope.",
-    tags: ["Audit", "Goals", "Scope"],
-    icon: "https://framerusercontent.com/images/rqTHzxUO3vC7g6gXZqLxByu48M.png?width=256&height=256",
+    body: "We start on a call. You describe what's stuck — the idea, the process, the two hours a week you keep losing. I turn it into a tight, honest scope.",
+    tags: ["Call", "Audit", "Scope"], svg: ICON.magnifier,
   },
   {
     n: "02", kick: "Phase 02", title: ["Plan &", "Design"],
-    body: "I map the build and design the flows — priorities, structure, and how the thing should feel to use.",
-    tags: ["Roadmap", "UX", "UI"],
-    icon: "https://framerusercontent.com/images/6UNvtZcsajPqOY2iFqXfLWLAis.png?width=256&height=256",
+    body: "I map how it should work and how it should feel — the flows, the screens, the automations — before a line of code gets written.",
+    tags: ["Flows", "Design", "Automations"], svg: ICON.pen,
   },
   {
     n: "03", kick: "Phase 03", title: ["Build"],
-    body: "I build it in the open — clean, modern code you own, shipped in small working pieces you can watch grow.",
-    tags: ["Frontend", "Backend", "Automation"],
-    icon: "https://framerusercontent.com/images/Uigc835AQJZdGJdrV6pTnx9kEDg.png?width=256&height=256",
+    body: "I build it in the open — clean, modern code you own. A website, an app, or an automation, shipped in small working pieces you can watch grow.",
+    tags: ["Web", "Apps", "AI"], svg: ICON.code,
   },
   {
     n: "04", kick: "Phase 04", title: ["Test &", "Ship"],
-    body: "Tested, hardened, and deployed to production — handed over working, not almost-working.",
-    tags: ["QA", "Deploy", "Docs"],
-    icon: "https://framerusercontent.com/images/71NyN9JJ45ohmLF3K57VaKslow.png?width=256&height=256",
+    body: "It gets tested, hardened, and deployed to production — handed over working, not almost-working.",
+    tags: ["QA", "Deploy", "Docs"], svg: ICON.rocket,
   },
   {
     n: "05", kick: "Phase 05", title: ["Handover", "& Support"],
-    body: "You keep the code and the accounts. I stay reachable while you find your feet with it.",
-    tags: ["Handover", "Training", "Support"],
-    icon: "https://framerusercontent.com/images/4dkW40P1hqiAVkLaXX3by8xbOQY.png?width=256&height=256",
+    body: "You keep the code and every account. I stay reachable while you find your feet with it — no retainer required.",
+    tags: ["Handover", "Training", "Support"], svg: ICON.key,
   },
 ];
 ---
@@ -63,7 +86,7 @@ const phases = [
               <p>{p.body}</p>
               <div class="tags">{p.tags.map((t) => <span>{t}</span>)}</div>
             </div>
-            <div class="art"><img src={p.icon} alt="" loading="lazy" /></div>
+            <div class="art" set:html={p.svg}></div>
           </article>
         ))}
       </div>
@@ -121,14 +144,14 @@ const phases = [
   .proc .phase .tags span { font: 500 0.85rem var(--sans); color: var(--ink);
                             padding: 0.5rem 1rem; border: 1px solid var(--line-off); border-radius: 999px; }
   .proc .phase .art { justify-self: center; }
-  .proc .phase .art img { width: clamp(220px, 26vw, 380px); height: auto; display: block; }
+  .proc .phase .art :global(svg) { width: clamp(200px, 24vw, 340px); height: auto; display: block; }
 
   @media (max-width: 1024px) {
     .proc .rail { display: none; }
     .proc .content { left: 0; }
     .proc .phase { grid-template-columns: 1fr; padding: 5rem 1.5rem; text-align: left; gap: 1.5rem; }
     .proc .phase .art { order: -1; justify-self: start; }
-    .proc .phase .art img { width: clamp(160px, 40vw, 240px); }
+    .proc .phase .art :global(svg) { width: clamp(150px, 38vw, 220px); }
   }
 </style>
 
