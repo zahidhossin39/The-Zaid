@@ -1,97 +1,151 @@
 ---
-// Three hero layouts. `variant` a = editorial left (default), b = centred and
-// ruled, c = split with a status panel. See PLAN.final.md and COLOR.final.md.
-//
-// Headline option 2 of 3 — chosen. The other two:
-// OPTION 1 — "The thing you keep putting off — I'll build it." / cta: Tell me what's stuck
-// OPTION 3 — "Still doing it the hard way?" / cta: Describe your stuck thing
-interface Props { variant?: "a" | "b" | "c" }
-const { variant = "a" } = Astro.props;
-
-const HEAD_A = "You've had the idea";
-const HEAD_B = "long enough.";
+const HEAD = "You've had the idea long enough.";
 const SUB =
   "I build the app, site, or automation you've been circling for months. Scoped tight, built in the open, handed over working.";
 const CTA = "Book a 20-minute call";
-
-const panel = [
-  ["Typical build", "2–5 weeks"],
-  ["You see progress", "every few days"],
-  ["You keep", "the code + accounts"],
-  ["Retainer", "not required"],
-];
 ---
-<section class="relative overflow-hidden">
-  {variant === "a" && (
-    <div aria-hidden="true" class="pointer-events-none absolute -top-56 -right-56 h-[34rem] w-[34rem] rounded-full bg-accent opacity-[0.10] blur-[120px]"></div>
-  )}
-  {variant === "b" && (
-    <div aria-hidden="true" class="pointer-events-none absolute -top-72 left-1/2 h-[30rem] w-[44rem] -translate-x-1/2 rounded-full bg-accent opacity-[0.09] blur-[130px]"></div>
-  )}
-  {variant === "c" && (
-    <div aria-hidden="true" class="pointer-events-none absolute -bottom-64 -right-40 h-[30rem] w-[30rem] rounded-full bg-accent opacity-[0.09] blur-[120px]"></div>
-  )}
 
-  {variant === "a" && (
-    <div class="relative mx-auto flex min-h-[88svh] max-w-[64rem] flex-col justify-center px-6 py-24 md:px-8">
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&display=swap"
+/>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-copy">
       <p class="eyebrow reveal">Zaid Hossain — builder for hire</p>
-      <div aria-hidden="true" class="reveal mt-4 h-px w-40 bg-gradient-to-r from-accent to-transparent" data-delay="80"></div>
-      <h1 class="h1 reveal mt-8 max-w-[19ch]" data-delay="120">
-        {HEAD_A} <span class="text-accent whitespace-nowrap">{HEAD_B}</span>
-      </h1>
-      <p class="lead reveal mt-7 max-w-[46ch]" data-delay="220">{SUB}</p>
-      <div class="reveal mt-11 flex flex-wrap items-center gap-x-8 gap-y-4" data-delay="320">
-        <a href="#book" class="rounded-full bg-accent px-7 py-3.5 font-medium text-bg transition hover:bg-accent-hover hover:-translate-y-0.5 active:translate-y-0">{CTA}</a>
-        <a href="#proof" class="text-muted transition hover:text-text">See the work ↓</a>
+      <h1 class="headline reveal" data-delay="120">{HEAD}</h1>
+      <p class="sub reveal" data-delay="220">{SUB}</p>
+      <div class="cta reveal" data-delay="320">
+        <a href="#book" class="btn">{CTA}</a>
+        <a href="#proof" class="link">See the work ↓</a>
       </div>
     </div>
-  )}
 
-  {variant === "b" && (
-    <div class="relative mx-auto flex min-h-[88svh] max-w-[56rem] flex-col items-center justify-center px-6 py-24 text-center md:px-8">
-      <p class="eyebrow reveal">Zaid Hossain — builder for hire</p>
-      <div aria-hidden="true" class="reveal my-9 h-px w-full bg-border" data-delay="80"></div>
-      <h1 class="h1 reveal max-w-[16ch]" data-delay="120">
-        {HEAD_A} <span class="text-accent">{HEAD_B}</span>
-      </h1>
-      <div aria-hidden="true" class="reveal my-9 h-px w-full bg-border" data-delay="180"></div>
-      <p class="lead reveal max-w-[44ch]" data-delay="220">{SUB}</p>
-      <div class="reveal mt-11 flex flex-wrap items-center justify-center gap-x-8 gap-y-4" data-delay="320">
-        <a href="#book" class="rounded-full bg-accent px-7 py-3.5 font-medium text-bg transition hover:bg-accent-hover hover:-translate-y-0.5 active:translate-y-0">{CTA}</a>
-        <a href="#proof" class="text-muted transition hover:text-text">See the work ↓</a>
-      </div>
+    <div class="hero-media reveal" data-delay="260">
+      <video
+        src="/hero.mp4"
+        poster="/hero-poster.jpg"
+        width="316"
+        height="176"
+        muted
+        loop
+        autoplay
+        playsinline
+        aria-hidden="true"
+        tabindex="-1"
+      ></video>
+      <p class="caption">Showreel</p>
     </div>
-  )}
-
-  {variant === "c" && (
-    <div class="relative mx-auto grid min-h-[88svh] max-w-[68rem] items-center gap-12 px-6 py-24 md:grid-cols-[7fr_5fr] md:gap-16 md:px-8">
-      <div>
-        <p class="eyebrow reveal">Zaid Hossain — builder for hire</p>
-        <h1 class="h1 reveal mt-7 max-w-[17ch]" data-delay="120">
-          {HEAD_A} <span class="text-accent whitespace-nowrap">{HEAD_B}</span>
-        </h1>
-        <p class="lead reveal mt-6 max-w-[42ch]" data-delay="220">{SUB}</p>
-        <div class="reveal mt-10 flex flex-wrap items-center gap-x-8 gap-y-4" data-delay="320">
-          <a href="#book" class="rounded-full bg-accent px-7 py-3.5 font-medium text-bg transition hover:bg-accent-hover hover:-translate-y-0.5 active:translate-y-0">{CTA}</a>
-          <a href="#proof" class="text-muted transition hover:text-text">See the work ↓</a>
-        </div>
-      </div>
-
-      <div class="reveal rounded-xl border border-border bg-surface p-7" data-delay="260">
-        <div class="flex items-center gap-2.5">
-          <span class="inline-block h-2 w-2 rounded-full bg-accent"></span>
-          <span class="eyebrow text-xs">Available — 2 slots</span>
-        </div>
-        <div aria-hidden="true" class="my-6 h-px bg-border"></div>
-        <dl>
-          {panel.map(([k, val]) => (
-            <div class="flex justify-between gap-4 py-2.5 text-[0.9375rem]">
-              <dt class="text-muted">{k}</dt>
-              <dd class="font-medium">{val}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-    </div>
-  )}
+  </div>
 </section>
+
+<style>
+  .hero {
+    background: #ffffff;
+    color: #111111;
+    font-family: "Inter Tight", system-ui, sans-serif;
+  }
+
+  .hero-inner {
+    min-height: 100svh;
+    max-width: 76rem;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+    gap: 5rem;
+  }
+
+  .eyebrow {
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .headline {
+    margin: 1.5rem 0 0;
+    font-weight: 700;
+    font-size: clamp(2.75rem, 6.2vw, 5.556rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    max-width: 14ch;
+  }
+
+  .sub {
+    margin: 1.75rem 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    max-width: 42ch;
+  }
+
+  .cta {
+    margin-top: 2.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+  }
+
+  .btn {
+    display: inline-block;
+    background: #111111;
+    color: #ffffff;
+    font-weight: 500;
+    padding: 0.875rem 1.75rem;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .link {
+    color: #111111;
+    text-decoration: none;
+    border-bottom: 1px solid #111111;
+    padding-bottom: 1px;
+  }
+
+  .hero-media {
+    justify-self: end;
+  }
+
+  .hero-media video {
+    display: block;
+    width: 316px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 316 / 176;
+    background: #f0f0f0;
+    object-fit: cover;
+  }
+
+  .caption {
+    margin: 0.625rem 0 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    .hero-inner {
+      grid-template-columns: 1fr;
+      gap: 4rem;
+      min-height: auto;
+      padding-top: 5rem;
+      padding-bottom: 5rem;
+    }
+
+    .hero-media {
+      justify-self: start;
+    }
+  }
+</style>

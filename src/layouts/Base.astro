@@ -46,5 +46,38 @@ const { title, description, theme } = Astro.props;
       );
       els.forEach((el) => io.observe(el));
     </script>
+
+    <script>
+      import Lenis from "lenis";
+      import "lenis/dist/lenis.css";
+
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        const lenis = new Lenis();
+
+        function raf(time: number) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
+
+        document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((anchor) => {
+          anchor.addEventListener("click", (e) => {
+            const href = anchor.getAttribute("href");
+            if (href && href !== "#") {
+              try {
+                const target = document.querySelector(href);
+                if (target) {
+                  e.preventDefault();
+                  lenis.scrollTo(target as HTMLElement);
+                }
+              } catch {
+                // Ignore invalid selector
+              }
+            }
+          });
+        });
+      }
+    </script>
   </body>
 </html>
