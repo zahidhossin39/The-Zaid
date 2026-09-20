@@ -1,11 +1,11 @@
 ---
 import "../styles/global.css";
 
-interface Props { title: string; description: string; }
-const { title, description } = Astro.props;
+interface Props { title: string; description: string; theme?: string }
+const { title, description, theme } = Astro.props;
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme={theme}>
   <head>
     <meta charset="UTF-8" />
     <!-- Set before paint: reveal styles only apply when JS can undo them. -->

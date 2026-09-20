@@ -1,47 +1,97 @@
 ---
-// Headline option 2 of 3 — chosen. See PLAN.final.md. The other two are kept
-// here so they can be swapped back in without rewriting the markup.
+// Three hero layouts. `variant` a = editorial left (default), b = centred and
+// ruled, c = split with a status panel. See PLAN.final.md and COLOR.final.md.
 //
-// OPTION 1 — "The thing you keep putting off — I'll build it."
-//   sub: Founders bring me the idea that's been stuck in a notes app for a
-//        year. Owners bring me the process they still do by hand. Both leave
-//        with something that works.
-//   cta: Tell me what's stuck
-//
-// OPTION 3 — "Still doing it the hard way?"
-//   sub: The spreadsheet process eating your Sundays. The app you sketch on
-//        napkins but never start. You describe the problem, I build the thing.
-//   cta: Describe your stuck thing
+// Headline option 2 of 3 — chosen. The other two:
+// OPTION 1 — "The thing you keep putting off — I'll build it." / cta: Tell me what's stuck
+// OPTION 3 — "Still doing it the hard way?" / cta: Describe your stuck thing
+interface Props { variant?: "a" | "b" | "c" }
+const { variant = "a" } = Astro.props;
+
+const HEAD_A = "You've had the idea";
+const HEAD_B = "long enough.";
+const SUB =
+  "I build the app, site, or automation you've been circling for months. Scoped tight, built in the open, handed over working.";
+const CTA = "Book a 20-minute call";
+
+const panel = [
+  ["Typical build", "2–5 weeks"],
+  ["You see progress", "every few days"],
+  ["You keep", "the code + accounts"],
+  ["Retainer", "not required"],
+];
 ---
 <section class="relative overflow-hidden">
-  <!-- soft amber bloom bleeding off the top-right; pure decoration -->
-  <div
-    aria-hidden="true"
-    class="pointer-events-none absolute -top-56 -right-56 h-[34rem] w-[34rem] rounded-full bg-accent opacity-[0.10] blur-[120px]"
-  >
-  </div>
+  {variant === "a" && (
+    <div aria-hidden="true" class="pointer-events-none absolute -top-56 -right-56 h-[34rem] w-[34rem] rounded-full bg-accent opacity-[0.10] blur-[120px]"></div>
+  )}
+  {variant === "b" && (
+    <div aria-hidden="true" class="pointer-events-none absolute -top-72 left-1/2 h-[30rem] w-[44rem] -translate-x-1/2 rounded-full bg-accent opacity-[0.09] blur-[130px]"></div>
+  )}
+  {variant === "c" && (
+    <div aria-hidden="true" class="pointer-events-none absolute -bottom-64 -right-40 h-[30rem] w-[30rem] rounded-full bg-accent opacity-[0.09] blur-[120px]"></div>
+  )}
 
-  <div class="relative mx-auto flex min-h-[88svh] max-w-[64rem] flex-col justify-center px-6 py-24 md:px-8">
-    <p class="eyebrow reveal">Zaid Hossain — builder for hire</p>
-    <div aria-hidden="true" class="reveal mt-4 h-px w-40 bg-gradient-to-r from-accent to-transparent" data-delay="80"></div>
-
-    <h1 class="h1 reveal mt-8 max-w-[19ch]" data-delay="120">
-      You've had the idea <span class="text-accent whitespace-nowrap">long enough.</span>
-    </h1>
-
-    <p class="lead reveal mt-7 max-w-[46ch]" data-delay="220">
-      I build the app, site, or automation you've been circling for months.
-      Scoped tight, built in the open, handed over working.
-    </p>
-
-    <div class="reveal mt-11 flex flex-wrap items-center gap-x-8 gap-y-4" data-delay="320">
-      <a
-        href="#book"
-        class="rounded-full bg-accent px-7 py-3.5 font-medium text-bg transition hover:bg-accent-hover hover:-translate-y-0.5 active:translate-y-0"
-      >
-        Book a 20-minute call
-      </a>
-      <a href="#proof" class="text-muted transition hover:text-text">See the work ↓</a>
+  {variant === "a" && (
+    <div class="relative mx-auto flex min-h-[88svh] max-w-[64rem] flex-col justify-center px-6 py-24 md:px-8">
+      <p class="eyebrow reveal">Zaid Hossain — builder for hire</p>
+      <div aria-hidden="true" class="reveal mt-4 h-px w-40 bg-gradient-to-r from-accent to-transparent" data-delay="80"></div>
+      <h1 class="h1 reveal mt-8 max-w-[19ch]" data-delay="120">
+        {HEAD_A} <span class="text-accent whitespace-nowrap">{HEAD_B}</span>
+      </h1>
+      <p class="lead reveal mt-7 max-w-[46ch]" data-delay="220">{SUB}</p>
+      <div class="reveal mt-11 flex flex-wrap items-center gap-x-8 gap-y-4" data-delay="320">
+        <a href="#book" class="rounded-full bg-accent px-7 py-3.5 font-medium text-bg transition hover:bg-accent-hover hover:-translate-y-0.5 active:translate-y-0">{CTA}</a>
+        <a href="#proof" class="text-muted transition hover:text-text">See the work ↓</a>
+      </div>
     </div>
-  </div>
+  )}
+
+  {variant === "b" && (
+    <div class="relative mx-auto flex min-h-[88svh] max-w-[56rem] flex-col items-center justify-center px-6 py-24 text-center md:px-8">
+      <p class="eyebrow reveal">Zaid Hossain — builder for hire</p>
+      <div aria-hidden="true" class="reveal my-9 h-px w-full bg-border" data-delay="80"></div>
+      <h1 class="h1 reveal max-w-[16ch]" data-delay="120">
+        {HEAD_A} <span class="text-accent">{HEAD_B}</span>
+      </h1>
+      <div aria-hidden="true" class="reveal my-9 h-px w-full bg-border" data-delay="180"></div>
+      <p class="lead reveal max-w-[44ch]" data-delay="220">{SUB}</p>
+      <div class="reveal mt-11 flex flex-wrap items-center justify-center gap-x-8 gap-y-4" data-delay="320">
+        <a href="#book" class="rounded-full bg-accent px-7 py-3.5 font-medium text-bg transition hover:bg-accent-hover hover:-translate-y-0.5 active:translate-y-0">{CTA}</a>
+        <a href="#proof" class="text-muted transition hover:text-text">See the work ↓</a>
+      </div>
+    </div>
+  )}
+
+  {variant === "c" && (
+    <div class="relative mx-auto grid min-h-[88svh] max-w-[68rem] items-center gap-12 px-6 py-24 md:grid-cols-[7fr_5fr] md:gap-16 md:px-8">
+      <div>
+        <p class="eyebrow reveal">Zaid Hossain — builder for hire</p>
+        <h1 class="h1 reveal mt-7 max-w-[17ch]" data-delay="120">
+          {HEAD_A} <span class="text-accent whitespace-nowrap">{HEAD_B}</span>
+        </h1>
+        <p class="lead reveal mt-6 max-w-[42ch]" data-delay="220">{SUB}</p>
+        <div class="reveal mt-10 flex flex-wrap items-center gap-x-8 gap-y-4" data-delay="320">
+          <a href="#book" class="rounded-full bg-accent px-7 py-3.5 font-medium text-bg transition hover:bg-accent-hover hover:-translate-y-0.5 active:translate-y-0">{CTA}</a>
+          <a href="#proof" class="text-muted transition hover:text-text">See the work ↓</a>
+        </div>
+      </div>
+
+      <div class="reveal rounded-xl border border-border bg-surface p-7" data-delay="260">
+        <div class="flex items-center gap-2.5">
+          <span class="inline-block h-2 w-2 rounded-full bg-accent"></span>
+          <span class="eyebrow text-xs">Available — 2 slots</span>
+        </div>
+        <div aria-hidden="true" class="my-6 h-px bg-border"></div>
+        <dl>
+          {panel.map(([k, val]) => (
+            <div class="flex justify-between gap-4 py-2.5 text-[0.9375rem]">
+              <dt class="text-muted">{k}</dt>
+              <dd class="font-medium">{val}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  )}
 </section>

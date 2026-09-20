@@ -14,6 +14,13 @@
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 
+/* Dev-only palette prototypes. Tailwind v4 utilities read these vars, so
+   overriding them on a scope re-themes everything inside it.
+   Delete these three blocks once a palette is chosen. */
+[data-theme="A"] { --color-accent: #5EEAD4; --color-accent-hover: #99F6E4; }
+[data-theme="B"] { --color-accent: #A5B4FC; --color-accent-hover: #C7D2FE; }
+[data-theme="C"] { --color-accent: #86EFAC; --color-accent-hover: #BBF7D0; }
+
 @layer base {
   html {
     scroll-behavior: smooth;

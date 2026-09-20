@@ -3,7 +3,8 @@
 import puppeteer from "puppeteer-core";
 
 const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
-const URL = "http://localhost:4321";
+const route = process.argv[4] ?? "";
+const URL = "http://localhost:4321/" + route.replace(/^\//, "");
 const width = Number(process.argv[2] ?? 1440);
 const tag = process.argv[3] ?? `w${width}`;
 

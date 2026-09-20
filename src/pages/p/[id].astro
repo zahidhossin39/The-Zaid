@@ -1,0 +1,33 @@
+---
+// Dev-only full-site prototypes: one per candidate palette, each with its own
+// hero layout. Visit /p/A, /p/B, /p/C. Delete once a palette is chosen.
+import Base from "../../layouts/Base.astro";
+import Hero from "../../components/Hero.astro";
+import Problem from "../../components/Problem.astro";
+import WhatIBuild from "../../components/WhatIBuild.astro";
+import Proof from "../../components/Proof.astro";
+import HowItWorks from "../../components/HowItWorks.astro";
+import About from "../../components/About.astro";
+import BookACall from "../../components/BookACall.astro";
+
+export function getStaticPaths() {
+  return [
+    { params: { id: "A" }, props: { variant: "a", name: "Sea Glass" } },
+    { params: { id: "B" }, props: { variant: "b", name: "Periwinkle" } },
+    { params: { id: "C" }, props: { variant: "c", name: "Signal Green" } },
+  ];
+}
+const { variant, name } = Astro.props;
+const { id } = Astro.params;
+---
+<Base title={`Prototype ${id} — ${name}`} description="Palette prototype." theme={id}>
+  <main>
+    <Hero variant={variant} />
+    <Problem />
+    <WhatIBuild />
+    <Proof />
+    <HowItWorks />
+    <About />
+    <BookACall />
+  </main>
+</Base>
