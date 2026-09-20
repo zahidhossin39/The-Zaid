@@ -1,5 +1,5 @@
 ---
-// Lab 07 · Aubergine Hour — off-axis mood: vertical eyebrow rail on the left, right-aligned headline, surface panel pulled inboard.
+// Lab 07 · Aubergine Hour — off-axis mood: vertical eyebrow rail on the left, headline growing out of the rail, sub + CTA in a full-width baseline band under a hairline.
 ---
 <!doctype html>
 <html lang="en">
@@ -19,11 +19,11 @@
       .rail { border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 6.5rem 0 3rem; }
       .dot { width: .625rem; height: .625rem; border-radius: 50%; background: var(--accent); }
       .rail p { writing-mode: vertical-rl; transform: rotate(180deg); margin: 0; font-size: .8125rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-      .main { display: flex; flex-direction: column; justify-content: center; align-items: flex-end; padding: 6rem 5rem 6rem 4rem; }
-      h1 { font-family: "Space Grotesk", Inter, sans-serif; font-weight: 500; letter-spacing: -.03em; line-height: 1.02; font-size: clamp(3rem, 6.5vw, 6rem); margin: 0; max-width: 15ch; text-align: right; text-wrap: balance; }
-      .panel { margin-top: 3.5rem; margin-right: 10rem; max-width: 32rem; background: var(--surface); border: 1px solid var(--border); padding: 2.25rem 2.5rem; }
+      .main { display: flex; flex-direction: column; justify-content: center; padding: 6rem 5rem; }
+      h1 { font-family: "Space Grotesk", Inter, sans-serif; font-weight: 500; letter-spacing: -.03em; line-height: 1.02; font-size: clamp(3rem, 6.5vw, 6rem); margin: 0; max-width: 16ch; text-wrap: balance; }
+      .meta { margin-top: 4.5rem; padding-top: 2.5rem; border-top: 1px solid var(--border); display: grid; grid-template-columns: minmax(0, 34rem) auto; align-items: center; gap: 3rem; }
       .sub { color: var(--muted); font-size: 1.0625rem; line-height: 1.65; margin: 0; }
-      .actions { margin-top: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+      .actions { display: flex; align-items: center; gap: 2rem; }
       .btn { background: var(--accent); color: var(--bg); padding: .875rem 1.5rem; font-weight: 600; font-size: .9375rem; text-decoration: none; }
       .link { color: var(--muted); text-decoration: none; font-size: .9375rem; }
       .link:hover { color: var(--text); }
@@ -38,7 +38,7 @@
       </div>
       <div class="main">
         <h1>You&apos;ve had the idea long enough.</h1>
-        <div class="panel">
+        <div class="meta">
           <p class="sub">I build the app, site, or automation you&apos;ve been circling for months. Scoped tight, built in the open, handed over working.</p>
           <div class="actions">
             <a class="btn" href="#">Book a 20-minute call</a>
