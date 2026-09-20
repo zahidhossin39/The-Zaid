@@ -1,0 +1,258 @@
+---
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Services — Scroll Clone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #171512;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Intro / Outro ---------- */
+  .panel {
+    min-height: 100svh;
+    background: #171512;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 2rem;
+  }
+  .panel .eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #8a857c;
+    margin: 0 0 1.4rem;
+  }
+  .panel h1 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    color: #f2f0ec;
+    max-width: 15ch;
+    margin: 0;
+  }
+  .panel .arrow {
+    color: #6a655d;
+    font-size: 1.4rem;
+    margin-top: 2.6rem;
+    animation: bob 1.8s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+  .panel.outro h1 {
+    font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+    line-height: 1.05;
+    max-width: 16ch;
+  }
+  .panel .subtext {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+    color: #6a655d;
+    margin: 1.4rem 0 0;
+    max-width: 44ch;
+  }
+
+  /* ---------- Sticky phase cards ---------- */
+  .card {
+    position: sticky;
+    top: 0;
+    min-height: 100svh;
+    background: #f2f0ec;
+    overflow: hidden;
+    border-top: 1px solid #e4e0d8;
+  }
+  .cards .card:nth-child(1) { top: 0; }
+  .cards .card:nth-child(2) { top: 8px; }
+  .cards .card:nth-child(3) { top: 16px; }
+  .cards .card:nth-child(4) { top: 24px; }
+  .cards .card:nth-child(5) { top: 32px; }
+
+  .card .inner {
+    max-width: 60rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 5rem);
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+  }
+  .card .icon {
+    display: block;
+    margin: 0 auto;
+    width: clamp(170px, 24vw, 280px);
+    height: auto;
+  }
+  .card .text {
+    align-self: flex-start;
+    max-width: 40ch;
+    margin-top: clamp(1.5rem, 4vw, 3rem);
+    text-align: left;
+  }
+  .card .phase {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: #6a655d;
+    margin: 0 0 1rem;
+  }
+  .card h2 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    font-size: clamp(2.6rem, 6.5vw, 4.6rem);
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: #171512;
+    margin: 0;
+  }
+  .card p.body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #6a655d;
+    margin: 1.4rem 0 0;
+    max-width: 44ch;
+  }
+  .card .tags {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  .card .tag {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: #171512;
+    padding: 8px 16px;
+    border: 1px solid #d9d5cd;
+    border-radius: 999px;
+  }
+</style>
+</head>
+<body>
+
+  <section class="panel intro">
+    <div>
+      <p class="eyebrow">Our Process</p>
+      <h1>How we bring ideas to life</h1>
+      <div class="arrow">&darr;</div>
+    </div>
+  </section>
+
+  <div class="cards">
+
+    <section class="card">
+      <div class="inner">
+        <img class="icon" loading="eager" src="https://framerusercontent.com/images/rqTHzxUO3vC7g6gXZqLxByu48M.png?width=256&height=256" alt="Discovery and Research icon">
+        <div class="text">
+          <p class="phase">Phase 01</p>
+          <h2>Discovery<br>&amp; Research</h2>
+          <p class="body">We start by understanding your goals, users, and market &mdash; turning open questions into a clear, shared direction.</p>
+          <div class="tags">
+            <span class="tag">Audit</span>
+            <span class="tag">User Research</span>
+            <span class="tag">Workshops</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="inner">
+        <img class="icon" loading="eager" src="https://framerusercontent.com/images/6UNvtZcsajPqOY2iFqXfLWLAis.png?width=256&height=256" alt="Product Strategy icon">
+        <div class="text">
+          <p class="phase">Phase 02</p>
+          <h2>Product<br>Strategy</h2>
+          <p class="body">We shape the roadmap &mdash; defining priorities, positioning, and the metrics that tell us we are winning.</p>
+          <div class="tags">
+            <span class="tag">Roadmap</span>
+            <span class="tag">Positioning</span>
+            <span class="tag">Metrics</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="inner">
+        <img class="icon" loading="eager" src="https://framerusercontent.com/images/Uigc835AQJZdGJdrV6pTnx9kEDg.png?width=256&height=256" alt="Interface Design icon">
+        <div class="text">
+          <p class="phase">Phase 03</p>
+          <h2>Interface<br>Design</h2>
+          <p class="body">We design intuitive, beautiful interfaces and flows that make the product feel effortless to use.</p>
+          <div class="tags">
+            <span class="tag">UI Design</span>
+            <span class="tag">Prototyping</span>
+            <span class="tag">Design System</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="inner">
+        <img class="icon" loading="eager" src="https://framerusercontent.com/images/71NyN9JJ45ohmLF3K57VaKslow.png?width=256&height=256" alt="Engineering and Build icon">
+        <div class="text">
+          <p class="phase">Phase 04</p>
+          <h2>Engineering<br>&amp; Build</h2>
+          <p class="body">We turn design into robust, production-ready product &mdash; built to scale, tested, and shipped with confidence.</p>
+          <div class="tags">
+            <span class="tag">Frontend</span>
+            <span class="tag">Backend</span>
+            <span class="tag">QA</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="inner">
+        <img class="icon" loading="eager" src="https://framerusercontent.com/images/4dkW40P1hqiAVkLaXX3by8xbOQY.png?width=256&height=256" alt="Launch and Growth icon">
+        <div class="text">
+          <p class="phase">Phase 05</p>
+          <h2>Launch<br>&amp; Growth</h2>
+          <p class="body">We ship, measure, and iterate &mdash; refining the product and driving momentum long after go-live.</p>
+          <div class="tags">
+            <span class="tag">Launch</span>
+            <span class="tag">Analytics</span>
+            <span class="tag">Iteration</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <section class="panel outro">
+    <div>
+      <p class="eyebrow">Ready When You Are</p>
+      <h1>Let&rsquo;s build the next one together</h1>
+      <p class="subtext">We ship, measure, and iterate long after go-live.</p>
+    </div>
+  </section>
+
+</body>
+</html>
