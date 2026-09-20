@@ -1,0 +1,228 @@
+---
+// Process section — curved arc timeline (inspired by scrollservices.framer.website).
+// Numbers ride a real circle arc; connector is one smooth curve, black below the
+// active disc and grey above, running off both edges. Eased scroll, revolver-style
+// click + haptic on each step. Icons are placeholder 3D assets — swap for your own.
+const phases = [
+  {
+    n: "01", kick: "Phase 01", title: ["Discovery", "& Scope"],
+    body: "We start with your goals, users, and the outcome you need — turning a fuzzy idea into a tight, shared scope.",
+    tags: ["Audit", "Goals", "Scope"],
+    icon: "https://framerusercontent.com/images/rqTHzxUO3vC7g6gXZqLxByu48M.png?width=256&height=256",
+  },
+  {
+    n: "02", kick: "Phase 02", title: ["Plan &", "Design"],
+    body: "I map the build and design the flows — priorities, structure, and how the thing should feel to use.",
+    tags: ["Roadmap", "UX", "UI"],
+    icon: "https://framerusercontent.com/images/6UNvtZcsajPqOY2iFqXfLWLAis.png?width=256&height=256",
+  },
+  {
+    n: "03", kick: "Phase 03", title: ["Build"],
+    body: "I build it in the open — clean, modern code you own, shipped in small working pieces you can watch grow.",
+    tags: ["Frontend", "Backend", "Automation"],
+    icon: "https://framerusercontent.com/images/Uigc835AQJZdGJdrV6pTnx9kEDg.png?width=256&height=256",
+  },
+  {
+    n: "04", kick: "Phase 04", title: ["Test &", "Ship"],
+    body: "Tested, hardened, and deployed to production — handed over working, not almost-working.",
+    tags: ["QA", "Deploy", "Docs"],
+    icon: "https://framerusercontent.com/images/71NyN9JJ45ohmLF3K57VaKslow.png?width=256&height=256",
+  },
+  {
+    n: "05", kick: "Phase 05", title: ["Handover", "& Support"],
+    body: "You keep the code and the accounts. I stay reachable while you find your feet with it.",
+    tags: ["Handover", "Training", "Support"],
+    icon: "https://framerusercontent.com/images/4dkW40P1hqiAVkLaXX3by8xbOQY.png?width=256&height=256",
+  },
+];
+---
+<section class="proc" id="process">
+  <div class="proc-head">
+    <p class="eye">How I work</p>
+    <h2>From a stuck idea to a shipped thing</h2>
+  </div>
+
+  <div class="proc-scroll" data-proc-scroll>
+    <div class="stage">
+      <div class="rail">
+        <svg class="railSvg" preserveAspectRatio="none">
+          <path class="lineGrey" fill="none" stroke="#d9d5cd" stroke-width="1.5"></path>
+          <path class="lineInk" fill="none" stroke="#171512" stroke-width="2.5" stroke-linecap="round"></path>
+        </svg>
+        {phases.map((p) => (
+          <div class="dot" data-n={p.n}>{p.n}</div>
+        ))}
+      </div>
+
+      <div class="content">
+        {phases.map((p) => (
+          <article class="phase">
+            <div class="copy">
+              <p class="kick">{p.kick}</p>
+              <h3>{p.title[0]}{p.title[1] ? <br /> : null}{p.title[1] ?? ""}</h3>
+              <p>{p.body}</p>
+              <div class="tags">{p.tags.map((t) => <span>{t}</span>)}</div>
+            </div>
+            <div class="art"><img src={p.icon} alt="" loading="lazy" /></div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .proc {
+    --cream: #f2f0ec;
+    --ink: #171512;
+    --muted: #6a655d;
+    --eye: #8a857c;
+    --line-off: #d9d5cd;
+    --serif: "Instrument Serif", Georgia, serif;
+    --sans: "Inter", system-ui, sans-serif;
+    background: var(--cream); color: var(--ink);
+  }
+
+  .proc-head { text-align: center; padding: clamp(5rem, 12vh, 9rem) 1.5rem clamp(2rem, 5vh, 3rem); }
+  .proc-head .eye { font: 500 0.8rem var(--sans); letter-spacing: 0.2em; text-transform: uppercase;
+                    color: var(--eye); margin: 0 0 1.2rem; }
+  .proc-head h2 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em;
+                  font-size: clamp(2.4rem, 5.4vw, 4rem); line-height: 1.04; margin: 0 auto; max-width: 18ch; }
+
+  .proc-scroll { position: relative; height: 340vh; }
+  .proc .stage { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+
+  .proc .rail { position: absolute; top: 0; left: 0; width: 460px; height: 100%; pointer-events: none; }
+  .proc .rail svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .proc .dot { position: absolute; display: grid; place-items: center; border-radius: 999px;
+               background: var(--cream); border: 1px solid var(--line-off);
+               font-family: var(--serif); color: var(--ink); transform: translate(-50%, -50%);
+               transition: background .3s ease, color .3s ease, border-color .3s ease; z-index: 2; }
+  .proc .dot.on { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .proc .dot.ping { animation: procping .32s ease-out; }
+  @keyframes procping { 0% { box-shadow: 0 0 0 0 rgba(23,21,18,.35); } 100% { box-shadow: 0 0 0 18px rgba(23,21,18,0); } }
+
+  .proc .content { position: absolute; top: 0; left: 460px; right: 0; bottom: 0; }
+  .proc .phase { position: absolute; inset: 0; opacity: 0; pointer-events: none;
+                 display: grid; align-items: center;
+                 grid-template-columns: minmax(0,1fr) minmax(0,0.85fr);
+                 gap: 3rem; padding: 4rem clamp(3rem,5vw,6rem) 4rem 0.5rem;
+                 transition: opacity .5s ease; }
+  .proc .phase.show { opacity: 1; pointer-events: auto; }
+  .proc .phase .copy { max-width: 40ch; transform: translateY(14px); transition: transform .6s ease; }
+  .proc .phase.show .copy { transform: translateY(0); }
+  .proc .phase .kick { font: 600 0.85rem var(--sans); letter-spacing: 0.16em; text-transform: uppercase;
+                       color: var(--eye); margin: 0 0 1.4rem; }
+  .proc .phase h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em;
+                    font-size: clamp(2.6rem, 4.6vw, 3.8rem); line-height: 1.0; margin: 0; color: var(--ink); }
+  .proc .phase p { font: 400 1.0625rem var(--sans); line-height: 1.6; color: var(--muted);
+                   margin: 1.5rem 0 0; max-width: 42ch; }
+  .proc .phase .tags { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 2rem; }
+  .proc .phase .tags span { font: 500 0.85rem var(--sans); color: var(--ink);
+                            padding: 0.5rem 1rem; border: 1px solid var(--line-off); border-radius: 999px; }
+  .proc .phase .art { justify-self: center; }
+  .proc .phase .art img { width: clamp(220px, 26vw, 380px); height: auto; display: block; }
+
+  @media (max-width: 1024px) {
+    .proc .rail { display: none; }
+    .proc .content { left: 0; }
+    .proc .phase { grid-template-columns: 1fr; padding: 5rem 1.5rem; text-align: left; gap: 1.5rem; }
+    .proc .phase .art { order: -1; justify-self: start; }
+    .proc .phase .art img { width: clamp(160px, 40vw, 240px); }
+  }
+</style>
+
+<script>
+  const root = document.getElementById("process");
+  if (root) {
+    const N = 5, R = 456, STEP = 0.335, CX = -169;
+    const scroll = root.querySelector<HTMLElement>("[data-proc-scroll]")!;
+    const dots = [...root.querySelectorAll<HTMLElement>(".dot")];
+    const phasesEls = [...root.querySelectorAll<HTMLElement>(".phase")];
+    const grey = root.querySelector(".lineGrey") as unknown as SVGPathElement;
+    const ink = root.querySelector(".lineInk") as unknown as SVGPathElement;
+
+    // revolver-style detent: pronounced but soft synth click + haptic
+    let ac: AudioContext | null = null;
+    const armAudio = () => {
+      if (!ac) { const AC = (window.AudioContext || (window as any).webkitAudioContext); if (AC) ac = new AC(); }
+      if (ac && ac.state === "suspended") ac.resume();
+    };
+    ["wheel", "keydown", "pointerdown", "touchstart"].forEach((e) =>
+      addEventListener(e, armAudio, { passive: true }));
+    const clickSound = () => {
+      if (!ac) return;
+      const t = ac.currentTime;
+      const master = ac.createGain(); master.gain.value = 0.95; master.connect(ac.destination);
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(260, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.07);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.19);
+      o.connect(g).connect(master); o.start(t); o.stop(t + 0.2);
+      const o3 = ac.createOscillator(), g3 = ac.createGain();
+      o3.type = "sine";
+      o3.frequency.setValueAtTime(150, t); o3.frequency.exponentialRampToValueAtTime(78, t + 0.09);
+      g3.gain.setValueAtTime(0.0001, t); g3.gain.exponentialRampToValueAtTime(0.3, t + 0.008);
+      g3.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
+      o3.connect(g3).connect(master); o3.start(t); o3.stop(t + 0.18);
+      const o2 = ac.createOscillator(), g2 = ac.createGain();
+      o2.type = "square"; o2.frequency.value = 1500;
+      g2.gain.setValueAtTime(0.16, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+      o2.connect(g2).connect(master); o2.start(t); o2.stop(t + 0.04);
+    };
+    const detent = (dot: HTMLElement) => {
+      clickSound();
+      if (navigator.vibrate) navigator.vibrate(12);
+      dot.classList.remove("ping"); void dot.offsetWidth; dot.classList.add("ping");
+    };
+
+    const arc = (aFrom: number, aTo: number, cy: number) => {
+      const n = 48; let d = "";
+      for (let k = 0; k <= n; k++) {
+        const a = aFrom + (aTo - aFrom) * (k / n);
+        d += (k ? " L " : "M ") + (CX + R * Math.cos(a)).toFixed(1) + " " + (cy + R * Math.sin(a)).toFixed(1);
+      }
+      return d;
+    };
+
+    let sp = 0, lastActive = 0;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    phasesEls[0].classList.add("show");
+
+    const frame = () => {
+      const r = scroll.getBoundingClientRect();
+      const total = scroll.offsetHeight - innerHeight;
+      const target = Math.min(1, Math.max(0, -r.top / total)) * (N - 1);
+      sp += (target - sp) * (reduce ? 1 : 0.18);
+      if (Math.abs(target - sp) < 0.001) sp = target;
+
+      const cy = innerHeight / 2;
+      const active = Math.round(sp);
+
+      dots.forEach((dot, i) => {
+        const a = (sp - i) * STEP;
+        const size = 78 - Math.min(1, Math.abs(sp - i)) * 20;
+        dot.style.left = (CX + R * Math.cos(a)) + "px";
+        dot.style.top = (cy + R * Math.sin(a)) + "px";
+        dot.style.width = size + "px";
+        dot.style.height = size + "px";
+        dot.style.fontSize = (size * 0.34).toFixed(1) + "px";
+        dot.classList.toggle("on", i === active);
+      });
+
+      const aTop = Math.asin(Math.max(-1, Math.min(1, (-80 - cy) / R)));
+      const aBot = Math.asin(Math.max(-1, Math.min(1, (innerHeight + 80 - cy) / R)));
+      grey.setAttribute("d", arc(aTop, aBot, cy));
+      ink.setAttribute("d", arc((sp - active) * STEP, aBot, cy));
+
+      if (active !== lastActive) {
+        lastActive = active;
+        phasesEls.forEach((el, i) => el.classList.toggle("show", i === active));
+        detent(dots[active]);
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+</script>
