@@ -1,0 +1,120 @@
+---
+// Dev-only palette + hero prototypes. Not linked from the site.
+// Delete once a palette is chosen.
+import "../styles/global.css";
+import palettes from "../data/palettes.json";
+const [A, B, C] = palettes;
+const v = (p) =>
+  `--p-bg:${p.bg};--p-surface:${p.surface};--p-border:${p.border};--p-text:${p.text};--p-muted:${p.muted};--p-accent:${p.accent};--p-hover:${p.accentHover}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Palette prototypes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" />
+    <style>
+      body { margin: 0; }
+      .proto { background: var(--p-bg); color: var(--p-text); font-family: "Inter", system-ui, sans-serif; }
+      .proto .ac { color: var(--p-accent); }
+      .proto .muted { color: var(--p-muted); }
+      .serif { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; letter-spacing: -0.02em; text-wrap: pretty; line-height: 1.02; }
+      .eyb { font-family: ui-monospace, Menlo, monospace; font-size: .8125rem; letter-spacing: .12em; text-transform: uppercase; color: var(--p-accent); }
+      .btn { background: var(--p-accent); color: var(--p-bg); border-radius: 9999px; padding: .875rem 1.75rem; font-weight: 500; display: inline-block; text-decoration: none; }
+      .btn-ghost { color: var(--p-muted); text-decoration: none; }
+      .card { background: var(--p-surface); border: 1px solid var(--p-border); }
+      .bloom { position: absolute; border-radius: 9999px; background: var(--p-accent); filter: blur(120px); pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <!-- ============ A — editorial left, soft bloom ============ -->
+    <section class="proto" data-proto="A" style={v(A)}>
+      <div style="position:relative;overflow:hidden">
+        <div class="bloom" style="top:-14rem;right:-14rem;width:34rem;height:34rem;opacity:.12"></div>
+        <div style="position:relative;max-width:64rem;margin:0 auto;padding:6rem 2rem;min-height:88vh;display:flex;flex-direction:column;justify-content:center">
+          <p class="eyb">Zaid Hossain — builder for hire</p>
+          <div style={`margin-top:1rem;height:1px;width:10rem;background:linear-gradient(to right, ${A.accent}, transparent)`}></div>
+          <h1 class="serif" style="font-size:clamp(2.75rem,7vw,4.75rem);margin:2rem 0 0;max-width:19ch">
+            You've had the idea <span class="ac" style="white-space:nowrap">long enough.</span>
+          </h1>
+          <p class="muted" style="font-size:1.1875rem;line-height:1.6;margin:1.75rem 0 0;max-width:46ch">
+            I build the app, site, or automation you've been circling for months.
+            Scoped tight, built in the open, handed over working.
+          </p>
+          <div style="margin-top:2.75rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap">
+            <a class="btn" href="#">Book a 20-minute call</a>
+            <a class="btn-ghost" href="#">See the work ↓</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ B — centred statement, ruled ============ -->
+    <section class="proto" data-proto="B" style={v(B)}>
+      <div style="position:relative;overflow:hidden">
+        <div class="bloom" style="top:-20rem;left:50%;transform:translateX(-50%);width:44rem;height:30rem;opacity:.10"></div>
+        <div style="position:relative;max-width:56rem;margin:0 auto;padding:6rem 2rem;min-height:88vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center">
+          <p class="eyb">Zaid Hossain — builder for hire</p>
+          <div style={`margin:2.25rem 0;height:1px;width:100%;background:${B.border}`}></div>
+          <h1 class="serif" style="font-size:clamp(3rem,8vw,5.5rem);margin:0;max-width:16ch">
+            You've had the idea <span class="ac">long enough.</span>
+          </h1>
+          <div style={`margin:2.25rem 0;height:1px;width:100%;background:${B.border}`}></div>
+          <p class="muted" style="font-size:1.1875rem;line-height:1.6;margin:0;max-width:44ch">
+            I build the app, site, or automation you've been circling for months.
+            Scoped tight, built in the open, handed over working.
+          </p>
+          <div style="margin-top:2.75rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap;justify-content:center">
+            <a class="btn" href="#">Book a 20-minute call</a>
+            <a class="btn-ghost" href="#">See the work ↓</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C — split, with a status panel ============ -->
+    <section class="proto" data-proto="C" style={v(C)}>
+      <div style="position:relative;overflow:hidden">
+        <div class="bloom" style="bottom:-16rem;right:-10rem;width:30rem;height:30rem;opacity:.10"></div>
+        <div style="position:relative;max-width:68rem;margin:0 auto;padding:6rem 2rem;min-height:88vh;display:grid;grid-template-columns:7fr 5fr;gap:4rem;align-items:center">
+          <div>
+            <p class="eyb">Zaid Hossain — builder for hire</p>
+            <h1 class="serif" style="font-size:clamp(2.5rem,5.5vw,4rem);margin:1.75rem 0 0;max-width:17ch">
+              You've had the idea <span class="ac" style="white-space:nowrap">long enough.</span>
+            </h1>
+            <p class="muted" style="font-size:1.125rem;line-height:1.6;margin:1.5rem 0 0;max-width:42ch">
+              I build the app, site, or automation you've been circling for months.
+              Scoped tight, built in the open, handed over working.
+            </p>
+            <div style="margin-top:2.5rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap">
+              <a class="btn" href="#">Book a 20-minute call</a>
+              <a class="btn-ghost" href="#">See the work ↓</a>
+            </div>
+          </div>
+
+          <div class="card" style="border-radius:.875rem;padding:1.75rem">
+            <div style="display:flex;align-items:center;gap:.625rem">
+              <span style={`width:.5rem;height:.5rem;border-radius:9999px;background:${C.accent};display:inline-block`}></span>
+              <span class="eyb" style="font-size:.75rem">Available — 2 slots</span>
+            </div>
+            <div style={`margin:1.5rem 0;height:1px;background:${C.border}`}></div>
+            {[
+              ["Typical build", "2–5 weeks"],
+              ["You see progress", "every few days"],
+              ["You keep", "the code + accounts"],
+              ["Retainer", "not required"],
+            ].map(([k, val]) => (
+              <div style="display:flex;justify-content:space-between;gap:1rem;padding:.625rem 0;font-size:.9375rem">
+                <span class="muted">{k}</span>
+                <span style="font-weight:500">{val}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
