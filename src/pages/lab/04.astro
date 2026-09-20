@@ -1,0 +1,68 @@
+---
+// Lab prototype 04 — Forest Noir. Standalone by design; see LAB-SPEC.md.
+// Green-tinted near-black, oversized editorial type, hairline column rules.
+// Accent roles: the index numerals and the button underline. No filled pill.
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>04 · Forest Noir</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400&family=Inter:wght@400;500&display=swap"
+    />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body { margin: 0; background: #090C0A; color: #E6ECE8; font-family: Inter, system-ui, sans-serif; }
+      a { text-decoration: none; }
+      .lbl { position: fixed; top: 1rem; left: 1rem; font: 600 11px ui-monospace, monospace;
+             letter-spacing: .1em; padding: .35rem .6rem; border-radius: 4px; z-index: 9;
+             background: #4ECCA3; color: #090C0A; }
+
+      .hero { max-width: 72rem; margin: 0 auto; padding: 6rem 3.5rem; min-height: 100vh;
+              display: flex; flex-direction: column; justify-content: center; }
+      .top { display: flex; justify-content: space-between; align-items: baseline;
+             border-bottom: 1px solid #1F2922; padding-bottom: 1.1rem; }
+      .eyb { font: 400 .8125rem ui-monospace, Menlo, monospace; letter-spacing: .14em;
+             text-transform: uppercase; color: #879A8F; margin: 0; }
+      .avail { font: 400 .8125rem ui-monospace, monospace; color: #4ECCA3; letter-spacing: .1em; }
+      h1 { font-family: Newsreader, Georgia, serif; font-weight: 300;
+           font-size: clamp(3.25rem, 9vw, 6.5rem); line-height: .96; letter-spacing: -.03em;
+           margin: 3.5rem 0 0; max-width: 13ch; text-wrap: pretty; }
+      .lower { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+               margin-top: 4rem; border-top: 1px solid #1F2922; padding-top: 2.25rem; }
+      .sub { color: #879A8F; font-size: 1.0625rem; line-height: 1.75; margin: 0; max-width: 42ch; }
+      .cta { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .btn { font-size: 1.25rem; font-family: Newsreader, Georgia, serif; color: #E6ECE8;
+             border-bottom: 2px solid #4ECCA3; padding-bottom: .3rem; }
+      .ghost { color: #879A8F; font-size: .9375rem; }
+    </style>
+  </head>
+  <body>
+    <div class="lbl">04 · Forest Noir</div>
+
+    <section class="hero" data-shot="hero">
+      <div class="top">
+        <p class="eyb">Zaid Hossain — builder for hire</p>
+        <span class="avail">2 SLOTS OPEN</span>
+      </div>
+
+      <h1>You've had the idea long enough.</h1>
+
+      <div class="lower">
+        <p class="sub">
+          I build the app, site, or automation you've been circling for months.
+          Scoped tight, built in the open, handed over working.
+        </p>
+        <div class="cta">
+          <a class="btn" href="#">Book a 20-minute call</a>
+          <a class="ghost" href="#">See the work ↓</a>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
