@@ -1,0 +1,69 @@
+---
+// Lab 08 · Acid — loud brutalist bands: uppercase heavy Space Grotesk, hairline strips, blocky lime button, services grid below.
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>08 · Acid</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" />
+    <style>
+      :root { --bg:#0B0B0B; --surface:#141412; --border:#262622; --text:#F5F5F2; --muted:#A1A198; --accent:#C8F526; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: "Space Grotesk", system-ui, sans-serif; }
+      .tag { position: fixed; top: 1rem; left: 1rem; font: 600 11px ui-monospace, monospace; letter-spacing: .1em; padding: .35rem .6rem; border-radius: 4px; z-index: 9; background: var(--accent); color: var(--bg); }
+      .hero { min-height: 100vh; display: flex; flex-direction: column; }
+      .band { display: flex; align-items: center; padding: 1.75rem 3rem; border-bottom: 1px solid var(--border); }
+      .eyebrow { display: flex; align-items: center; gap: .875rem; margin: 0; font-weight: 500; font-size: .875rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+      .sq { width: .75rem; height: .75rem; background: var(--accent); }
+      .stage { flex: 1; display: flex; align-items: center; padding: 3rem; }
+      h1 { font-weight: 700; text-transform: uppercase; letter-spacing: -.035em; line-height: .9; font-size: clamp(3.25rem, 9.5vw, 9.5rem); margin: 0; max-width: 12ch; }
+      .foot { display: grid; grid-template-columns: 1fr auto; border-top: 1px solid var(--border); }
+      .foot .sub { padding: 2.5rem 3rem; color: var(--muted); font-size: 1.1875rem; line-height: 1.55; margin: 0; max-width: 48ch; align-self: center; }
+      .foot .actions { display: flex; align-items: center; gap: 2.5rem; padding: 2.5rem 3rem; border-left: 1px solid var(--border); }
+      .btn { background: var(--accent); color: var(--bg); padding: 1.125rem 2.25rem; font-weight: 700; font-size: 1rem; letter-spacing: .03em; text-transform: uppercase; text-decoration: none; }
+      .link { color: var(--muted); text-decoration: none; font-size: .9375rem; letter-spacing: .03em; }
+      .link:hover { color: var(--text); }
+      .services { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); }
+      .svc { padding: 3rem; background: var(--surface); border-right: 1px solid var(--border); }
+      .svc:last-child { border-right: 0; }
+      .svc h2 { font-weight: 700; text-transform: uppercase; letter-spacing: -.02em; font-size: 1.5rem; margin: 0 0 .75rem; }
+      .svc p { color: var(--muted); margin: 0; line-height: 1.55; }
+    </style>
+  </head>
+  <body>
+    <div class="tag">08 · ACID</div>
+    <section class="hero" data-shot="hero">
+      <div class="band">
+        <p class="eyebrow"><span class="sq"></span>Zaid Hossain — builder for hire</p>
+      </div>
+      <div class="stage">
+        <h1>You&apos;ve had the idea long enough.</h1>
+      </div>
+      <div class="foot">
+        <p class="sub">I build the app, site, or automation you&apos;ve been circling for months. Scoped tight, built in the open, handed over working.</p>
+        <div class="actions">
+          <a class="btn" href="#">Book a 20-minute call</a>
+          <a class="link" href="#">See the work ↓</a>
+        </div>
+      </div>
+    </section>
+    <section class="services" data-shot="two">
+      <div class="svc">
+        <h2>Apps</h2>
+        <p>From rough idea to a working product in your hands.</p>
+      </div>
+      <div class="svc">
+        <h2>Automations</h2>
+        <p>The busywork you keep putting off, running itself.</p>
+      </div>
+      <div class="svc">
+        <h2>Websites</h2>
+        <p>Fast, sharp sites that say the thing plainly.</p>
+      </div>
+    </section>
+  </body>
+</html>

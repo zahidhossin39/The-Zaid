@@ -1,0 +1,45 @@
+---
+// Lab 09 · One Note — disciplined restraint: dead-centred column between two hairlines, tight Inter, pure white used twice.
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>09 · One Note</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" />
+    <style>
+      :root { --bg:#0B0B0C; --surface:#151517; --border:#262629; --text:#F5F5F4; --muted:#A1A1AA; --accent:#FFFFFF; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; }
+      .tag { position: fixed; top: 1rem; left: 1rem; font: 600 11px ui-monospace, monospace; letter-spacing: .1em; padding: .35rem .6rem; border-radius: 4px; z-index: 9; background: var(--accent); color: var(--bg); }
+      .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 4rem 2rem; }
+      .inner { width: min(100%, 72rem); display: flex; flex-direction: column; align-items: center; text-align: center; padding: 5.5rem 2rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+      .mark { width: .625rem; height: .625rem; background: var(--accent); }
+      .eyebrow { margin: 1.5rem 0 0; font-size: .8125rem; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+      h1 { font-weight: 600; letter-spacing: -.045em; line-height: 1.05; font-size: clamp(2.75rem, 5.5vw, 4.75rem); margin: 2.25rem 0 0; max-width: 20ch; text-wrap: balance; }
+      .sub { color: var(--muted); font-size: 1.1875rem; line-height: 1.6; margin: 1.75rem 0 0; max-width: 50ch; }
+      .actions { margin-top: 3rem; display: flex; align-items: center; gap: 2.5rem; }
+      .btn { background: var(--accent); color: var(--bg); border-radius: 9999px; padding: .875rem 1.75rem; font-weight: 600; font-size: 1rem; text-decoration: none; }
+      .link { color: var(--muted); text-decoration: none; font-size: .9375rem; }
+      .link:hover { color: var(--text); }
+    </style>
+  </head>
+  <body>
+    <div class="tag">09 · ONE NOTE</div>
+    <section class="hero" data-shot="hero">
+      <div class="inner">
+        <span class="mark"></span>
+        <p class="eyebrow">Zaid Hossain — builder for hire</p>
+        <h1>You&apos;ve had the idea long enough.</h1>
+        <p class="sub">I build the app, site, or automation you&apos;ve been circling for months. Scoped tight, built in the open, handed over working.</p>
+        <div class="actions">
+          <a class="btn" href="#">Book a 20-minute call</a>
+          <a class="link" href="#">See the work ↓</a>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

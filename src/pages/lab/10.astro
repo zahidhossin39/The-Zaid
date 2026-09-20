@@ -1,0 +1,44 @@
+---
+// Lab 10 · Fog — quiet and low-contrast: small-scale Newsreader inside a soft floating panel, generous air around it.
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>10 · Fog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Inter:wght@400;500;600&display=swap" />
+    <style>
+      :root { --bg:#16161A; --surface:#1E1E23; --border:#2C2C33; --text:#D8D8DC; --muted:#8E8E98; --accent:#9AA5FF; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; }
+      .tag { position: fixed; top: 1rem; left: 1rem; font: 600 11px ui-monospace, monospace; letter-spacing: .1em; padding: .35rem .6rem; border-radius: 4px; z-index: 9; background: var(--accent); color: var(--bg); }
+      .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 4rem 2rem; }
+      .card { background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; padding: 4rem 4.5rem; max-width: 46rem; }
+      .eyebrow { display: flex; align-items: center; gap: .625rem; margin: 0; font-size: .8125rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+      .dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--accent); }
+      h1 { font-family: Newsreader, Georgia, serif; font-weight: 400; letter-spacing: -.015em; line-height: 1.12; font-size: clamp(2.25rem, 3.75vw, 3.25rem); margin: 1.75rem 0 0; max-width: 20ch; text-wrap: balance; }
+      .sub { color: var(--muted); font-size: 1.0625rem; line-height: 1.65; margin: 1.5rem 0 0; max-width: 48ch; }
+      .actions { margin-top: 2.75rem; display: flex; align-items: center; gap: 2rem; }
+      .btn { background: var(--accent); color: var(--bg); border-radius: .5rem; padding: .8rem 1.5rem; font-weight: 600; font-size: .9375rem; text-decoration: none; }
+      .link { color: var(--muted); text-decoration: none; font-size: .9375rem; }
+      .link:hover { color: var(--text); }
+    </style>
+  </head>
+  <body>
+    <div class="tag">10 · FOG</div>
+    <section class="hero" data-shot="hero">
+      <div class="card">
+        <p class="eyebrow"><span class="dot"></span>Zaid Hossain — builder for hire</p>
+        <h1>You&apos;ve had the idea long enough.</h1>
+        <p class="sub">I build the app, site, or automation you&apos;ve been circling for months. Scoped tight, built in the open, handed over working.</p>
+        <div class="actions">
+          <a class="btn" href="#">Book a 20-minute call</a>
+          <a class="link" href="#">See the work ↓</a>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
