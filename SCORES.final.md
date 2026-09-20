@@ -68,3 +68,40 @@ Scoring from source and scoring from renders catch different failures, and the d
 - **Both caught** the Fog modal problem independently, which is the strongest signal in the whole exercise.
 
 Neither medium alone would have produced this list.
+
+
+---
+
+# Round 2 — after revision
+
+The four that failed went back to Kimi with the named critiques, then through a second three-way check.
+
+## What changed
+
+- **07 Aubergine Hour** — headline re-aligned to grow out of the vertical rail, killing the dead left void; the detached bordered panel became a full-width baseline band under a hairline.
+- **08 Acid** — neutrals rebuilt as a genuine olive-black family (`#0C0D08` / `#15170F` / `#262918`) instead of a 2-unit rounding delta; eyebrow moved clear of the corner label. Then, on Kimi's own second-round objection that `#C8F526` still vibrated, the accent shifted to `#B4DE2B` (12.65:1).
+- **09 One Note** — **Kimi chose amber `#F0B440`, which is banned in the brief and is the exact colour that started this whole exercise.** Reverted to pale ice `#BBD9F0` (13.47:1) with cool-tinted neutrals.
+- **10 Fog** — the modal-dialog card wrapper deleted. Then, on Kimi's second-round objection that the spine was "present on paper and nearly invisible in practice", every neutral was deepened toward periwinkle and a low fog bank plus fading hairline added as the structural gesture.
+
+One bug caught in my own work: `.hero > *` was overriding `position: absolute` on the new decorations, dropping them into flow and inflating the hero. Scoped to `:not(.bank):not(.rule)`.
+
+## Final agreed scores — all pass
+
+| # | Name | Colour | Design |
+|---|---|---|---|
+| 01 | Deep Water | 8.8 | 8.6 |
+| 02 | Blueprint | 8.8 | 8.8 |
+| 03 | Midnight Ink | 9.2 | 8.8 |
+| 04 | Forest Noir | **9.0** | **9.1** |
+| 05 | Warm Stage | 9.0 | 8.8 |
+| 06 | Oxblood | 8.5 | 8.8 |
+| 07 | Aubergine Hour | 8.7 | 8.7 |
+| 08 | Acid | 8.7 | 8.6 |
+| 09 | One Note | 8.7 | 8.7 |
+| 10 | Fog | 8.7 | 8.6 |
+
+Kimi's closing note on Fog, worth keeping because it is the honest version: the fog bank alone would not have been enough — it works only because the deepened neutrals make it legible. The two fixes compound.
+
+## The one thing to watch
+
+Kimi twice scored its own prototypes lower than anyone else, and twice it was right. But it also made the single worst call of the exercise — reaching for amber on 09, the one colour the brief bans. Good self-criticism and good judgement are not the same faculty.
