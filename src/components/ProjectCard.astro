@@ -12,10 +12,12 @@ const { title, stuck, now, youtubeId, liveUrl, tags } = Astro.props;
   -->
   <div class="relative aspect-video w-full bg-bg" data-yt={youtubeId}>
     <img
-      src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
+      src={`https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`}
       alt=""
       loading="lazy"
       decoding="async"
+      data-fallback={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
+      onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}"
       class="h-full w-full object-cover opacity-80 transition group-hover:opacity-100"
     />
     <button
