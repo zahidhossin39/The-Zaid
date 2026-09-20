@@ -32,7 +32,6 @@ someone clicks play.
 
 ## Before this goes live
 
-- [ ] Pick a hero headline — three options are in `src/components/Hero.astro`
 - [ ] Replace the 4 placeholder projects with real ones
 - [ ] Make a Cal.com account, put the handle in `CAL_LINK` in `BookACall.astro`
 - [ ] Add a photo at `public/zaid.jpg` and wire it into `About.astro`

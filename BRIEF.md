@@ -38,7 +38,7 @@ Hero → the problem → what I build (3 types) → proof grid → how it works 
 
 ## Open items
 
-- [ ] **Hero headline** — 3 options to be drafted in the build, Zaid picks
+- [x] **Hero headline** — decided: "You've had the idea long enough." CTA: "Book a 20-minute call". The other two options stay in comments in `Hero.astro`
 - [ ] **Domain** — `zaidhossain.com` returned NXDOMAIN (likely free). `zaid.dev` has no A record but may still be registered; verify at a registrar
 - [ ] **Email** — once domain is confirmed, Cloudflare Email Routing forwards `hello@zaid.dev` to the Gmail for free. Cosmetic, do later
 
