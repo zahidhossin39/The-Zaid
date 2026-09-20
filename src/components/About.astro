@@ -1,0 +1,53 @@
+<section class="mx-auto max-w-[64rem] px-6 py-20 md:px-8 md:py-32">
+  <div class="grid gap-12 md:grid-cols-[4fr_8fr] md:gap-16">
+    <div class="reveal">
+      <!--
+        TODO(zaid): drop a real photo at public/zaid.jpg and delete the
+        placeholder block below. Grayscale by default, colour on hover.
+      -->
+      <div class="aspect-[4/5] w-full max-w-[18rem] overflow-hidden rounded-lg border border-border bg-surface">
+        <div class="grid h-full place-items-center px-6 text-center font-mono text-xs leading-relaxed text-muted">
+          your photo<br />/public/zaid.jpg
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-[42rem]">
+      <p class="eyebrow reveal">Who's building it</p>
+      <h2 class="h2 reveal mt-5" data-delay="80">I'm Zaid.</h2>
+
+      <div class="reveal mt-7 space-y-5 text-muted" data-delay="160">
+        <p>
+          I build software for people who ran out of time, not ideas.
+        </p>
+        <p>
+          Most of what I know came from building things I needed myself — an
+          app to fix my own problem, an automation because I got tired of
+          doing something by hand. That's still how I work: start with the
+          actual problem, build the smallest thing that solves it, ship it.
+        </p>
+        <p class="text-text">
+          I'm early in taking on client work. That means you get more of my
+          attention than you'd get anywhere else — and I'd rather prove that
+          than argue about it.
+        </p>
+      </div>
+
+      <ul class="reveal mt-9 flex flex-wrap gap-x-7 gap-y-3" data-delay="240">
+        {[
+          ["GitHub", "https://github.com/"],
+          ["X", "https://x.com/"],
+          ["LinkedIn", "https://linkedin.com/"],
+        ].map(([label, href]) => (
+          <li>
+            <a href={href} target="_blank" rel="noopener noreferrer"
+               class="text-muted underline decoration-border underline-offset-4 transition hover:text-accent hover:decoration-accent">
+              {label}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <!-- TODO(zaid): replace the three social URLs above with your profiles -->
+    </div>
+  </div>
+</section>

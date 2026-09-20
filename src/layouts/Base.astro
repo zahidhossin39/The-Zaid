@@ -1,0 +1,48 @@
+---
+import "../styles/global.css";
+
+interface Props { title: string; description: string; }
+const { title, description } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#0A0A0B" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap"
+    />
+  </head>
+  <body>
+    <slot />
+
+    <script>
+      // Reveal-on-scroll. One observer for the whole page; unobserve after the
+      // first trigger so sections don't re-animate when scrolling back up.
+      const els = document.querySelectorAll<HTMLElement>(".reveal");
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (!e.isIntersecting) continue;
+            const delay = Number(e.target.getAttribute("data-delay") ?? 0);
+            setTimeout(() => e.target.classList.add("in-view"), delay);
+            io.unobserve(e.target);
+          }
+        },
+        { rootMargin: "0px 0px -12% 0px", threshold: 0.1 }
+      );
+      els.forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

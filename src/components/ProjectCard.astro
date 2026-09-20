@@ -1,0 +1,60 @@
+---
+interface Props {
+  title: string; stuck: string; now: string;
+  youtubeId: string; liveUrl: string; tags: string[];
+}
+const { title, stuck, now, youtubeId, liveUrl, tags } = Astro.props;
+---
+<article class="reveal group overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-1 hover:border-muted/40">
+  <!--
+    YouTube facade: ships a thumbnail, not an iframe. Four real embeds would
+    cost ~1-2MB of third-party JS on load. The iframe is injected on click.
+  -->
+  <div class="relative aspect-video w-full bg-bg" data-yt={youtubeId}>
+    <img
+      src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      class="h-full w-full object-cover opacity-80 transition group-hover:opacity-100"
+    />
+    <button
+      type="button"
+      aria-label={`Play walkthrough: ${title}`}
+      class="yt-play absolute inset-0 grid place-items-center bg-bg/30 transition hover:bg-bg/10"
+    >
+      <span class="grid h-16 w-16 place-items-center rounded-full bg-accent shadow-lg transition group-hover:scale-110">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="#0A0A0B" aria-hidden="true">
+          <path d="M8 5.5v13l11-6.5z" />
+        </svg>
+      </span>
+    </button>
+  </div>
+
+  <div class="p-6 md:p-7">
+    <h3 class="h3">{title}</h3>
+
+    <dl class="mt-4 space-y-2 text-[0.95rem]">
+      <div class="flex gap-3">
+        <dt class="w-14 shrink-0 font-mono text-xs uppercase tracking-[0.1em] text-muted pt-1">Stuck</dt>
+        <dd class="text-muted">{stuck}</dd>
+      </div>
+      <div class="flex gap-3">
+        <dt class="w-14 shrink-0 font-mono text-xs uppercase tracking-[0.1em] text-accent pt-1">Now</dt>
+        <dd class="text-text">{now}</dd>
+      </div>
+    </dl>
+
+    <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
+      <ul class="flex flex-wrap gap-2">
+        {tags.map((t) => (
+          <li class="rounded-full border border-border px-3 py-1 font-mono text-xs text-muted">{t}</li>
+        ))}
+      </ul>
+      <a href={liveUrl} target="_blank" rel="noopener noreferrer"
+         class="font-medium text-accent transition hover:text-accent-hover">
+        Visit it live ↗
+      </a>
+    </div>
+  </div>
+</article>

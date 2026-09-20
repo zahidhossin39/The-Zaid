@@ -1,0 +1,47 @@
+---
+// Rows, not cards. The page already has 4 project cards, 3 step markers and
+// an embed card — a fourth set of boxes would be card soup.
+const items = [
+  {
+    n: "01",
+    label: "Apps",
+    title: "A tool that does the one thing",
+    body: "The internal app, the client portal, the thing you've been faking with a spreadsheet. Built small, built to actually get used.",
+  },
+  {
+    n: "02",
+    label: "Automations",
+    title: "The busywork, gone",
+    body: "The copy-paste between two systems. The report you rebuild every Monday. It runs without you now.",
+  },
+  {
+    n: "03",
+    label: "Websites",
+    title: "A site with a job to do",
+    body: "Not a brochure. A site with one clear thing it's meant to make happen, and the plumbing behind it to make it happen.",
+  },
+];
+---
+<section class="mx-auto max-w-[64rem] px-6 py-20 md:px-8 md:py-32">
+  <p class="eyebrow reveal">What I build</p>
+
+  <div class="mt-12 border-t border-border">
+    {items.map((item, i) => (
+      <div
+        class="reveal grid gap-4 border-b border-border py-9 md:grid-cols-[7rem_1fr] md:gap-10"
+        data-delay={i * 90}
+      >
+        <div class="flex items-baseline gap-3 md:block">
+          <span class="font-mono text-sm text-accent">{item.n}</span>
+          <span class="font-mono text-xs uppercase tracking-[0.12em] text-muted md:mt-2 md:block">
+            {item.label}
+          </span>
+        </div>
+        <div class="max-w-[42rem]">
+          <h3 class="h3">{item.title}</h3>
+          <p class="mt-2.5 text-muted">{item.body}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>

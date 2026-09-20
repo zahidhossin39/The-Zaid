@@ -1,0 +1,34 @@
+[
+  {
+    "title": "Placeholder — swap for your first real build",
+    "stuck": "Describe the painful, manual, expensive-in-time situation the client was in before.",
+    "now": "Describe the concrete result. Use a number if you have one.",
+    "youtubeId": "jNQXAC9IVRw",
+    "liveUrl": "https://example.com",
+    "tags": ["App", "Placeholder"]
+  },
+  {
+    "title": "Placeholder — automation project",
+    "stuck": "The copy-paste between two systems that ate two hours every week.",
+    "now": "Runs on its own now. Nobody touches it.",
+    "youtubeId": "aqz-KE-bpKQ",
+    "liveUrl": "https://example.com",
+    "tags": ["Automation", "Placeholder"]
+  },
+  {
+    "title": "Placeholder — website project",
+    "stuck": "A site that looked fine and did nothing.",
+    "now": "One clear action, and the plumbing behind it to make it happen.",
+    "youtubeId": "LXb3EKWsInQ",
+    "liveUrl": "https://example.com",
+    "tags": ["Website", "Placeholder"]
+  },
+  {
+    "title": "Placeholder — internal tool",
+    "stuck": "A spreadsheet doing a job a spreadsheet should not be doing.",
+    "now": "A small tool that does exactly that one job, properly.",
+    "youtubeId": "ScMzIvxBSi4",
+    "liveUrl": "https://example.com",
+    "tags": ["Internal tool", "Placeholder"]
+  }
+]

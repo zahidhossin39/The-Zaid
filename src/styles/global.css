@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0A0A0B;
+  --color-surface: #141417;
+  --color-border: #26262B;
+  --color-text: #F4F2ED;
+  --color-muted: #9C9A94;
+  --color-accent: #FFA524;
+  --color-accent-hover: #FFB84D;
+
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* offset so anchored sections don't hide under the viewport edge */
+    scroll-padding-top: 4rem;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--color-accent); color: var(--color-bg); }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+}
+
+@layer components {
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 7vw, 4.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    font-weight: 400;
+  }
+  .h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    font-weight: 400;
+  }
+  .h3 { font-size: 1.1875rem; font-weight: 600; letter-spacing: -0.01em; }
+  .lead { font-size: 1.1875rem; color: var(--color-muted); line-height: 1.6; }
+}
+
+/* --- motion: opt-in reveal, driven by IntersectionObserver --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 600ms cubic-bezier(.22,1,.36,1), transform 600ms cubic-bezier(.22,1,.36,1);
+}
+.reveal.in-view { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}

@@ -1,0 +1,97 @@
+---
+const EMAIL = "hello.zaidhossain@gmail.com";
+// TODO(zaid): replace with your real Cal.com handle once you've made one.
+const CAL_LINK = "zaid/20min";
+---
+<section id="book" class="relative overflow-hidden border-t border-border">
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute -top-32 left-1/2 h-[30rem] w-[52rem] -translate-x-1/2 rounded-full opacity-[0.06] blur-3xl"
+    style="background: radial-gradient(circle, #FFA524 0%, transparent 70%)"
+  >
+  </div>
+
+  <div class="relative mx-auto max-w-[64rem] px-6 py-20 text-center md:px-8 md:py-32">
+    <p class="eyebrow reveal">Book a call</p>
+    <h2 class="h2 reveal mx-auto mt-5 max-w-[20ch]" data-delay="80">
+      Tell me what you're trying to build.
+    </h2>
+    <p class="lead reveal mx-auto mt-5 max-w-[42ch]" data-delay="160">
+      Twenty minutes, no pitch. If I'm not the right fit for it, I'll say so
+      on the call.
+    </p>
+
+    <div class="reveal mx-auto mt-12 max-w-[48rem] overflow-hidden rounded-xl border border-border bg-surface" data-delay="240">
+      <div id="cal-embed" class="min-h-[34rem] w-full">
+        <noscript>
+          <p class="p-10 text-muted">
+            Booking needs JavaScript. Email <a class="text-accent" href={`mailto:${EMAIL}`}>{EMAIL}</a> instead.
+          </p>
+        </noscript>
+      </div>
+    </div>
+
+    <p class="reveal mt-8 text-muted" data-delay="300">
+      Rather write it down? <a class="text-accent underline underline-offset-4 transition hover:text-accent-hover" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+    </p>
+  </div>
+</section>
+
+<footer class="border-t border-border">
+  <div class="mx-auto flex max-w-[64rem] flex-col gap-2 px-6 py-8 text-sm text-muted md:flex-row md:items-center md:justify-between md:px-8">
+    <p>© {new Date().getFullYear()} Zaid Hossain</p>
+    <p class="font-mono text-xs">Built with Astro</p>
+  </div>
+</footer>
+
+<script define:vars={{ CAL_LINK }}>
+  // Cal.com inline embed, loaded lazily — it's ~100KB of third-party JS and
+  // it sits at the very bottom of the page, so there's no reason to pay for
+  // it until someone scrolls near it.
+  const target = document.getElementById("cal-embed");
+  if (target) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io.disconnect();
+
+        (function (C, A, L) {
+          let p = function (a, ar) { a.q.push(ar); };
+          let d = C.document;
+          C.Cal = C.Cal || function () {
+            let cal = C.Cal, ar = arguments;
+            if (!cal.loaded) {
+              cal.ns = {};
+              cal.q = cal.q || [];
+              d.head.appendChild(d.createElement("script")).src = A;
+              cal.loaded = true;
+            }
+            if (ar[0] === L) {
+              const api = function () { p(api, arguments); };
+              api.q = api.q || [];
+              cal.ns[ar[1]] = cal.ns[ar[1]] || api;
+              p(cal.ns[ar[1]], ar);
+              p(cal, ["initNamespace", ar[1]]);
+              return;
+            }
+            p(cal, ar);
+          };
+        })(window, "https://app.cal.com/embed/embed.js", "init");
+
+        window.Cal("init", { origin: "https://app.cal.com" });
+        window.Cal("inline", {
+          elementOrSelector: "#cal-embed",
+          calLink: CAL_LINK,
+          config: { theme: "dark" },
+        });
+        window.Cal("ui", {
+          theme: "dark",
+          cssVarsPerTheme: { dark: { "cal-brand": "#FFA524" } },
+          hideEventTypeDetails: false,
+        });
+      },
+      { rootMargin: "300px" }
+    );
+    io.observe(target);
+  }
+</script>
