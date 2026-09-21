@@ -1,4 +1,6 @@
 ---
+import DotGrid from "./DotGrid.astro";
+
 const HEAD = "You've had the idea long enough.";
 const SUB =
   "I build the app, site, or automation you've been circling for months. Scoped tight, built in the open, handed over working.";
@@ -11,12 +13,33 @@ const CTA = "Book a 20-minute call";
 />
 
 <section class="hero">
+  <DotGrid />
   <div class="hero-inner">
     <div class="hero-copy">
       <h1 class="headline reveal" data-delay="120">{HEAD}</h1>
       <p class="sub reveal" data-delay="220">{SUB}</p>
       <div class="cta reveal" data-delay="320">
-        <a href="#book" class="btn"><span class="btn-label">{CTA}</span><span class="btn-fill" aria-hidden="true"></span></a>
+        <a href="#book" class="btn"
+          ><span class="btn-label"
+            ><svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>{CTA}</span
+          ><span class="btn-fill" aria-hidden="true"></span></a
+        >
         <a href="#proof" class="link">See the work ↓</a>
       </div>
     </div>
@@ -41,12 +64,19 @@ const CTA = "Book a 20-minute call";
 
 <style>
   .hero {
+    position: relative;
     background: #ffffff;
     color: #111111;
     font-family: "Inter Tight", system-ui, sans-serif;
   }
 
+  .hero :global(.dotgrid-wrapper) {
+    z-index: 0;
+  }
+
   .hero-inner {
+    position: relative;
+    z-index: 1;
     min-height: 100svh;
     max-width: 76rem;
     margin: 0 auto;
@@ -105,6 +135,13 @@ const CTA = "Book a 20-minute call";
     position: relative;
     z-index: 1;
     pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .btn-label svg {
+    flex-shrink: 0;
   }
 
   /* cursor-origin fill circle (grows from where the mouse enters) */
