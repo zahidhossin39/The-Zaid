@@ -16,7 +16,7 @@ const CTA = "Book a 20-minute call";
       <h1 class="headline reveal" data-delay="120">{HEAD}</h1>
       <p class="sub reveal" data-delay="220">{SUB}</p>
       <div class="cta reveal" data-delay="320">
-        <a href="#book" class="btn">{CTA}</a>
+        <a href="#book" class="btn"><span class="btn-label">{CTA}</span><span class="btn-fill" aria-hidden="true"></span></a>
         <a href="#proof" class="link">See the work ↓</a>
       </div>
     </div>
@@ -83,18 +83,47 @@ const CTA = "Book a 20-minute call";
   }
 
   .btn {
-    display: inline-block;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
     background: #111111;
     color: #ffffff;
     font-weight: 500;
     padding: 0.875rem 1.75rem;
     border-radius: 999px;
     text-decoration: none;
-    transition: transform 0.15s ease, background 0.15s ease;
+    transition: transform 0.15s ease;
   }
 
   .btn:hover {
     transform: translateY(-2px);
+  }
+
+  .btn-label {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* cursor-origin fill circle (grows from where the mouse enters) */
+  .btn-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 550px;
+    height: 550px;
+    border-radius: 9999px;
+    background: var(--color-accent);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0);
+    transform-origin: center center;
+    z-index: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-fill { display: none; }
   }
 
   .link {
@@ -139,3 +168,30 @@ const CTA = "Book a 20-minute call";
     }
   }
 </style>
+
+<script>
+  // Cursor-origin fill: circle grows from the point the mouse enters and
+  // shrinks toward the point it leaves. Ported from the Zaid-Portfolio button.
+  const btn = document.querySelector<HTMLElement>(".hero .btn");
+  const fill = btn?.querySelector<HTMLElement>(".btn-fill");
+  if (btn && fill) {
+    const drive = (e: MouseEvent, entering: boolean) => {
+      const rect = btn.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const size = Math.hypot(Math.max(x, rect.width - x), Math.max(y, rect.height - y)) * 2;
+      fill.style.width = `${size}px`;
+      fill.style.height = `${size}px`;
+      // snap to cursor at the current scale, no transition
+      fill.style.transition = "none";
+      fill.style.left = `${x}px`;
+      fill.style.top = `${y}px`;
+      fill.style.transform = `translate(-50%, -50%) scale(${entering ? 0 : 1})`;
+      void fill.offsetHeight; // force reflow so the snap applies before animating
+      fill.style.transition = "transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)";
+      fill.style.transform = `translate(-50%, -50%) scale(${entering ? 1 : 0})`;
+    };
+    btn.addEventListener("mouseenter", (e) => drive(e, true));
+    btn.addEventListener("mouseleave", (e) => drive(e, false));
+  }
+</script>
