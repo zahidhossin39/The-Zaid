@@ -33,18 +33,27 @@ const { title, description, theme } = Astro.props;
       // Reveal-on-scroll. One observer for the whole page; unobserve after the
       // first trigger so sections don't re-animate when scrolling back up.
       const els = document.querySelectorAll<HTMLElement>(".reveal");
+      const revealEl = (el: Element) => {
+        const delay = Number(el.getAttribute("data-delay") ?? 0);
+        setTimeout(() => el.classList.add("in-view"), delay);
+      };
       const io = new IntersectionObserver(
         (entries) => {
           for (const e of entries) {
             if (!e.isIntersecting) continue;
-            const delay = Number(e.target.getAttribute("data-delay") ?? 0);
-            setTimeout(() => e.target.classList.add("in-view"), delay);
+            revealEl(e.target);
             io.unobserve(e.target);
           }
         },
         { rootMargin: "0px 0px -12% 0px", threshold: 0.1 }
       );
-      els.forEach((el) => io.observe(el));
+      // Anything already on screen at load reveals immediately (the -12% dead
+      // zone must not hide above-the-fold content); the rest waits for scroll.
+      els.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight && r.bottom > 0) revealEl(el);
+        else io.observe(el);
+      });
     </script>
 
     <script>
