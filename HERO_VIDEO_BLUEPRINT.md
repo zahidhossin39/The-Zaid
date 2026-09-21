@@ -69,6 +69,16 @@ Free, perfectly legible, zero render risk.
 
 ---
 
+## 2b. Character canon (applies to every prompt, every plate, every future asset)
+
+The clay figure **always wears a soft clay baseball cap**, brim forward, shading the blank face. This is locked.
+
+Beyond looking better, it is load-bearing technically: the brim occludes the top of the blank head, so diffusion has less featureless skull to hallucinate a nose ridge or jawline into. It reinforces Gemini's phantom-face mitigation rather than fighting it.
+
+The cap is **matte clay in the same muted body tone** — never amber, never branded, never a logo. Amber stays reserved for practical light sources only.
+
+---
+
 ## 3. Production pipeline
 
 **Rule that governs everything: state *changes* (hard cuts), never state *transitions* (morphs).** Generative video artifacts are born in the temporal interpolation layer. We never enter it.
@@ -93,6 +103,7 @@ Free, perfectly legible, zero render risk.
 ```
 faceless clay figure slumped at a kitchen table, seen from three-quarter rear,
 head turned away from camera, blank rounded head, no facial features,
+wearing a soft clay baseball cap, brim shading the blank face,
 single warm desk lamp as the only light source, deep charcoal shadows,
 visible fingerprints in the clay, dust motes in the lamp cone, film grain,
 shallow depth of field, macro lens, camera locked at table height,
