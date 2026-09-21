@@ -3,32 +3,51 @@
 // Numbers ride a real circle arc; connector is one smooth curve, black below the
 // active disc and grey above, running off both edges. Eased scroll, revolver-style
 // click + haptic on each step. Icons are placeholder 3D assets — swap for your own.
-// Custom duotone icons — hand-drawn SVG, no external assets.
+// Custom duotone icons — hand-drawn SVG, no external assets. Each carries a
+// light->shade gradient fill and a soft drop shadow for a puffy 3D feel.
+const defs = (id: string) => `<defs>
+  <linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f0ebe1"/><stop offset="1" stop-color="#d2cbbc"/>
+  </linearGradient>
+  <filter id="s${id}" x="-45%" y="-45%" width="190%" height="190%">
+    <feDropShadow dx="0" dy="8" stdDeviation="7" flood-color="#3a3428" flood-opacity="0.22"/>
+  </filter>
+</defs>`;
 const ICON = {
-  magnifier: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="50" cy="50" r="30" fill="#e4dfd5" stroke="#171512" stroke-width="5"/>
-    <circle cx="50" cy="50" r="17" fill="#ffffff" fill-opacity=".55"/>
-    <path d="M71 71 96 96" stroke="#171512" stroke-width="9" stroke-linecap="round"/></svg>`,
-  pen: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M28 92 74 46 88 60 42 106 24 108Z" fill="#e4dfd5" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
-    <path d="M74 46 84 36a10 10 0 0 1 14 14l-10 10" fill="#b9b2a4" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
-    <path d="M28 92 42 106" stroke="#171512" stroke-width="5" stroke-linecap="round"/></svg>`,
-  code: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="16" y="26" width="88" height="72" rx="13" fill="#e4dfd5" stroke="#171512" stroke-width="5"/>
-    <path d="M46 52 33 62 46 72" stroke="#171512" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M74 52 87 62 74 72" stroke="#171512" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M65 48 55 76" stroke="#171512" stroke-width="6" stroke-linecap="round"/></svg>`,
-  rocket: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M60 16c15 13 21 32 21 51H39c0-19 6-38 21-51Z" fill="#e4dfd5" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
-    <circle cx="60" cy="46" r="9" fill="#b9b2a4" stroke="#171512" stroke-width="5"/>
-    <path d="M39 67 26 84 44 78" fill="#e4dfd5" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
-    <path d="M81 67 94 84 76 78" fill="#e4dfd5" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
-    <path d="M52 80c2 12 14 12 16 0" stroke="#171512" stroke-width="5" stroke-linecap="round"/></svg>`,
-  key: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="44" cy="44" r="23" fill="#e4dfd5" stroke="#171512" stroke-width="5"/>
-    <circle cx="44" cy="44" r="8" fill="#f2f0ec" stroke="#171512" stroke-width="5"/>
-    <path d="M60 60 96 96" stroke="#171512" stroke-width="7" stroke-linecap="round"/>
-    <path d="M85 85 95 75M74 74 82 82" stroke="#171512" stroke-width="7" stroke-linecap="round"/></svg>`,
+  magnifier: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">${defs("m")}
+    <g filter="url(#sm)">
+      <path d="M71 71 96 96" stroke="#171512" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="30" fill="url(#gm)" stroke="#171512" stroke-width="5"/>
+      <circle cx="42" cy="42" r="9" fill="#ffffff" fill-opacity=".6"/>
+    </g></svg>`,
+  pen: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">${defs("p")}
+    <g filter="url(#sp)">
+      <path d="M28 92 74 46 88 60 42 106 24 108Z" fill="url(#gp)" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M74 46 84 36a10 10 0 0 1 14 14l-10 10" fill="#b9b2a4" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M28 92 42 106" stroke="#171512" stroke-width="5" stroke-linecap="round"/>
+    </g></svg>`,
+  code: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">${defs("c")}
+    <g filter="url(#sc)">
+      <rect x="16" y="26" width="88" height="72" rx="13" fill="url(#gc)" stroke="#171512" stroke-width="5"/>
+      <path d="M46 52 33 62 46 72" stroke="#171512" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M74 52 87 62 74 72" stroke="#171512" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M65 48 55 76" stroke="#171512" stroke-width="6" stroke-linecap="round"/>
+    </g></svg>`,
+  rocket: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">${defs("r")}
+    <g filter="url(#sr)">
+      <path d="M39 67 26 84 44 78" fill="#b9b2a4" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M81 67 94 84 76 78" fill="#b9b2a4" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M60 16c15 13 21 32 21 51H39c0-19 6-38 21-51Z" fill="url(#gr)" stroke="#171512" stroke-width="5" stroke-linejoin="round"/>
+      <circle cx="60" cy="46" r="9" fill="#b9b2a4" stroke="#171512" stroke-width="5"/>
+      <path d="M52 80c2 12 14 12 16 0" stroke="#171512" stroke-width="5" stroke-linecap="round"/>
+    </g></svg>`,
+  key: `<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">${defs("k")}
+    <g filter="url(#sk)">
+      <path d="M60 60 96 96" stroke="#171512" stroke-width="7" stroke-linecap="round"/>
+      <path d="M85 85 95 75M74 74 82 82" stroke="#171512" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="44" cy="44" r="23" fill="url(#gk)" stroke="#171512" stroke-width="5"/>
+      <circle cx="44" cy="44" r="8" fill="#f2f0ec" stroke="#171512" stroke-width="5"/>
+    </g></svg>`,
 };
 
 const phases = [
