@@ -1,66 +1,12 @@
 ---
 // PROTOTYPE — "What I build" as an expand-on-hover list.
 // Inspired by expand-on-hover-list.framer.website: grey collapsed rows, hover
-// expands one row (text -> black, one-line description + a glass 3D image card
-// slide in). Content = Zaid's three offerings. Glass icons are hand-built SVG.
-const GLASS = {
-  // App tile
-  apps: `<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="ga" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#a9dbff"/><stop offset="1" stop-color="#2f74ff"/></linearGradient>
-      <radialGradient id="ha" cx=".32" cy=".24" r=".6">
-        <stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-      <filter id="sa" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#2f74ff" flood-opacity=".3"/></filter>
-    </defs>
-    <g transform="rotate(-13 100 100)" filter="url(#sa)">
-      <rect x="52" y="52" width="96" height="96" rx="26" fill="url(#ga)" fill-opacity=".9"/>
-      <rect x="52" y="52" width="96" height="96" rx="26" fill="url(#ha)"/>
-      <rect x="52.5" y="52.5" width="95" height="95" rx="25.5" stroke="#fff" stroke-opacity=".8" stroke-width="1.6"/>
-      <g fill="#fff" fill-opacity=".9"><circle cx="80" cy="80" r="5"/><circle cx="100" cy="80" r="5"/><circle cx="120" cy="80" r="5"/>
-        <circle cx="80" cy="100" r="5"/><circle cx="100" cy="100" r="5"/><circle cx="120" cy="100" r="5"/>
-        <circle cx="80" cy="120" r="5"/><circle cx="100" cy="120" r="5"/><circle cx="120" cy="120" r="5"/></g>
-      <ellipse cx="78" cy="72" rx="20" ry="9" fill="#fff" fill-opacity=".6"/>
-    </g></svg>`,
-  // Automations — looping arrows ring
-  automations: `<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="gb" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#b6f0d8"/><stop offset="1" stop-color="#16b57e"/></linearGradient>
-      <radialGradient id="hb" cx=".3" cy=".26" r=".6">
-        <stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-      <filter id="sb" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#16b57e" flood-opacity=".3"/></filter>
-    </defs>
-    <g filter="url(#sb)">
-      <path d="M100 46a54 54 0 1 1-46 26" fill="none" stroke="url(#gb)" stroke-width="26" stroke-linecap="round"/>
-      <path d="M100 46a54 54 0 1 1-46 26" fill="none" stroke="url(#hb)" stroke-width="26" stroke-linecap="round"/>
-      <path d="M96 30 118 46 96 62Z" fill="url(#gb)"/>
-      <ellipse cx="126" cy="70" rx="16" ry="8" fill="#fff" fill-opacity=".55" transform="rotate(-30 126 70)"/>
-    </g></svg>`,
-  // Websites — browser window with globe
-  websites: `<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="gc" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#c9b8ff"/><stop offset="1" stop-color="#6d3cff"/></linearGradient>
-      <radialGradient id="hc" cx=".3" cy=".22" r=".6">
-        <stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-      <filter id="sc" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#6d3cff" flood-opacity=".3"/></filter>
-    </defs>
-    <g transform="rotate(-10 100 100)" filter="url(#sc)">
-      <rect x="46" y="52" width="108" height="92" rx="18" fill="url(#gc)" fill-opacity=".9"/>
-      <rect x="46" y="52" width="108" height="92" rx="18" fill="url(#hc)"/>
-      <path d="M46 78h108" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>
-      <g fill="#fff" fill-opacity=".9"><circle cx="60" cy="65" r="3.4"/><circle cx="72" cy="65" r="3.4"/><circle cx="84" cy="65" r="3.4"/></g>
-      <circle cx="100" cy="111" r="22" fill="none" stroke="#fff" stroke-opacity=".9" stroke-width="3"/>
-      <path d="M78 111h44M100 89v44M84 96c10 8 22 8 32 0M84 126c10-8 22-8 32 0" stroke="#fff" stroke-opacity=".85" stroke-width="2.4" fill="none"/>
-      <ellipse cx="74" cy="70" rx="18" ry="8" fill="#fff" fill-opacity=".5"/>
-    </g></svg>`,
-};
-
+// expands one row (text -> black, one-line description + an image card fades+
+// scales in). Content = Zaid's three offerings. Images = warm clay renders.
 const items = [
-  { n: "01", title: "Apps", sub: "The internal tool or client portal you've been faking with a spreadsheet — built small, built to get used.", svg: GLASS.apps },
-  { n: "02", title: "Automations", sub: "The copy-paste between two systems, the report you rebuild every Monday — it runs without you now.", svg: GLASS.automations },
-  { n: "03", title: "Websites", sub: "Not a brochure. A site with one clear job to do, and the plumbing behind it to make it happen.", svg: GLASS.websites },
+  { n: "01", title: "Apps", sub: "The internal tool or client portal you've been faking with a spreadsheet — built small, built to get used.", img: "/clay-apps.jpg" },
+  { n: "02", title: "Automations", sub: "The copy-paste between two systems, the report you rebuild every Monday — it runs without you now.", img: "/clay-auto.jpg" },
+  { n: "03", title: "Websites", sub: "Not a brochure. A site with one clear job to do, and the plumbing behind it to make it happen.", img: "/clay-web.jpg" },
 ];
 ---
 <!doctype html>
@@ -103,10 +49,10 @@ const items = [
       .media { position:absolute; right:5.2rem; top:50%; opacity:0; pointer-events:none;
                transform:translateY(-50%) scale(1.12) rotate(-6deg); transform-origin:center;
                transition:opacity .5s ease, transform .65s cubic-bezier(.22,.61,.36,1); }
-      .card { width:clamp(240px,23vw,320px); aspect-ratio:1.6; border-radius:18px;
-              background:linear-gradient(150deg,#faf8f4,#efeadf); border:1px solid rgba(0,0,0,.03);
-              box-shadow:0 20px 42px rgba(30,25,15,.11); display:grid; place-items:center; }
-      .card :global(svg) { width:56%; height:auto; }
+      .card { width:clamp(240px,23vw,320px); aspect-ratio:1.6; border-radius:18px; overflow:hidden;
+              background:#f2efe8; border:1px solid rgba(0,0,0,.03);
+              box-shadow:0 20px 42px rgba(30,25,15,.11); }
+      .card img { width:100%; height:100%; object-fit:cover; display:block; }
 
       .arrow-wrap { display:flex; justify-content:flex-end; }
       .arrow { width:3rem; height:3rem; border-radius:999px; background:var(--ink); color:#fff; display:grid; place-items:center;
@@ -139,7 +85,7 @@ const items = [
               <h3 class="title">{it.title}</h3>
               <p class="sub">{it.sub}</p>
             </span>
-            <span class="media"><span class="card" set:html={it.svg}></span></span>
+            <span class="media"><span class="card"><img src={it.img} alt={it.title} /></span></span>
             <span class="arrow-wrap">
               <span class="arrow">
                 <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
