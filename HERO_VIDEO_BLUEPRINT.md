@@ -75,7 +75,18 @@ The clay figure **always wears a soft clay baseball cap**, brim forward, shading
 
 Beyond looking better, it is load-bearing technically: the brim occludes the top of the blank head, so diffusion has less featureless skull to hallucinate a nose ridge or jawline into. It reinforces Gemini's phantom-face mitigation rather than fighting it.
 
-The cap is **matte clay in the same muted body tone** — never amber, never branded, never a logo. Amber stays reserved for practical light sources only.
+### Character palette (locked)
+
+| Element | Colour | Why |
+|---|---|---|
+| Cap + apron | **muted sage-olive** `#7E8578` | Sits roughly opposite amber on the wheel, so it makes the phone glow read *hotter* without becoming a competing accent. Low chroma — it physically cannot overpower. Under warm tungsten it drifts grey-warm on its own. |
+| Shirt | **bone / oatmeal** `#D9D2C5` | Separates the body from both the grey clay skin and the dark background. |
+| Skin | **raw grey clay** | Unchanged. Never tinted. |
+| Everything else | muted clay tones | No second saturated colour anywhere. |
+
+**Amber `#FFA524` is reserved for practical light sources only** — the phone screen and the lamp pool. Never on clothing, never as a brand wash, never a logo on the cap.
+
+**Explicitly rejected:** rust / terracotta / warm orange clothing — too close to amber, it fights the phone for attention. Also no blue or teal props; a saturated blue mug was cut from an early plate for exactly this reason.
 
 ---
 
@@ -101,9 +112,13 @@ The cap is **matte clay in the same muted body tone** — never amber, never bra
 ### Prompt shape for the stills
 
 ```
-faceless clay figure slumped at a kitchen table, seen from three-quarter rear,
-head turned away from camera, blank rounded head, no facial features,
-wearing a soft clay baseball cap, brim shading the blank face,
+faceless clay figure of a tired adult, broad rounded shoulders and heavy torso,
+slumped deeply over a small kitchen table with a rounded hunched back,
+head hanging low and tilted toward the glowing phone, seen from three-quarter rear,
+completely smooth featureless egg-shaped head with no brow, no nose, no muzzle,
+no ears, no face of any kind,
+wearing a muted sage-olive baseball cap brim forward,
+a muted sage-olive work apron over a creased bone-white shirt, raw grey clay skin,
 single warm desk lamp as the only light source, deep charcoal shadows,
 visible fingerprints in the clay, dust motes in the lamp cone, film grain,
 shallow depth of field, macro lens, camera locked at table height,
