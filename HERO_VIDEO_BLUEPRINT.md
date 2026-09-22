@@ -34,7 +34,7 @@ Second board (Alpha = Gemini strategy, Beta = Claude execution, Gamma = Kimi cre
 
 Gamma's catch, and it is the binding one: at roughly 300px wide with sound off, **stillness survives and micro-gesture does not**. The old 2 to 5s beat was a shoulder tense and an arrested reach performed by a featureless puppet in a corner slot. That is not subtlety, it is invisibility. A pile reads as a pile at any size. Its absence reads instantly too.
 
-Alpha's catch, the **attribution gap**: a bare "Booking confirmed" notification makes a non-technical viewer assume the man subscribed to an app or hired an assistant. Zaid vanishes from his own advert. The receipt insert is typeset as a ledger entry with no UI chrome for exactly this reason, and attribution moves to the page copy under the video.
+Alpha's catch, the **attribution gap**: a bare "Booking confirmed" notification makes a non-technical viewer assume the man subscribed to an app or hired an assistant. Zaid vanishes from his own advert. The receipt is typeset numbers set into the frame with no UI styling for exactly this reason, and attribution moves to the caption under the video.
 
 ### Final scores (post-synthesis)
 
@@ -48,31 +48,35 @@ Alpha's catch, the **attribution gap**: a bare "Booking confirmed" notification 
 
 ---
 
-## 2. Storyboard — 10s, plays once, holds
+## 2. Storyboard, about 5s of action, then holds
 
-It does not loop. It plays on load, ends on the final frame, and holds. The held frame doubles as the poster for reduced motion and slow connections.
-
-The state change lands at **2.5 seconds**, inside the decision window. The commercial proof comes afterwards, as the reward for staying. This ordering is the fix for the flaw that killed both previous concepts, where the money beat fired after the viewer had already decided.
+Revised after a third review against the real hero slot: **316 x 176 px, on a white hero section**, beside a very large uppercase headline.
 
 | Time | Visual | Notes |
 |---|---|---|
-| **0–2.5s** *The pile* | Table level, close enough that the pile dominates. A thick clay stack of unopened envelopes, paper slips, a notebook bristling with torn sticky notes, all leaning. The man is behind it, slumped, lamp lit, night. His hand enters and sets **one more slip** on top. The stack sways. Slow 3% push begins. | Night stays as context, not as the hook. We do not open on the wide mood shot. |
-| **2.5s** | **HARD CUT.** | The only cut that matters. |
-| **2.5–5s** *The absence* | Identical frame. The pile is **gone**. Not shrunk, not tidied. Bare wood. He is still there, hands still. Push continues unbroken. | Nothing else in frame changes. The cut pops on the absence. |
-| **5–7s** *The receipt* | **HARD CUT** to a typeset insert on bone white. Inter, no UI chrome, no logo, no notification styling. Line one: **"All caught up."** A beat. Line two sets beneath: **"Twelve replies sent. Three jobs booked."** | A ledger entry, not a screenshot. |
-| **7–10s** *Hold* | **HARD CUT** back to the bare table. Hold. | **No mug lift. No serenity.** End unresolved. |
+| **0 to 3s** *The pile* | Table level. A leaning stack of envelopes, slips and torn sticky notes, **the palest, brightest mass in the frame**. The man sits slumped behind it and **partly hidden by it**. At about 1s, **one more slip drops onto the top** as a flat 2D cutout. No hand. Slow 3% push. | All motion is a deterministic 2D transform. |
+| **3s** | **HARD CUT.** | The only cut in the film. |
+| **3s onward** *The absence* | The same image with the pile removed (inpainted, see section 3). Bare wood. The man is now fully visible, still sitting there. The push continues. | The pile was hiding him. Its removal reveals him. |
+| **4s** *The receipt* | Two lines are set onto the dark wall area of the same frame. Bone `#D9D2C5`, Inter, numerals: **"12 replies sent."** / **"3 jobs booked."** | No card and no cut to white. |
+| **Hold** | The frame holds with the text on it. | The final frame explains itself to anyone who looks over late. |
 
-### Why it does not resolve
+### Why these specific choices
 
-Three panelists reached this independently across two sessions. Alpha named the mechanism best: if you medicate the viewer's cortisol for free inside the video, you destroy the urgency to click. The film ends with the burden gone and the man still sitting there. The relief is available, and it is on the other side of the button.
+- **No bone-white card.** The hero is white. A bright card would make the video blend into the page for two seconds, so it would appear to vanish.
+- **No "All caught up."** That is the empty-inbox line from Instagram, Gmail and Slack. It is app UI in text form, the same problem as the notification screenshot. Numbers only, written as digits so they read at 176px tall.
+- **The receipt is load bearing.** A pile vanishing on a hard cut is otherwise "and then a wizard fixes it", the exact trope killed in the first board. The itemised numbers turn magic into work done. They must stay on screen and stay legible.
+- **What stays unresolved.** The relief is shown: the pile is gone. What the film withholds is *how*. That curiosity is the pull toward the button, and the caption points at it.
 
-### Where the three services went
+### Page wiring (when the video exists)
 
-Deliberately out of the video, as before. They are carried by the existing "What I build" band. Under the video, one line of real page text does the attribution the film refuses to do:
+- Replace the caption **"Showreel"** under the video with: **I build the thing that clears the pile.** It names the pile, so a visitor who missed the first beat still learns it existed, and it attributes the work to Zaid.
+- Remove the **`loop`** attribute from the `<video>` in `src/components/Hero.astro`. The film plays once and holds.
+- **Do not start playback on page load.** Visitors read the headline first and look right after 2 to 4 seconds. Start about 1s after the hero reveal finishes. On mobile (under 900px, where the video stacks below the text) start when it is at least half in view. Replay from the start on hover.
 
-> I build the thing that clears the pile.
+### Delivery spec
 
-Free, perfectly legible, zero render risk.
+- Export at **632 x 352** (2x the slot, for retina screens). MP4 (h.264) plus WebM, and a final-frame poster.
+- At this size fingerprints and dust motes are invisible and heavy grain compresses into blocky noise. Spend effort on **silhouette and contrast**, not texture. Add light grain after scaling down.
 
 ---
 
@@ -91,7 +95,7 @@ Beyond looking better, it is load-bearing technically: the brim occludes the top
 | Skin | **raw grey clay** | Unchanged. Never tinted. |
 | Everything else | muted clay tones | No second saturated colour anywhere. |
 
-**Amber `#FFA524` is reserved for practical light sources only** — the phone screen and the lamp pool. Never on clothing, never as a brand wash, never a logo on the cap.
+**Amber `#FFA524` is reserved for practical light sources only** — the lamp pool, and a phone screen if one ever appears. Never on clothing, never as a brand wash, never a logo on the cap.
 
 **Explicitly rejected:** rust / terracotta / warm orange clothing — too close to amber, it fights the phone for attention. Also no blue or teal props; a saturated blue mug was cut from an early plate for exactly this reason.
 
