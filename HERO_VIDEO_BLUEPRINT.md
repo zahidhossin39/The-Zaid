@@ -1,5 +1,7 @@
 # Hero video — production blueprint
 
+> **Superseded (2026-09-23):** clay was ruled out as reading like a cartoon to busy owners. See `HERO_STYLE_RESEARCH.md` for the current style decision. The story rules here (one message, readable final frame, no invented results) still apply.
+
 Output of a three-AI adversarial Creative & Conversion Board (Claude = Brand & Trust, Gemini = Production Realist, Kimi = Adversarial Creative Director). Supersedes the earlier "Mess → 3 helpers → calm" concept, which all three panelists failed independently.
 
 ---
