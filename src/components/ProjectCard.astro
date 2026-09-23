@@ -1,41 +1,87 @@
 ---
+// Media is either a real walkthrough (youtubeId, click-to-load facade) or a
+// hand-built mockup for demo projects (kind: "site" | "auto").
 interface Props {
-  title: string; stuck: string; now: string;
-  youtubeId: string; liveUrl: string; tags: string[];
+  title: string; stuck: string; now: string; tags: string[];
+  kind?: "site" | "auto"; demo?: boolean; youtubeId?: string; liveUrl?: string;
 }
-const { title, stuck, now, youtubeId, liveUrl, tags } = Astro.props;
+const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
 ---
 <article class="reveal group overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-1 hover:border-muted/40">
-  <!--
-    YouTube facade: ships a thumbnail, not an iframe. Four real embeds would
-    cost ~1-2MB of third-party JS on load. The iframe is injected on click.
-  -->
-  <div class="relative aspect-video w-full bg-bg" data-yt={youtubeId}>
-    <img
-      src={`https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      data-fallback={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`}
-      onload="if(this.naturalWidth<=120&&this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}"
-      onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}"
-      class="h-full w-full object-cover opacity-80 transition group-hover:opacity-100"
-    />
-    <button
-      type="button"
-      aria-label={`Play walkthrough: ${title}`}
-      class="yt-play absolute inset-0 grid place-items-center bg-bg/30 transition hover:bg-bg/10"
-    >
-      <span class="grid h-16 w-16 place-items-center rounded-full bg-accent shadow-lg transition group-hover:scale-110">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="#0A0A0B" aria-hidden="true">
-          <path d="M8 5.5v13l11-6.5z" />
-        </svg>
-      </span>
-    </button>
-  </div>
+  {youtubeId ? (
+    <div class="relative aspect-video w-full bg-bg" data-yt={youtubeId}>
+      <img src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`} alt="" loading="lazy" decoding="async"
+           class="h-full w-full object-cover opacity-80 transition group-hover:opacity-100" />
+      <button type="button" aria-label={`Play walkthrough: ${title}`}
+              class="yt-play absolute inset-0 grid place-items-center bg-bg/30 transition hover:bg-bg/10">
+        <span class="grid h-16 w-16 place-items-center rounded-full bg-accent shadow-lg transition group-hover:scale-110">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#0A0A0B" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" /></svg>
+        </span>
+      </button>
+    </div>
+  ) : kind === "site" ? (
+    /* mock: a small-business booking site in a browser window */
+    <div class="mock relative aspect-[4/3] md:aspect-video w-full overflow-hidden bg-[#1b1b1f] p-4 md:p-5" aria-hidden="true">
+      <div class="win flex h-full flex-col overflow-hidden rounded-lg bg-[#fbfaf7] text-[#111] shadow-2xl">
+        <div class="flex items-center gap-2 border-b border-black/10 bg-[#f1efea] px-3 py-2">
+          <i class="h-2 w-2 rounded-full bg-black/20"></i><i class="h-2 w-2 rounded-full bg-black/20"></i><i class="h-2 w-2 rounded-full bg-black/20"></i>
+          <span class="ml-2 flex-1 truncate rounded-full bg-white px-3 py-0.5 font-mono text-[10px] text-black/50">harborpinedental.com</span>
+        </div>
+        <div class="flex items-center justify-between px-5 pt-3 text-[10px] text-black/55">
+          <b class="font-semibold text-black">Harbor &amp; Pine</b>
+          <span class="hidden gap-4 sm:flex"><span>Services</span><span>Team</span><span>Prices</span></span>
+        </div>
+        <div class="grid flex-1 grid-cols-[1.2fr_1fr] items-center gap-4 px-5">
+          <div>
+            <p class="font-display text-[clamp(1.1rem,2.6vw,1.6rem)] leading-[1.05]">Healthy smiles,<br/>booked in 30 seconds.</p>
+            <p class="mt-2 text-[10px] leading-snug text-black/55">Family dentistry in Portside. Open evenings and Saturdays.</p>
+            <span class="mt-3 inline-block rounded-full bg-[#111] px-3 py-1.5 text-[10px] font-medium text-white">Book an appointment →</span>
+            <p class="mt-2 text-[9px] text-black/50">★★★★★ 4.9 · 312 reviews</p>
+          </div>
+          <div class="slot rounded-md border border-black/10 bg-white p-2.5 text-[9px] shadow-sm">
+            <p class="font-semibold">Pick a time</p>
+            <div class="mt-1.5 grid grid-cols-3 gap-1">
+              {["9:00","10:30","11:15","14:00","15:30","17:45"].map((t, i) => (
+                <span class:list={["rounded px-1 py-1 text-center", i === 1 ? "pick bg-[#111] text-white" : "bg-black/5"]}>{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="toast absolute bottom-6 right-6 flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-[10px] text-[#111] shadow-xl md:bottom-8 md:right-8">
+        <span class="grid h-4 w-4 place-items-center rounded-full bg-[#111] text-[8px] text-white">✓</span>
+        New booking · Tue 10:30
+      </div>
+    </div>
+  ) : (
+    /* mock: an automation flow with a live-looking run log */
+    <div class="mock relative md:aspect-video w-full overflow-hidden bg-[#0f0f12] p-5 font-mono text-[10px] text-[#d8d5cd]" aria-hidden="true">
+      <div class="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
+        {[["New lead", "Website form"], ["AI drafts reply", "Personal, on-brand"], ["Sent + logged", "Email · CRM · Slack"]].map(([a, b], i) => (
+          <>
+            {i > 0 && <span class="wire relative h-px w-6 bg-white/20 md:w-10"><i class="pulse absolute -top-[2px] h-[5px] w-[5px] rounded-full bg-white"></i></span>}
+            <div class="node rounded-lg border border-white/15 bg-white/[0.04] px-2.5 py-2">
+              <p class="text-[8px] uppercase tracking-[0.14em] text-white/40">Step {i + 1}</p>
+              <p class="mt-1 font-sans text-[11px] font-semibold text-white">{a}</p>
+              <p class="text-[9px] text-white/45">{b}</p>
+            </div>
+          </>
+        ))}
+      </div>
+      <div class="log mt-4 rounded-lg border border-white/10 bg-black/40 p-3">
+        <p class="mb-1.5 flex justify-between text-[8px] uppercase tracking-[0.14em] text-white/35"><span>Run log</span><span class="live">● live</span></p>
+        {[["09:02:14", "Sarah K. · reply sent in 41s"], ["09:17:50", "Dental Co. · added to CRM"], ["10:03:09", "Mark T. · reply sent in 38s"], ["10:04:12", "Owner summary sent to Slack"]].map(([t, m]) => (
+          <p class="row flex gap-3 border-t border-white/5 py-1"><span class="text-white/35">{t}</span><span>{m}</span><span class="ml-auto text-white/60">✓</span></p>
+        ))}
+      </div>
+    </div>
+  )}
 
   <div class="p-6 md:p-7">
-    <h3 class="h3">{title}</h3>
+    <div class="flex items-start justify-between gap-4">
+      <h3 class="h3">{title}</h3>
+      {demo && <span class="shrink-0 rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em] text-muted">Demo</span>}
+    </div>
 
     <dl class="mt-4 space-y-2 text-[0.95rem]">
       <div class="flex gap-3">
@@ -54,10 +100,38 @@ const { title, stuck, now, youtubeId, liveUrl, tags } = Astro.props;
           <li class="rounded-full border border-border px-3 py-1 font-mono text-xs text-muted">{t}</li>
         ))}
       </ul>
-      <a href={liveUrl} target="_blank" rel="noopener noreferrer"
-         class="font-medium text-accent transition hover:text-accent-hover">
-        Visit it live ↗
-      </a>
+      {liveUrl && (
+        <a href={liveUrl} target="_blank" rel="noopener noreferrer" class="font-medium text-accent transition hover:text-accent-hover">
+          Visit it live ↗
+        </a>
+      )}
     </div>
   </div>
 </article>
+
+<style>
+  /* site mock: toast pops in, the picked slot pulses */
+  .toast { opacity: 0; transform: translateY(8px) scale(.96); }
+  .group:hover .toast, .toast { animation: toast 4.5s ease-in-out infinite 1s; }
+  @keyframes toast { 0%, 12% { opacity: 0; transform: translateY(8px) scale(.96); }
+                     20%, 75% { opacity: 1; transform: none; } 85%, 100% { opacity: 0; transform: translateY(8px) scale(.96); } }
+  .pick { animation: pick 4.5s ease-in-out infinite 1s; }
+  @keyframes pick { 0%, 10% { background: rgba(0,0,0,.05); color: #111; } 16%, 100% { background: #111; color: #fff; } }
+
+  /* auto mock: pulses travel the wires, log rows tick in */
+  .pulse { animation: travel 1.6s linear infinite; }
+  .wire:nth-of-type(2) .pulse { animation-delay: .8s; }
+  @keyframes travel { from { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { left: 100%; opacity: 0; } }
+  .log .row { animation: tick 6s ease-out infinite; opacity: 0; }
+  .log .row:nth-of-type(2) { animation-delay: 0s; }
+  .log .row:nth-of-type(3) { animation-delay: .6s; }
+  .log .row:nth-of-type(4) { animation-delay: 1.2s; }
+  .log .row:nth-of-type(5) { animation-delay: 1.8s; }
+  @keyframes tick { 0% { opacity: 0; transform: translateY(4px); } 8%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+  .live { animation: blink 1.4s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .3; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toast, .pick, .pulse, .log .row, .live { animation: none; opacity: 1; transform: none; }
+  }
+</style>

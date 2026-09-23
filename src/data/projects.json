@@ -1,34 +1,18 @@
 [
   {
-    "title": "Placeholder — swap for your first real build",
-    "stuck": "Describe the painful, manual, expensive-in-time situation the client was in before.",
-    "now": "Describe the concrete result. Use a number if you have one.",
-    "youtubeId": "jNQXAC9IVRw",
-    "liveUrl": "https://example.com",
-    "tags": ["App", "Placeholder"]
+    "kind": "site",
+    "title": "Harbor & Pine Dental — booking site",
+    "stuck": "A nice-looking site that nobody booked from. New patients still had to call during office hours.",
+    "now": "One clear “Book an appointment” button, online booking 24/7, and every request lands straight in the clinic’s calendar.",
+    "tags": ["Website", "Booking"],
+    "demo": true
   },
   {
-    "title": "Placeholder — automation project",
-    "stuck": "The copy-paste between two systems that ate two hours every week.",
-    "now": "Runs on its own now. Nobody touches it.",
-    "youtubeId": "aqz-KE-bpKQ",
-    "liveUrl": "https://example.com",
-    "tags": ["Automation", "Placeholder"]
-  },
-  {
-    "title": "Placeholder — website project",
-    "stuck": "A site that looked fine and did nothing.",
-    "now": "One clear action, and the plumbing behind it to make it happen.",
-    "youtubeId": "LXb3EKWsInQ",
-    "liveUrl": "https://example.com",
-    "tags": ["Website", "Placeholder"]
-  },
-  {
-    "title": "Placeholder — internal tool",
-    "stuck": "A spreadsheet doing a job a spreadsheet should not be doing.",
-    "now": "A small tool that does exactly that one job, properly.",
-    "youtubeId": "ScMzIvxBSi4",
-    "liveUrl": "https://example.com",
-    "tags": ["Internal tool", "Placeholder"]
+    "kind": "auto",
+    "title": "Lead follow-up — on autopilot",
+    "stuck": "Enquiries sat in an inbox for a day. By the time someone replied, the customer had booked elsewhere.",
+    "now": "Every new lead gets a personal reply in under a minute, is logged in the CRM, and the owner gets a one-line summary.",
+    "tags": ["Automation", "AI", "CRM"],
+    "demo": true
   }
 ]
