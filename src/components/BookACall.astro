@@ -115,10 +115,17 @@ import HoursBar from "./HoursBar.astro";
         cssVarsPerTheme: { dark: { "cal-brand": "#F4F2ED" } },
         hideEventTypeDetails: false,
       });
+      const fail = () => {
+        const ph = target.querySelector(".cal-ph");
+        const mail = ph?.querySelector("a");
+        if (ph && mail) ph.replaceChildren("Couldn't load the calendar. Email ", mail, " instead.");
+      };
+      const failTimer = setTimeout(fail, 8000); // linkReady never came (blocked, offline)
       w.Cal("on", {
         action: "linkReady",
-        callback: () => target.querySelector(".cal-ph")?.remove(),
+        callback: () => { clearTimeout(failTimer); target.querySelector(".cal-ph")?.remove(); },
       });
+      w.Cal("on", { action: "linkFailed", callback: () => { clearTimeout(failTimer); fail(); } });
     };
 
     intents.forEach((t) => document.addEventListener(t, onIntent, true));

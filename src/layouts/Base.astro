@@ -13,7 +13,7 @@ const { title, description, theme } = Astro.props;
          so hidden start states can't leave content invisible. -->
     <script is:inline>
       document.documentElement.classList.add("js");
-      setTimeout(() => { if (!window.__motion) document.documentElement.classList.remove("js"); }, 2500);
+      setTimeout(() => { if (!window.__motion) document.documentElement.classList.remove("js"); }, 4000);
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
@@ -39,6 +39,11 @@ const { title, description, theme } = Astro.props;
       // first trigger so sections don't re-animate when scrolling back up.
       (window as any).__motion = true; // tells the head failsafe that JS is alive
       const els = document.querySelectorAll<HTMLElement>(".reveal");
+      // scripts arrived after the failsafe fired: show everything, then restore .js
+      if (!document.documentElement.classList.contains("js")) {
+        els.forEach((el) => el.classList.add("in-view"));
+        document.documentElement.classList.add("js");
+      }
       const revealEl = (el: Element) => {
         const delay = Number(el.getAttribute("data-delay") ?? 0);
         setTimeout(() => el.classList.add("in-view"), delay);

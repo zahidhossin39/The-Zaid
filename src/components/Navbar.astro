@@ -24,7 +24,11 @@
     height: 4rem;
     font-family: "Inter Tight", system-ui, sans-serif;
     mix-blend-mode: difference;
+    /* the bar is transparent: let taps reach the page, only the links catch them */
+    pointer-events: none;
   }
+
+  .navbar a { pointer-events: auto; }
 
   .navbar-inner {
     max-width: 76rem;

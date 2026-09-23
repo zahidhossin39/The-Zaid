@@ -62,7 +62,7 @@ const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
       </div>
       <div class="absolute inset-x-4 bottom-0 flex h-10 items-center justify-between md:inset-x-5 md:h-11">
         <span class="demo-tag">Demo</span>
-        <button type="button" class="replay" aria-label="Replay demo" hidden>Replay</button>
+        <button type="button" class="replay" aria-label={`Replay demo: ${title}`} hidden>Replay</button>
       </div>
     </div>
   ) : (
@@ -93,7 +93,7 @@ const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
       </div>
       <div class="absolute inset-x-5 bottom-0 flex h-11 items-center justify-between">
         <span class="demo-tag">Demo</span>
-        <button type="button" class="replay" aria-label="Replay demo" hidden>Replay</button>
+        <button type="button" class="replay" aria-label={`Replay demo: ${title}`} hidden>Replay</button>
       </div>
     </div>
   )}
@@ -226,7 +226,7 @@ const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
     // plain observer: re-arm only once the mock has fully left the viewport
     const view = new IntersectionObserver((es) => es.forEach((e) => {
       const i = mocks.indexOf(e.target as HTMLElement);
-      if (e.isIntersecting) settle(i, "bottom"); else armed[i] = true;
+      if (e.isIntersecting) settle(i, "bottom"); else { armed[i] = true; tls[i].pause(0); }
     }));
 
     mocks.forEach((m, i) => {

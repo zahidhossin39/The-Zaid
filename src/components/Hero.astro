@@ -47,7 +47,7 @@ const CTA = "Book a free 20-min call";
     {hasReel && (
       <div class="hero-media reveal" data-delay="260">
         <video
-          src="/hero.mp4"
+          src="/hero.mp4#t=0.1"
           width="316"
           height="176"
           muted
@@ -256,6 +256,7 @@ const CTA = "Book a free 20-min call";
   if (media && video) {
     const play = () => video.play().catch(() => {});
     video.addEventListener("error", () => media.remove());
+    if (video.error) media.remove(); // failed before the listener was attached
     video.addEventListener("click", () => {
       video.currentTime = 0;
       play();
