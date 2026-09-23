@@ -1,3 +1,6 @@
+---
+import HoursBar from "./HoursBar.astro";
+---
 <!--
   Deliberately sparse: one narrow centered column, no cards, no columns.
   This is the emotional beat of the page; density would kill it.
@@ -6,13 +9,15 @@
   <div class="mx-auto max-w-[36rem] space-y-10 text-center">
     <p class="h2 reveal">Right now, every new customer costs you time.</p>
 
-    <p class="lead reveal" data-delay="120">
+    <p class="lead">
       Each one means another message to answer, another order or booking to
       confirm, another follow-up to remember. It all runs through you, so the
       business can only grow as far as your hours allow.
     </p>
 
-    <p class="reveal text-xl text-text" data-delay="240">
+    <HoursBar variant="problem" />
+
+    <p class="text-xl text-text">
       More customers. Same number of hours.
     </p>
   </div>

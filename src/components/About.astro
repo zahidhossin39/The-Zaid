@@ -1,8 +1,8 @@
 <section id="about" class="mx-auto max-w-[64rem] px-6 py-20 md:px-8 md:py-32">
   <div class="grid gap-12 md:grid-cols-[4fr_8fr] md:gap-16">
-    <div class="reveal">
-      <div class="aspect-[4/5] w-full max-w-[18rem] overflow-hidden rounded-lg border border-border bg-surface">
-        <img src="/zaid.webp" alt="Zaid Hossain" width="640" height="800" class="h-full w-full object-cover" loading="lazy" decoding="async" />
+    <div>
+      <div data-about-photo class="aspect-[4/5] w-full max-w-[18rem] overflow-hidden rounded-lg border border-border bg-surface">
+        <img src="/zaid.webp" alt="Zaid Hossain" width="640" height="800" class="h-full w-full object-cover" loading="eager" decoding="async" />
       </div>
     </div>
 
@@ -10,7 +10,7 @@
       <p class="eyebrow reveal">Who's building it</p>
       <h2 class="h2 reveal mt-5" data-delay="80">I'm Zaid.</h2>
 
-      <div class="reveal mt-7 space-y-5 text-muted" data-delay="160">
+      <div class="mt-7 space-y-5 text-muted">
         <p>
           I build websites and automations for owners whose business has
           outgrown their hours.
@@ -46,3 +46,29 @@
     </div>
   </div>
 </section>
+
+<script>
+  import { gsap } from "gsap";
+
+  const photo = document.querySelector<HTMLElement>("[data-about-photo]");
+  const img = photo?.querySelector("img");
+  if (photo && img) {
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+      // Start state is JS-only, so the photo is visible without JS.
+      gsap.set(photo, { clipPath: "inset(100% 0 0 0)" });
+      let io: IntersectionObserver | undefined;
+      img.decode().then(
+        () => {
+          io = new IntersectionObserver(([e]) => {
+            if (!e.isIntersecting) return;
+            io!.disconnect();
+            gsap.to(photo, { clipPath: "inset(0% 0 0 0)", duration: 0.9, ease: "power3.out" });
+          }, { threshold: 0.4, rootMargin: "0px 0px -25% 0px" });
+          io.observe(photo.parentElement!); // not the clipped box: IO counts its own clip-path as hidden
+        },
+        () => gsap.set(photo, { clipPath: "inset(0% 0 0 0)" }),
+      );
+      return () => { io?.disconnect(); gsap.set(photo, { clearProps: "clipPath" }); };
+    });
+  }
+</script>

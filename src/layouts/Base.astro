@@ -8,8 +8,13 @@ const { title, description, theme } = Astro.props;
 <html lang="en" data-theme={theme}>
   <head>
     <meta charset="UTF-8" />
-    <!-- Set before paint: reveal styles only apply when JS can undo them. -->
-    <script is:inline>document.documentElement.classList.add("js");</script>
+    <!-- Set before paint: reveal styles only apply when JS can undo them.
+         Failsafe: if the module scripts never run (blocked, failed), drop .js
+         so hidden start states can't leave content invisible. -->
+    <script is:inline>
+      document.documentElement.classList.add("js");
+      setTimeout(() => { if (!window.__motion) document.documentElement.classList.remove("js"); }, 2500);
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -23,7 +28,7 @@ const { title, description, theme } = Astro.props;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=PT+Sans+Narrow:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=Inter+Tight:wght@400;500;700&family=PT+Sans+Narrow:wght@400;700&display=swap"
     />
   </head>
   <body>
@@ -32,6 +37,7 @@ const { title, description, theme } = Astro.props;
     <script>
       // Reveal-on-scroll. One observer for the whole page; unobserve after the
       // first trigger so sections don't re-animate when scrolling back up.
+      (window as any).__motion = true; // tells the head failsafe that JS is alive
       const els = document.querySelectorAll<HTMLElement>(".reveal");
       const revealEl = (el: Element) => {
         const delay = Number(el.getAttribute("data-delay") ?? 0);
@@ -78,7 +84,7 @@ const { title, description, theme } = Astro.props;
                 const target = document.querySelector(href);
                 if (target) {
                   e.preventDefault();
-                  lenis.scrollTo(target as HTMLElement);
+                  lenis.scrollTo(target as HTMLElement, { duration: 0.8 });
                 }
               } catch {
                 // Ignore invalid selector

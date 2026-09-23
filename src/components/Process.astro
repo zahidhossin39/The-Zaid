@@ -281,8 +281,23 @@ const phases = [
         phasesEls.forEach((el, i) => el.classList.toggle("show", i === active));
         detent(dots[active]);
       }
-      requestAnimationFrame(frame);
+      if (running) raf = requestAnimationFrame(frame);
     };
-    requestAnimationFrame(frame);
+
+    // Only run the loop while the section is near the viewport. On restart,
+    // snap the eased value to the scroll target so a jump (e.g. #process)
+    // doesn't sweep through every phase.
+    let running = false, raf = 0;
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !running) {
+        running = true;
+        const r = scroll.getBoundingClientRect();
+        sp = Math.min(1, Math.max(0, -r.top / (scroll.offsetHeight - innerHeight))) * (N - 1);
+        raf = requestAnimationFrame(frame);
+      } else if (!e.isIntersecting) {
+        running = false;
+        cancelAnimationFrame(raf);
+      }
+    }, { rootMargin: "200px 0px" }).observe(root);
   }
 </script>

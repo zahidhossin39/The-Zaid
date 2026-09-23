@@ -7,7 +7,7 @@
     <nav class="nav-links">
       <a href="#proof" class="nav-link">Work</a>
       <a href="#about" class="nav-link nav-about">About</a>
-      <a href="#book" class="nav-link">Book a call</a>
+      <a href="#book" class="nav-link nav-cta" data-cal-intent>Book a call</a>
     </nav>
   </div>
 </header>
@@ -70,13 +70,45 @@
     opacity: 0.7;
   }
 
+  /* "Book a call" keeps its pill padding at all times, so showing the outline
+     never moves anything. The negative margin cancels the padding, so the
+     text sits exactly where a plain link would and the outline hangs into the
+     gutter. The outline is a pseudo-element faded by opacity. */
+  .nav-cta {
+    position: relative;
+    padding: 0 0.875rem;
+    margin: 0 -0.875rem;
+  }
+
+  .nav-cta::after {
+    content: "";
+    position: absolute;
+    inset: 5px 0;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .navbar.is-pill .nav-cta::after {
+    opacity: 1;
+  }
+
   @media (max-width: 767px) {
-    .navbar {
-      transition: transform 0.3s ease;
+    /* Headroom: fade out everything except the "Book a call" pill. Hidden
+       items can't be clicked or focused (visibility flips after the fade). */
+    .logo,
+    .nav-link:not(.nav-cta) {
+      transition: opacity 0.3s ease, visibility 0s;
     }
 
-    .navbar.is-hidden {
-      transform: translateY(-100%);
+    .navbar.is-hidden .logo,
+    .navbar.is-hidden .nav-link:not(.nav-cta) {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.3s ease, visibility 0s 0.3s;
     }
 
     .navbar-inner {
@@ -95,8 +127,10 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .navbar {
-      transition: none;
+    .logo,
+    .nav-link,
+    .nav-cta::after {
+      transition: none !important;
     }
   }
 </style>
@@ -140,5 +174,14 @@
     phone.addEventListener("change", update);
     // keyboard users tabbing into a hidden nav should see it
     nav.addEventListener("focusin", () => nav.classList.remove("is-hidden"));
+
+    // Outline "Book a call" as a pill once the hero CTA has scrolled above the
+    // viewport, so there's always one visible way to book.
+    const heroCta = document.querySelector(".hero [data-cal-intent]");
+    if (heroCta) {
+      new IntersectionObserver(([e]) => {
+        nav.classList.toggle("is-pill", !e.isIntersecting && e.boundingClientRect.top < 0);
+      }).observe(heroCta);
+    }
   }
 </script>

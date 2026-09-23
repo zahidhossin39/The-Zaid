@@ -2,6 +2,9 @@
 const EMAIL = "hello.zaidhossain@gmail.com";
 // TODO(zaid): replace with your real Cal.com handle once you've made one.
 const CAL_LINK = "zaid/20min";
+// <wbr> lets the address wrap at the @ on 320px phones instead of mid-word
+const [EMAIL_USER, EMAIL_DOMAIN] = EMAIL.split("@");
+import HoursBar from "./HoursBar.astro";
 ---
 <section id="book" class="relative overflow-hidden border-t border-border">
   <div
@@ -15,22 +18,28 @@ const CAL_LINK = "zaid/20min";
     <h2 class="h2 reveal mx-auto mt-5 max-w-[20ch]" data-delay="80">
       Tell me where your time goes.
     </h2>
-    <p class="lead reveal mx-auto mt-5 max-w-[42ch]" data-delay="160">
+    <p class="lead mx-auto mt-5 max-w-[42ch]">
       Twenty minutes, no pitch. You tell me what takes up your week, and I'll
       tell you honestly whether I can fix it.
     </p>
 
-    <div class="reveal mx-auto mt-12 max-w-[48rem] overflow-hidden rounded-xl border border-border bg-surface" data-delay="240">
-      <div id="cal-embed" class="min-h-[34rem] w-full">
+    <div class="mt-10"><HoursBar variant="book" /></div>
+
+    <div class="reveal mx-auto mt-10 max-w-[48rem] overflow-hidden rounded-xl border border-border bg-surface" data-delay="240">
+      <div id="cal-embed" class="relative min-h-[34rem] w-full" data-cal-link={CAL_LINK}>
+        <!-- Sits behind the embed; removed once Cal says the calendar is ready. -->
+        <p class="cal-ph absolute inset-x-0 top-0 z-0 p-10 text-muted">
+          Loading the calendar… or email <a class="text-accent underline underline-offset-4" href={`mailto:${EMAIL}`}>{EMAIL_USER}@<wbr />{EMAIL_DOMAIN}</a>
+        </p>
         <noscript>
           <p class="p-10 text-muted">
-            Booking needs JavaScript. Email <a class="text-accent" href={`mailto:${EMAIL}`}>{EMAIL}</a> instead.
+            Booking needs JavaScript. Email <a class="text-accent" href={`mailto:${EMAIL}`}>{EMAIL_USER}@<wbr />{EMAIL_DOMAIN}</a> instead.
           </p>
         </noscript>
       </div>
     </div>
 
-    <p class="reveal mt-8 text-muted" data-delay="300">
+    <p class="mt-8 text-muted">
       Rather write it down? <a class="text-accent underline underline-offset-4 transition hover:text-accent-hover" href={`mailto:${EMAIL}`}>{EMAIL}</a>
     </p>
   </div>
@@ -43,54 +52,76 @@ const CAL_LINK = "zaid/20min";
   </div>
 </footer>
 
-<script define:vars={{ CAL_LINK }}>
-  // Cal.com inline embed, loaded lazily — it's ~100KB of third-party JS and
-  // it sits at the very bottom of the page, so there's no reason to pay for
-  // it until someone scrolls near it.
+<style is:global>
+  #cal-embed > :not(.cal-ph) { position: relative; z-index: 1; }
+  html:not(.js) .cal-ph { display: none; }
+</style>
+
+<script>
+  // Cal.com inline embed, loaded lazily: ~100KB of third-party JS at the very
+  // bottom of the page. It loads when the section gets near, or earlier when
+  // someone reaches for a "Book a call" link ([data-cal-intent]).
+  const w = window as any;
   const target = document.getElementById("cal-embed");
   if (target) {
+    const intents = ["pointerenter", "focus", "pointerdown"];
+    const onIntent = (e: Event) => {
+      if ((e.target as Element | null)?.closest?.("[data-cal-intent]")) w.loadCal();
+    };
     const io = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        io.disconnect();
-
-        (function (C, A, L) {
-          let p = function (a, ar) { a.q.push(ar); };
-          let d = C.document;
-          C.Cal = C.Cal || function () {
-            let cal = C.Cal, ar = arguments;
-            if (!cal.loaded) {
-              cal.ns = {};
-              cal.q = cal.q || [];
-              d.head.appendChild(d.createElement("script")).src = A;
-              cal.loaded = true;
-            }
-            if (ar[0] === L) {
-              const api = function () { p(api, arguments); };
-              api.q = api.q || [];
-              cal.ns[ar[1]] = cal.ns[ar[1]] || api;
-              p(cal.ns[ar[1]], ar);
-              p(cal, ["initNamespace", ar[1]]);
-              return;
-            }
-            p(cal, ar);
-          };
-        })(window, "https://app.cal.com/embed/embed.js", "init");
-
-        window.Cal("init", { origin: "https://app.cal.com" });
-        window.Cal("inline", {
-          elementOrSelector: "#cal-embed",
-          calLink: CAL_LINK,
-          config: { theme: "dark" },
-        });
-        window.Cal("ui", {
-          theme: "dark",
-          cssVarsPerTheme: { dark: { "cal-brand": "#F4F2ED" } },
-          hideEventTypeDetails: false,
-        });
-      },
+      (entries) => { if (entries.some((e) => e.isIntersecting)) w.loadCal(); },
       { rootMargin: "300px" }
     );
+    let done = false;
+
+    w.loadCal = () => {
+      if (done) return;
+      done = true;
+      io.disconnect();
+      // capture phase so non-bubbling pointerenter/focus reach the document
+      intents.forEach((t) => document.removeEventListener(t, onIntent, true));
+
+      (function (C: any, A: string, L: string) {
+        let p = function (a: any, ar: any) { a.q.push(ar); };
+        let d = C.document;
+        C.Cal = C.Cal || function () {
+          let cal = C.Cal, ar = arguments;
+          if (!cal.loaded) {
+            cal.ns = {};
+            cal.q = cal.q || [];
+            d.head.appendChild(d.createElement("script")).src = A;
+            cal.loaded = true;
+          }
+          if (ar[0] === L) {
+            const api: any = function () { p(api, arguments); };
+            api.q = api.q || [];
+            cal.ns[ar[1]] = cal.ns[ar[1]] || api;
+            p(cal.ns[ar[1]], ar);
+            p(cal, ["initNamespace", ar[1]]);
+            return;
+          }
+          p(cal, ar);
+        };
+      })(window, "https://app.cal.com/embed/embed.js", "init");
+
+      w.Cal("init", { origin: "https://app.cal.com" });
+      w.Cal("inline", {
+        elementOrSelector: "#cal-embed",
+        calLink: target.dataset.calLink,
+        config: { theme: "dark" },
+      });
+      w.Cal("ui", {
+        theme: "dark",
+        cssVarsPerTheme: { dark: { "cal-brand": "#F4F2ED" } },
+        hideEventTypeDetails: false,
+      });
+      w.Cal("on", {
+        action: "linkReady",
+        callback: () => target.querySelector(".cal-ph")?.remove(),
+      });
+    };
+
+    intents.forEach((t) => document.addEventListener(t, onIntent, true));
     io.observe(target);
   }
 </script>

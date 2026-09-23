@@ -1,16 +1,15 @@
 ---
+import fs from "node:fs";
 import DotGrid from "./DotGrid.astro";
+
+// Showreel column only renders once public/hero.mp4 exists (checked at build).
+const hasReel = fs.existsSync("public/hero.mp4");
 
 const HEAD = "More customers shouldn't mean more hours.";
 const SUB =
   "I build websites to bring customers in, and automations that reply, follow up and keep their details in one place, so you don't have to.";
 const CTA = "Book a free 20-min call";
 ---
-
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700&display=swap"
-/>
 
 <section class="hero">
   <DotGrid />
@@ -19,7 +18,7 @@ const CTA = "Book a free 20-min call";
       <h1 class="headline reveal" data-delay="120">{HEAD}</h1>
       <p class="sub reveal" data-delay="220">{SUB}</p>
       <div class="cta reveal" data-delay="320">
-        <a href="#book" class="btn"
+        <a href="#book" class="btn" data-cal-intent
           ><span class="btn-label"
             ><svg
               xmlns="http://www.w3.org/2000/svg"
@@ -45,21 +44,21 @@ const CTA = "Book a free 20-min call";
       <p class="trust reveal" data-delay="380">Fixed price, agreed upfront · Final payment when it works as agreed · You own everything</p>
     </div>
 
-    <div class="hero-media reveal" data-delay="260">
-      <video
-        src="/hero.mp4"
-        poster="/hero-poster.jpg"
-        width="316"
-        height="176"
-        muted
-        loop
-        autoplay
-        playsinline
-        aria-hidden="true"
-        tabindex="-1"
-      ></video>
-      <p class="caption">Showreel</p>
-    </div>
+    {hasReel && (
+      <div class="hero-media reveal" data-delay="260">
+        <video
+          src="/hero.mp4"
+          width="316"
+          height="176"
+          muted
+          playsinline
+          preload="metadata"
+          aria-hidden="true"
+          tabindex="-1"
+        ></video>
+        <p class="caption">Showreel</p>
+      </div>
+    )}
   </div>
 </section>
 
@@ -184,6 +183,7 @@ const CTA = "Book a free 20-min call";
 
   .hero-media video {
     display: block;
+    cursor: pointer;
     width: 316px;
     max-width: 100%;
     height: auto;
@@ -247,5 +247,36 @@ const CTA = "Book a free 20-min call";
     };
     btn.addEventListener("mouseenter", (e) => drive(e, true));
     btn.addEventListener("mouseleave", (e) => drive(e, false));
+  }
+
+  // Showreel (only in the DOM when public/hero.mp4 exists): plays once, then
+  // holds its last frame (no loop). Click replays. Reduced motion: no autoplay.
+  const media = document.querySelector<HTMLElement>(".hero-media");
+  const video = media?.querySelector("video");
+  if (media && video) {
+    const play = () => video.play().catch(() => {});
+    video.addEventListener("error", () => media.remove());
+    video.addEventListener("click", () => {
+      video.currentTime = 0;
+      play();
+    });
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (matchMedia("(max-width: 767px)").matches) {
+        // phones: the reel sits below the copy, so wait until it's half in view
+        const io = new IntersectionObserver(
+          ([e]) => {
+            if (!e.isIntersecting) return;
+            io.disconnect();
+            play();
+          },
+          { threshold: 0.5 },
+        );
+        io.observe(video);
+      } else {
+        const start = () => setTimeout(play, 1000); // ~1s after the reveal
+        if (document.readyState === "complete") start();
+        else addEventListener("load", start, { once: true });
+      }
+    }
   }
 </script>
