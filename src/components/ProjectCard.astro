@@ -7,7 +7,7 @@ interface Props {
 }
 const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
 ---
-<article class="reveal group overflow-hidden rounded-xl border border-border bg-surface transition hover:-translate-y-1 hover:border-muted/40">
+<article class="reveal group overflow-hidden rounded-xl border border-border bg-surface transition hover:border-muted/40">
   {youtubeId ? (
     <div class="relative aspect-video w-full bg-bg" data-yt={youtubeId}>
       <img src={`https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`} alt="" loading="lazy" decoding="async"
@@ -21,60 +21,79 @@ const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
     </div>
   ) : kind === "site" ? (
     /* mock: a small-business booking site in a browser window.
-       Below sm: no fixed ratio, columns stack like the site's own mobile view; bottom padding gives the toast empty space. */
-    <div class="mock relative sm:aspect-[4/3] md:aspect-video w-full overflow-hidden bg-[#1b1b1f] p-4 md:p-5" aria-hidden="true">
-      <div class="win flex h-full flex-col overflow-hidden rounded-lg bg-[#fbfaf7] text-[#111] shadow-2xl">
-        <div class="flex items-center gap-2 border-b border-black/10 bg-[#f1efea] px-3 py-2">
-          <i class="h-2 w-2 rounded-full bg-black/20"></i><i class="h-2 w-2 rounded-full bg-black/20"></i><i class="h-2 w-2 rounded-full bg-black/20"></i>
-          <span class="ml-2 flex-1 truncate rounded-full bg-white px-3 py-0.5 font-mono text-[10px] text-black/50">harborpinedental.com</span>
-        </div>
-        <div class="flex items-center justify-between px-5 pt-3 text-[10px] text-black/55">
-          <b class="font-semibold text-black">Harbor &amp; Pine</b>
-          <span class="hidden gap-4 sm:flex"><span>Services</span><span>Team</span><span>Prices</span></span>
-        </div>
-        <div class="grid flex-1 grid-cols-1 items-center gap-4 px-5 pt-4 pb-16 sm:grid-cols-[1.2fr_1fr] sm:py-0">
-          <div>
-            <p class="font-display text-[clamp(1.1rem,2.6vw,1.6rem)] leading-[1.05]">Healthy smiles,<br/>booked in 30 seconds.</p>
-            <p class="mt-2 text-[10px] leading-snug text-black/55">Family dentistry in Portside. Open evenings and Saturdays.</p>
-            <span class="mt-3 inline-block rounded-full bg-[#111] px-3 py-1.5 text-[10px] font-medium text-white">Book an appointment →</span>
-            <p class="mt-2 text-[9px] text-black/50">★★★★★ 4.9 · 312 reviews</p>
+       Below sm: no fixed ratio, columns stack like the site's own mobile view; bottom padding gives the toast empty space.
+       Base CSS is the demo's final frame (10:30 picked, toast shown); the script plays it once in view. */
+    <div class="mock relative sm:aspect-[4/3] md:aspect-video w-full overflow-hidden bg-[#1b1b1f] p-4 pb-10 md:p-5 md:pb-11" data-mock="site">
+      <div class="h-full" aria-hidden="true">
+        <div class="win flex h-full flex-col overflow-hidden rounded-lg bg-[#fbfaf7] text-[#111] shadow-2xl">
+          <div class="flex items-center gap-2 border-b border-black/10 bg-[#f1efea] px-3 py-2">
+            <i class="h-2 w-2 rounded-full bg-black/20"></i><i class="h-2 w-2 rounded-full bg-black/20"></i><i class="h-2 w-2 rounded-full bg-black/20"></i>
+            <span class="ml-2 flex-1 truncate rounded-full bg-white px-3 py-0.5 font-mono text-[10px] text-black/50">harborpinedental.com</span>
           </div>
-          <div class="slot rounded-md border border-black/10 bg-white p-2.5 text-[9px] shadow-sm">
-            <p class="font-semibold">Pick a time</p>
-            <div class="mt-1.5 grid grid-cols-3 gap-1">
-              {["9:00","10:30","11:15","14:00","15:30","17:45"].map((t, i) => (
-                <span class:list={["rounded px-1 py-1 text-center", i === 1 ? "pick bg-[#111] text-white" : "bg-black/5"]}>{t}</span>
-              ))}
+          <div class="flex items-center justify-between px-5 pt-3 text-[10px] text-black/55">
+            <b class="font-semibold text-black">Harbor &amp; Pine</b>
+            <span class="hidden gap-4 sm:flex"><span>Services</span><span>Team</span><span>Prices</span></span>
+          </div>
+          <div class="grid flex-1 grid-cols-1 items-center gap-4 px-5 pt-4 pb-16 sm:grid-cols-[1.2fr_1fr] sm:py-0">
+            <div>
+              <p class="font-display text-[clamp(1.1rem,2.6vw,1.6rem)] leading-[1.05]">Healthy smiles,<br/>booked in 30 seconds.</p>
+              <p class="mt-2 text-[10px] leading-snug text-black/55">Family dentistry in Portside. Open evenings and Saturdays.</p>
+              <span class="cta mt-3 inline-block rounded-full bg-[#111] px-3 py-1.5 text-[10px] font-medium text-white">Book an appointment →</span>
+            </div>
+            <div class="slot relative rounded-md border border-black/10 bg-white p-2.5 text-[9px] shadow-sm">
+              <i class="ring pointer-events-none absolute -inset-px rounded-md border border-black"></i>
+              <p class="font-semibold">Pick a time</p>
+              <div class="mt-1.5 grid grid-cols-3 gap-1">
+                {["9:00","10:30","11:15","14:00","15:30","17:45"].map((t, i) => (
+                  <span class:list={["relative rounded bg-black/5 px-1 py-1 text-center", i === 1 && "pick"]}>{t}{i === 1 && <span class="fill absolute inset-0 grid place-items-center rounded bg-[#111] text-white">{t}</span>}</span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
+        <div class="toast absolute bottom-12 right-6 flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-[10px] text-[#111] shadow-xl md:bottom-14 md:right-8">
+          <span class="grid h-4 w-4 place-items-center rounded-full bg-[#111] text-[8px] text-white">✓</span>
+          New booking · Tue 10:30
+        </div>
+        <!-- fake cursor; its tip sits at (2, 1.5) in its own box -->
+        <svg class="cursor pointer-events-none invisible absolute left-0 top-0 opacity-0" width="18" height="18" viewBox="0 0 18 18">
+          <path d="M2 1.5v13.2l3.5-3.2 2.4 5.3 2.2-1-2.4-5.2h4.8z" fill="#000" stroke="#fff" stroke-width="1.2" stroke-linejoin="round" />
+        </svg>
       </div>
-      <div class="toast absolute bottom-6 right-6 flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-[10px] text-[#111] shadow-xl md:bottom-8 md:right-8">
-        <span class="grid h-4 w-4 place-items-center rounded-full bg-[#111] text-[8px] text-white">✓</span>
-        New booking · Tue 10:30
+      <div class="absolute inset-x-4 bottom-0 flex h-10 items-center justify-between md:inset-x-5 md:h-11">
+        <span class="demo-tag">Demo</span>
+        <button type="button" class="replay" aria-label="Replay demo" hidden>Replay</button>
       </div>
     </div>
   ) : (
-    /* mock: an automation flow with a live-looking run log */
-    <div class="mock relative md:aspect-video w-full overflow-hidden bg-[#0f0f12] p-5 font-mono text-[10px] text-[#d8d5cd]" aria-hidden="true">
-      <!-- below sm: vertical flow, one full-width row per node -->
-      <div class="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
-        {[["New lead", "Website form"], ["AI drafts reply", "Personal, on-brand"], ["Sent + logged", "Email · CRM · Slack"]].map(([a, b], i) => (
-          <>
-            {i > 0 && <span class="wire relative h-4 w-px justify-self-center bg-white/20 sm:h-px sm:w-6 md:w-10"><i class="pulse absolute -top-[2px] h-[5px] w-[5px] rounded-full bg-white"></i></span>}
-            <div class="node flex flex-wrap items-baseline gap-x-3 rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 sm:block sm:px-2.5">
-              <p class="text-[8px] uppercase tracking-[0.14em] text-white/40">Step {i + 1}</p>
-              <p class="font-sans text-[12px] font-semibold text-white sm:mt-1 sm:text-[11px]">{a}</p>
-              <p class="text-[10px] text-white/45 sm:text-[9px]">{b}</p>
-            </div>
-          </>
-        ))}
+    /* mock: an automation flow with a run log. Base CSS is the final frame (all steps lit, newest row on top). */
+    <div class="mock relative md:aspect-video w-full overflow-hidden bg-[#0f0f12] p-5 pb-11 font-mono text-[10px] text-[#d8d5cd]" data-mock="auto">
+      <div aria-hidden="true">
+        <!-- below sm: vertical flow, one full-width row per node -->
+        <div class="grid grid-cols-1 items-center gap-2 sm:grid-cols-[1fr_auto_1fr_auto_1fr]">
+          {[["New lead", "Website form"], ["AI drafts reply", "Personal, on-brand"], ["Sent + logged", "Email · customer list · chat"]].map(([a, b], i) => (
+            <>
+              {i > 0 && <span class="wire relative h-4 w-px justify-self-center bg-white/20 sm:h-px sm:w-6 md:w-10"></span>}
+              <div class="node relative flex flex-wrap items-baseline gap-x-3 rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 sm:block sm:px-2.5">
+                <i class="lit pointer-events-none absolute -inset-px rounded-lg border border-white/70"></i>
+                <p class="text-[8px] uppercase tracking-[0.14em] text-white/40">Step {i + 1}</p>
+                <p class="font-sans text-[12px] font-semibold text-white sm:mt-1 sm:text-[11px]">{a}</p>
+                <p class="text-[10px] text-white/45 sm:text-[9px]">{b}</p>
+              </div>
+            </>
+          ))}
+        </div>
+        <div class="log mt-4 rounded-lg border border-white/10 bg-black/40 p-3">
+          <p class="mb-1.5 flex justify-between text-[8px] uppercase tracking-[0.14em] text-white/35"><span>Run log</span><span>Demo run</span></p>
+          {/* newest first: the first row is the one this run adds, the rest are dimmed history */}
+          {[["10:03:09", "Mark T. · reply sent in 38s"], ["09:30:00", "Owner summary sent"], ["09:17:50", "Dental Co. · added to customer list"], ["09:02:14", "Sarah K. · reply sent in 41s"]].map(([t, m], i) => (
+            <p class:list={["row flex gap-3 border-t border-white/5 py-1", i > 0 && "opacity-50"]}><span class="text-white/35">{t}</span><span>{m}</span><span class="ml-auto text-white/60">✓</span></p>
+          ))}
+        </div>
       </div>
-      <div class="log mt-4 rounded-lg border border-white/10 bg-black/40 p-3">
-        <p class="mb-1.5 flex justify-between text-[8px] uppercase tracking-[0.14em] text-white/35"><span>Run log</span><span class="live">● live</span></p>
-        {[["09:02:14", "Sarah K. · reply sent in 41s"], ["09:17:50", "Dental Co. · added to CRM"], ["10:03:09", "Mark T. · reply sent in 38s"], ["10:04:12", "Owner summary sent to Slack"]].map(([t, m]) => (
-          <p class="row flex gap-3 border-t border-white/5 py-1"><span class="text-white/35">{t}</span><span>{m}</span><span class="ml-auto text-white/60">✓</span></p>
-        ))}
+      <div class="absolute inset-x-5 bottom-0 flex h-11 items-center justify-between">
+        <span class="demo-tag">Demo</span>
+        <button type="button" class="replay" aria-label="Replay demo" hidden>Replay</button>
       </div>
     </div>
   )}
@@ -112,33 +131,129 @@ const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
 </article>
 
 <style>
-  /* site mock: toast pops in, the picked slot pulses */
-  .toast { opacity: 0; transform: translateY(8px) scale(.96); }
-  .group:hover .toast, .toast { animation: toast 4.5s ease-in-out infinite 1s; }
-  @keyframes toast { 0%, 12% { opacity: 0; transform: translateY(8px) scale(.96); }
-                     20%, 75% { opacity: 1; transform: none; } 85%, 100% { opacity: 0; transform: translateY(8px) scale(.96); } }
-  .pick { animation: pick 4.5s ease-in-out infinite 1s; }
-  @keyframes pick { 0%, 10% { background: rgba(0,0,0,.05); color: #111; } 16%, 100% { background: #111; color: #fff; } }
-
-  /* auto mock: pulses travel the wires, log rows tick in */
-  .pulse { animation: travel 1.6s linear infinite; }
-  .wire:nth-of-type(2) .pulse { animation-delay: .8s; }
-  @keyframes travel { from { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { left: 100%; opacity: 0; } }
-  /* phone: wires are vertical, so the pulse runs top to bottom */
+  /* Base state = each demo's final frame; no-JS and reduced-motion visitors see this. */
+  .wire::after { content: ""; position: absolute; inset: 0; background: #fff; transform: scaleX(var(--d, 1)); transform-origin: left; }
   @media (max-width: 639.98px) {
-    .pulse { top: auto; left: -2px; animation-name: travel-y; }
+    .wire::after { transform: scaleY(var(--d, 1)); transform-origin: top; }
   }
-  @keyframes travel-y { from { top: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { top: 100%; opacity: 0; } }
-  .log .row { animation: tick 6s ease-out infinite; opacity: 0; }
-  .log .row:nth-of-type(2) { animation-delay: 0s; }
-  .log .row:nth-of-type(3) { animation-delay: .6s; }
-  .log .row:nth-of-type(4) { animation-delay: 1.2s; }
-  .log .row:nth-of-type(5) { animation-delay: 1.8s; }
-  @keyframes tick { 0% { opacity: 0; transform: translateY(4px); } 8%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; } }
-  .live { animation: blink 1.4s steps(2) infinite; }
-  @keyframes blink { 50% { opacity: .3; } }
-
-  @media (prefers-reduced-motion: reduce) {
-    .toast, .pick, .pulse, .log .row, .live { animation: none; opacity: 1; transform: none; }
-  }
+  .demo-tag, .replay { font-family: var(--font-mono), ui-monospace, monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: #fff; }
+  .demo-tag { border: 1px solid rgb(255 255 255 / .4); border-radius: 999px; padding: 1px 8px; }
+  /* padding gives a bigger tap target; negative margin keeps the text aligned to the edge */
+  .replay { margin-right: -8px; padding: 8px; cursor: pointer; text-underline-offset: 3px; }
+  .replay:hover { text-decoration: underline; }
+  .replay:focus-visible { outline: 1px solid #fff; outline-offset: -2px; }
 </style>
+
+<script>
+  // Demos: each mock plays once when it crosses the viewport centre, then holds its final frame.
+  // It replays on re-entry only after it has fully left the viewport, or from its Replay button.
+  import { gsap } from "gsap";
+
+  const mocks = [...document.querySelectorAll<HTMLElement>(".mock")];
+
+  // centre of `el` in the mock's coordinates, minus the cursor tip offset (2, 1.5)
+  const pt = (mock: HTMLElement, el: Element, axis: "x" | "y") => () => {
+    const r = el.getBoundingClientRect(), m = mock.getBoundingClientRect();
+    return axis === "x" ? r.left - m.left + r.width / 2 - 2 : r.top - m.top + r.height / 2 - 1.5;
+  };
+
+  // Every tween is a fromTo, so invalidate()/restart() never reuse stale "from" values.
+  // Later tweens on an already-animated property skip immediateRender so they don't clobber the first one's start.
+  const later = { immediateRender: false };
+
+  function siteTl(m: HTMLElement) {
+    const q = (s: string) => m.querySelector(s)!;
+    const cursor = q(".cursor"), cta = q(".cta"), pick = q(".pick");
+    return gsap.timeline({ paused: true })
+      .fromTo(cursor, { x: () => m.clientWidth * 0.82, y: () => m.clientHeight * 0.92 },
+        { x: pt(m, cta, "x"), y: pt(m, cta, "y"), duration: 0.8, ease: "power2.inOut" }, 0)
+      .fromTo(cursor, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 0)
+      .fromTo(cta, { scale: 1 }, { scale: 0.96, duration: 0.12, ease: "power2.out", ...later }, 0.95)
+      .fromTo(cta, { scale: 0.96 }, { scale: 1, duration: 0.25, ease: "power2.out", ...later }, 1.07)
+      .fromTo(q(".ring"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 1.35)
+      .fromTo(cursor, { x: pt(m, cta, "x"), y: pt(m, cta, "y") },
+        { x: pt(m, pick, "x"), y: pt(m, pick, "y"), duration: 0.6, ease: "power2.inOut", ...later }, 1.5)
+      .fromTo(q(".fill"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2 }, 2.2)
+      .fromTo(q(".toast"), { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power3.out" }, 2.6)
+      .fromTo(cursor, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.3, ...later }, 3.1);
+  }
+
+  function autoTl(m: HTMLElement) {
+    const nodes = m.querySelectorAll(".node"), lits = m.querySelectorAll(".lit"), wires = m.querySelectorAll(".wire");
+    const rows = [...m.querySelectorAll<HTMLElement>(".row")];
+    const tl = gsap.timeline({ paused: true });
+    const light = (i: number, at: number) => tl
+      .fromTo(nodes[i], { opacity: 0.4 }, { opacity: 1, duration: 0.25 }, at)
+      .fromTo(lits[i], { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25 }, at);
+    const fill = (i: number, at: number) =>
+      tl.fromTo(wires[i], { "--d": 0 }, { "--d": 1, duration: 0.5, ease: "power1.inOut" }, at);
+    light(0, 0); fill(0, 0.25); light(1, 0.75); fill(1, 1); light(2, 1.5);
+    // the new row fades in on top while the older rows slide down into place
+    return tl
+      .fromTo(rows[0], { autoAlpha: 0, y: -8 }, { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 1.5)
+      .fromTo(rows.slice(1), { y: () => -rows[0].offsetHeight }, { y: 0, duration: 0.35, ease: "power3.out" }, 1.5);
+  }
+
+  if (mocks.length) gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+    const tls = mocks.map((m) => (m.dataset.mock === "site" ? siteTl(m) : autoTl(m)));
+    const armed = mocks.map(() => true);
+    const ac = new AbortController();
+
+    // one demo at a time: finish any other that is still running
+    const play = (i: number) => {
+      tls.forEach((t, j) => j !== i && t.isActive() && t.progress(1));
+      // invalidate to re-measure (fonts/layout may have shifted). An invalidated tween only re-applies its
+      // "from" state once it has rendered forward again, so render 0 -> end -> 0 before playing.
+      tls[i].invalidate().progress(0, true).progress(1, true).progress(0, true).play();
+    };
+    // edge = "centre" (init: the mock's centre is above the viewport centre) or "bottom" (the whole mock is above it)
+    const passed = (m: HTMLElement, edge: "centre" | "bottom") => {
+      const r = m.getBoundingClientRect();
+      return (edge === "centre" ? r.top + r.height / 2 : r.bottom) < innerHeight / 2;
+    };
+    // a demo already past the centre (refresh, deep link, fast jump) shows its final frame, never its start.
+    // Only never-played (still paused) timelines qualify. After init we only settle mocks that are fully above
+    // the centre line; one still on the line is the centre observer's to play.
+    const settle = (i: number, edge: "centre" | "bottom") => {
+      const tl = tls[i];
+      if (tl.paused() && tl.progress() === 0 && passed(mocks[i], edge)) { tl.progress(1); armed[i] = false; }
+    };
+
+    const centre = new IntersectionObserver((es) => es.forEach((e) => {
+      const i = mocks.indexOf(e.target as HTMLElement);
+      if (e.isIntersecting && armed[i]) { armed[i] = false; play(i); }
+    }), { rootMargin: "-50% 0px -49% 0px" });
+    // plain observer: re-arm only once the mock has fully left the viewport
+    const view = new IntersectionObserver((es) => es.forEach((e) => {
+      const i = mocks.indexOf(e.target as HTMLElement);
+      if (e.isIntersecting) settle(i, "bottom"); else armed[i] = true;
+    }));
+
+    mocks.forEach((m, i) => {
+      settle(i, "centre");
+      centre.observe(m);
+      view.observe(m);
+      const btn = m.querySelector<HTMLButtonElement>(".replay")!;
+      btn.hidden = false;
+      btn.addEventListener("click", () => { if (!tls[i].isActive()) play(i); }, { signal: ac.signal });
+    });
+
+    let timer = 0;
+    addEventListener("resize", () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => tls.forEach((tl) => {
+        const done = tl.progress() === 1;
+        tl.invalidate();
+        if (done) tl.progress(1);
+      }), 200);
+    }, { signal: ac.signal });
+
+    return () => {
+      ac.abort();
+      clearTimeout(timer);
+      centre.disconnect();
+      view.disconnect();
+      mocks.forEach((m) => (m.querySelector<HTMLButtonElement>(".replay")!.hidden = true));
+    };
+  });
+</script>

@@ -167,6 +167,16 @@ const phases = [
   .proc .phase .art { justify-self: center; }
   .proc .phase .art :global(svg) { width: clamp(200px, 24vw, 340px); height: auto; display: block; }
 
+  /* no JS (or the failsafe removed .js): the scroll engine never runs, so show
+     the phases as a plain stacked list instead of an empty sticky stage */
+  :global(html:not(.js)) .proc-scroll { height: auto; }
+  :global(html:not(.js)) .proc .stage { position: static; height: auto; overflow: visible; }
+  :global(html:not(.js)) .proc .rail { display: none; }
+  :global(html:not(.js)) .proc .content { position: static; max-width: 64rem; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  :global(html:not(.js)) .proc .phase { position: relative; opacity: 1; pointer-events: auto;
+                                        padding-top: 2rem; padding-bottom: 2rem; }
+  :global(html:not(.js)) .proc .phase .copy { transform: none; }
+
   /* phones + tablets: the vertical arc turns into a horizontal dial along the
      bottom of the screen (same dots, same ink/grey line, driven by the script) */
   @media (max-width: 1024px) {
