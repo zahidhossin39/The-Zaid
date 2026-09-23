@@ -4,7 +4,7 @@ import DotGrid from "./DotGrid.astro";
 const HEAD = "You've had the idea long enough.";
 const SUB =
   "I build websites that bring in customers and automations that give you your hours back. Fixed scope, fixed price, handed over working.";
-const CTA = "Book a 20-minute call";
+const CTA = "Book a free 20-min call";
 ---
 
 <link
@@ -40,8 +40,9 @@ const CTA = "Book a 20-minute call";
             </svg>{CTA}</span
           ><span class="btn-fill" aria-hidden="true"></span></a
         >
-        <a href="#proof" class="link">See the work ↓</a>
+        <a href="#proof" class="link">See examples ↓</a>
       </div>
+      <p class="trust reveal" data-delay="380">Fixed price, agreed upfront · You own everything · No pitch</p>
     </div>
 
     <div class="hero-media reveal" data-delay="260">
@@ -161,6 +162,12 @@ const CTA = "Book a 20-minute call";
 
   @media (prefers-reduced-motion: reduce) {
     .btn-fill { display: none; }
+  }
+
+  .trust {
+    margin: 1.25rem 0 0;
+    font-size: 0.875rem;
+    color: #6b6963;
   }
 
   .link {

@@ -1,18 +1,25 @@
 [
   {
     "kind": "site",
-    "title": "Harbor & Pine Dental — booking site",
+    "title": "Harbor & Pine Dental: booking site",
     "stuck": "A nice-looking site that nobody booked from. New patients still had to call during office hours.",
-    "now": "One clear “Book an appointment” button, online booking 24/7, and every request lands straight in the clinic’s calendar.",
-    "tags": ["Website", "Booking"],
+    "now": "One clear 'Book an appointment' button, online booking day and night, and every request lands straight in the clinic's calendar.",
+    "tags": [
+      "Website",
+      "Booking"
+    ],
     "demo": true
   },
   {
     "kind": "auto",
-    "title": "Lead follow-up — on autopilot",
+    "title": "Automatic lead follow-up",
     "stuck": "Enquiries sat in an inbox for a day. By the time someone replied, the customer had booked elsewhere.",
-    "now": "Every new lead gets a personal reply in under a minute, is logged in the CRM, and the owner gets a one-line summary.",
-    "tags": ["Automation", "AI", "CRM"],
+    "now": "Every new lead gets a personal reply in under a minute and is saved to the customer list. The owner gets a one-line summary.",
+    "tags": [
+      "Automation",
+      "AI",
+      "Follow-up"
+    ],
     "demo": true
   }
 ]
