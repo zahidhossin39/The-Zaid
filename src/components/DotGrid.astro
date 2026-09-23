@@ -113,7 +113,10 @@ const {
     const dotSize = parseFloat(canvas.dataset.dotsize || "4");
     const gap = parseFloat(canvas.dataset.gap || "26");
     const baseColor = canvas.dataset.basecolor || "#dcd9d1";
-    const activeColor = canvas.dataset.activecolor || "#FFA524";
+    // follow the site accent so the dots match whatever palette is active
+    const activeColor =
+      getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim() ||
+      canvas.dataset.activecolor || "#FFA524";
     const proximity = parseFloat(canvas.dataset.proximity || "130");
     const speedTrigger = parseFloat(canvas.dataset.speedtrigger || "100");
     const shockRadius = parseFloat(canvas.dataset.shockradius || "250");

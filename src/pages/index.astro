@@ -23,4 +23,38 @@ import BookACall from "../components/BookACall.astro";
     <About />
     <BookACall />
   </main>
+
+  <!-- PROTOTYPE: accent picker. Delete once an accent is chosen. -->
+  <nav class="accent-picker" aria-label="Accent prototype">
+    <span class="lbl">Accent</span>
+    {[
+      ["", "Amber (now)", "#FFA524"],
+      ["cobalt", "Cobalt", "#3B5BFF"],
+      ["emerald", "Emerald", "#13A06A"],
+      ["terracotta", "Terracotta", "#D9582E"],
+    ].map(([k, name, hex]) => (
+      <a href={k ? `?accent=${k}` : "/"} data-k={k}>
+        <i style={`background:${hex}`}></i>{name}
+      </a>
+    ))}
+  </nav>
+  <script>
+    const cur = new URLSearchParams(location.search).get("accent") || "";
+    document.querySelectorAll<HTMLElement>(".accent-picker a").forEach((a) => {
+      if (a.dataset.k === cur) a.classList.add("on");
+    });
+  </script>
+  <style>
+    .accent-picker { position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%); z-index: 100;
+      display: flex; align-items: center; gap: .25rem; padding: .35rem; border-radius: 999px;
+      background: rgba(17,17,17,.92); backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      font: 500 .8125rem/1 var(--font-sans); }
+    .lbl { color: #8a877f; padding: 0 .6rem 0 .75rem; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; }
+    .accent-picker a { display: flex; align-items: center; gap: .45rem; padding: .55rem .85rem; border-radius: 999px;
+      color: #d8d5cd; text-decoration: none; white-space: nowrap; transition: background .2s; }
+    .accent-picker a:hover { background: rgba(255,255,255,.08); }
+    .accent-picker a.on { background: #fff; color: #111; }
+    .accent-picker i { width: .7rem; height: .7rem; border-radius: 999px; }
+    @media (max-width: 560px) { .lbl { display: none; } .accent-picker a { padding: .5rem .6rem; } }
+  </style>
 </Base>

@@ -14,12 +14,12 @@
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-/* Dev-only palette prototypes. Tailwind v4 utilities read these vars, so
-   overriding them on a scope re-themes everything inside it.
-   Delete these three blocks once a palette is chosen. */
-[data-theme="A"] { --color-accent: #5EEAD4; --color-accent-hover: #99F6E4; }
-[data-theme="B"] { --color-accent: #A5B4FC; --color-accent-hover: #C7D2FE; }
-[data-theme="C"] { --color-accent: #86EFAC; --color-accent-hover: #BBF7D0; }
+/* PROTOTYPE — accent picker (?accent=cobalt|emerald|terracotta). Tailwind v4
+   utilities read these vars, so overriding them on <html> re-themes the page.
+   Delete these blocks once an accent is chosen and set it in @theme above. */
+[data-theme="cobalt"]     { --color-accent: #3B5BFF; --color-accent-hover: #6A83FF; }
+[data-theme="emerald"]    { --color-accent: #13A06A; --color-accent-hover: #2FC488; }
+[data-theme="terracotta"] { --color-accent: #D9582E; --color-accent-hover: #E97C57; }
 
 @layer base {
   html {
