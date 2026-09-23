@@ -6,7 +6,7 @@
     <a href="#" class="logo">Zaid Hossain</a>
     <nav class="nav-links">
       <a href="#proof" class="nav-link">Work</a>
-      <a href="#about" class="nav-link">About</a>
+      <a href="#about" class="nav-link nav-about">About</a>
       <a href="#book" class="nav-link">Book a call</a>
     </nav>
   </div>
@@ -42,6 +42,10 @@
     color: #ffffff;
     text-decoration: none;
     letter-spacing: -0.01em;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   .nav-links {
@@ -56,9 +60,85 @@
     font-size: 0.9375rem;
     font-weight: 500;
     transition: opacity 0.15s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   .nav-link:hover {
     opacity: 0.7;
   }
+
+  @media (max-width: 767px) {
+    .navbar {
+      transition: transform 0.3s ease;
+    }
+
+    .navbar.is-hidden {
+      transform: translateY(-100%);
+    }
+
+    .navbar-inner {
+      padding: 0 1.5rem;
+    }
+  }
+
+  @media (max-width: 399px) {
+    .nav-about {
+      display: none;
+    }
+
+    .nav-links {
+      gap: 1.25rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .navbar {
+      transition: none;
+    }
+  }
 </style>
+
+<script>
+  // Headroom (phones only): hide the fixed nav while scrolling down so it
+  // doesn't sit on top of body text, bring it back on any scroll up.
+  const nav = document.querySelector<HTMLElement>(".navbar");
+  const phone = window.matchMedia("(max-width: 767px)");
+  const TOP = 80; // always visible above this
+  const JITTER = 6; // ignore scroll deltas smaller than this
+
+  if (nav) {
+    let lastY = Math.max(0, window.scrollY);
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const y = Math.max(0, window.scrollY);
+      if (!phone.matches || y < TOP) {
+        nav.classList.remove("is-hidden");
+        lastY = y;
+        return;
+      }
+      const delta = y - lastY;
+      if (Math.abs(delta) < JITTER) return; // keep lastY so slow scrolls add up
+      nav.classList.toggle("is-hidden", delta > 0);
+      lastY = y;
+    };
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    phone.addEventListener("change", update);
+    // keyboard users tabbing into a hidden nav should see it
+    nav.addEventListener("focusin", () => nav.classList.remove("is-hidden"));
+  }
+</script>

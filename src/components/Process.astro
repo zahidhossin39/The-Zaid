@@ -167,12 +167,33 @@ const phases = [
   .proc .phase .art { justify-self: center; }
   .proc .phase .art :global(svg) { width: clamp(200px, 24vw, 340px); height: auto; display: block; }
 
+  /* phones + tablets: the vertical arc turns into a horizontal dial along the
+     bottom of the screen (same dots, same ink/grey line, driven by the script) */
   @media (max-width: 1024px) {
-    .proc .rail { display: none; }
-    .proc .content { left: 0; }
-    .proc .phase { grid-template-columns: 1fr; padding: 5rem 1.5rem; text-align: left; gap: 1.5rem; }
+    .proc .rail { width: 100%; }
+    .proc .content { left: 0; bottom: 8.5rem; }
+    .proc .phase { padding: 5rem 2rem 1rem; gap: 2rem; align-content: center; }
+    .proc .phase .art :global(svg) { width: clamp(150px, 26vw, 240px); }
+  }
+  @media (max-width: 767px) {
+    .proc .content { bottom: 7.5rem; }
+    .proc .phase { grid-template-columns: 1fr; padding: 4.5rem 1.5rem 0; gap: 1.25rem; }
     .proc .phase .art { order: -1; justify-self: start; }
-    .proc .phase .art :global(svg) { width: clamp(150px, 38vw, 220px); }
+    .proc .phase .art :global(svg) { width: min(140px, 26vw, 16svh); }
+    .proc .phase .kick { margin-bottom: 0.9rem; }
+    .proc .phase h3 { font-size: clamp(2.2rem, 9.5vw, 2.8rem); }
+    .proc .phase p { font-size: 1rem; margin-top: 1rem; }
+    .proc .phase .tags { margin-top: 1.25rem; }
+  }
+  /* phones held sideways: too short for the icon, so text only */
+  @media (max-width: 1024px) and (max-height: 500px) {
+    .proc .content { bottom: 4.5rem; }
+    .proc .phase { grid-template-columns: 1fr; padding: 4rem 2rem 0; gap: 0; }
+    .proc .phase .art { display: none; }
+    .proc .phase .kick { margin-bottom: 0.5rem; }
+    .proc .phase h3 { font-size: 2rem; }
+    .proc .phase p { font-size: 0.95rem; margin-top: 0.6rem; max-width: 60ch; }
+    .proc .phase .tags { margin-top: 0.8rem; }
   }
 </style>
 
@@ -181,6 +202,7 @@ const phases = [
   if (root) {
     const N = 5, R = 456, STEP = 0.335, CX = -169;
     const scroll = root.querySelector<HTMLElement>("[data-proc-scroll]")!;
+    const stage = root.querySelector<HTMLElement>(".stage")!;
     const dots = [...root.querySelectorAll<HTMLElement>(".dot")];
     const phasesEls = [...root.querySelectorAll<HTMLElement>(".phase")];
     const grey = root.querySelector(".lineGrey") as unknown as SVGPathElement;
@@ -190,18 +212,28 @@ const phases = [
       dot.classList.remove("ping"); void dot.offsetWidth; dot.classList.add("ping");
     };
 
-    const arc = (aFrom: number, aTo: number, cy: number) => {
+    const arc = (cx: number, cy: number, r: number, aFrom: number, aTo: number) => {
       const n = 48; let d = "";
       for (let k = 0; k <= n; k++) {
         const a = aFrom + (aTo - aFrom) * (k / n);
-        d += (k ? " L " : "M ") + (CX + R * Math.cos(a)).toFixed(1) + " " + (cy + R * Math.sin(a)).toFixed(1);
+        d += (k ? " L " : "M ") + (cx + r * Math.cos(a)).toFixed(1) + " " + (cy + r * Math.sin(a)).toFixed(1);
       }
       return d;
     };
+    const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
 
     let sp = 0, lastActive = 0;
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const dial = matchMedia("(max-width: 1024px)");
     phasesEls[0].classList.add("show");
+
+    const place = (dot: HTMLElement, x: number, y: number, size: number) => {
+      dot.style.left = x + "px";
+      dot.style.top = y + "px";
+      dot.style.width = size + "px";
+      dot.style.height = size + "px";
+      dot.style.fontSize = (size * 0.34).toFixed(1) + "px";
+    };
 
     const frame = () => {
       const r = scroll.getBoundingClientRect();
@@ -210,24 +242,39 @@ const phases = [
       sp += (target - sp) * (reduce ? 1 : 0.18);
       if (Math.abs(target - sp) < 0.001) sp = target;
 
-      const cy = innerHeight / 2;
       const active = Math.round(sp);
 
-      dots.forEach((dot, i) => {
-        const a = (sp - i) * STEP;
-        const size = 78 - Math.min(1, Math.abs(sp - i)) * 20;
-        dot.style.left = (CX + R * Math.cos(a)) + "px";
-        dot.style.top = (cy + R * Math.sin(a)) + "px";
-        dot.style.width = size + "px";
-        dot.style.height = size + "px";
-        dot.style.fontSize = (size * 0.34).toFixed(1) + "px";
-        dot.classList.toggle("on", i === active);
-      });
-
-      const aTop = Math.asin(Math.max(-1, Math.min(1, (-80 - cy) / R)));
-      const aBot = Math.asin(Math.max(-1, Math.min(1, (innerHeight + 80 - cy) / R)));
-      grey.setAttribute("d", arc(aTop, aBot, cy));
-      ink.setAttribute("d", arc((sp - active) * STEP, aBot, cy));
+      if (dial.matches) {
+        // Dial: circle centred below the screen, active dot at its top.
+        // Past phases slide off to the left, upcoming ones wait on the right.
+        // stage is 100svh; innerHeight grows when the phone URL bar hides, so measure the stage
+        const W = root.clientWidth, H = stage.clientHeight, RD = 620;
+        const stepD = Math.asin(Math.min(W * 0.36, 200) / RD);
+        const short = H < 500, small = W < 768 || short;
+        const cx = W / 2, cy = H - (short ? 36 : small ? 60 : 68) + RD;
+        const top = -Math.PI / 2;
+        dots.forEach((dot, i) => {
+          const a = top - (sp - i) * stepD;
+          const size = (short ? 44 : small ? 54 : 64) - Math.min(1, Math.abs(sp - i)) * (small ? 14 : 16);
+          place(dot, cx + RD * Math.cos(a), cy + RD * Math.sin(a), size);
+          dot.classList.toggle("on", i === active);
+        });
+        const aL = -Math.acos(clamp1((-80 - cx) / RD));
+        const aR = -Math.acos(clamp1((W + 80 - cx) / RD));
+        grey.setAttribute("d", arc(cx, cy, RD, aL, aR));
+        ink.setAttribute("d", arc(cx, cy, RD, aL, top - (sp - active) * stepD));
+      } else {
+        const cy = innerHeight / 2;
+        dots.forEach((dot, i) => {
+          const a = (sp - i) * STEP;
+          place(dot, CX + R * Math.cos(a), cy + R * Math.sin(a), 78 - Math.min(1, Math.abs(sp - i)) * 20);
+          dot.classList.toggle("on", i === active);
+        });
+        const aTop = Math.asin(clamp1((-80 - cy) / R));
+        const aBot = Math.asin(clamp1((innerHeight + 80 - cy) / R));
+        grey.setAttribute("d", arc(CX, cy, R, aTop, aBot));
+        ink.setAttribute("d", arc(CX, cy, R, (sp - active) * STEP, aBot));
+      }
 
       if (active !== lastActive) {
         lastActive = active;

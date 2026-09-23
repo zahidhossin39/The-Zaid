@@ -1,64 +1,98 @@
-# Ideation Handoff — Zaid Hossain portfolio site
+# Ideation Handoff: Zaid Hossain portfolio site
 
-A fresh agent should read this top-to-bottom once, then brainstorm from the **Ideation Canvas** (§4). §1–§3 are settled context — absorb, do not re-litigate.
+A fresh agent should read this top to bottom once. Sections 1 to 3 are settled; don't re-litigate them. Last updated 2026-09-24.
 
 ---
 
 ## 1. Executive summary
 
-**What:** A single-page marketing/portfolio site for **Zaid Hossain**, a solo builder for small businesses.
+**What:** A single-page portfolio site for **Zaid Hossain**, a solo builder for small businesses.
 
-**Who it's for:** Non-technical small-business owners and founders with a *stuck idea* or a *stuck manual process* — people who know what they want built but keep putting it off.
+**Who it's for:** Non-technical small-business owners, local and online, globally. Their business has outgrown their hours.
 
-**Value proposition:** "You describe the problem, I build the thing." Zaid builds **apps, automations, and websites** — scoped tight, built in the open, handed over working. He has **no clients yet**; the site is credibility-first, conversion-second (the one goal is booking a 20-minute call).
+**Positioning:** The site leads with **growth, not deliverables**. Core line: "More customers shouldn't mean more hours."
+- **Services:** exactly two, **Websites** (bring customers in) and **Automations** (handle the work each customer creates).
+- **Apps** are not a service. They appear only in About, as a hobby and background.
+- He has **no clients yet**. The one goal is booking a free 20-minute call.
 
-**Voice:** Plain, direct, a little wry. Speaks to the owner's frustration ("It's been 'next month' since spring"), never corporate or buzzwordy.
+**Voice:** calm, honest builder. Full rules are in `.claude/brand-voice-guidelines.md`, which must be followed for any copy. In short:
+- I and you, never "we". Plain words, short sentences.
+- No hype, no humour, no exclamation marks, no em dashes.
+- Promise only what's true.
 
 ---
 
-## 2. Settled foundations — do NOT change
+## 2. Settled foundations: do NOT change
 
 **Stack**
-- **Astro 7** (static output) + **Tailwind v4** via `@tailwindcss/vite`. No React (a vanilla canvas port is used where a React component was wanted).
-- **Lenis** smooth scroll (in `Base.astro`), respects `prefers-reduced-motion`.
-- **gsap** (+ free `InertiaPlugin`) — used only by the hero DotGrid.
-- Windows dev box; `npm`; dev server on `localhost:4321`.
+- **Astro 7** (static) + **Tailwind v4** via `@tailwindcss/vite`. No React.
+- **Lenis** smooth scroll in `Base.astro`. It respects `prefers-reduced-motion`.
+- **gsap** + `InertiaPlugin`, used only by the hero DotGrid.
+- Windows dev machine, `npm`, dev server on `localhost:4321` (launch config "dev").
 
-**Design tokens** (`src/styles/global.css`, `@theme`)
-- Dark site: bg `#0A0A0B`, surface `#141417`, border `#26262B`, text `#F4F2ED`, muted `#9C9A94`, **accent amber `#FFA524`**.
-- Fonts: **Instrument Serif** (display/headings), **Inter** (body), **Inter Tight** (hero), **PT Sans Narrow** (the "What I build" list), mono for eyebrows.
-- Component classes: `.eyebrow` `.h1` `.h2` `.h3` `.lead`; reveal-on-scroll via `.reveal` + `data-delay`, gated on `.js`.
+**Colour:** pure **black and white**, with no accent colour (amber was removed). In `global.css`, `--color-accent` is `#F4F2ED`, an off-white neutral, so older `text-accent` classes stay monochrome. The sections alternate white, dark and cream: the hero is white, "What I build" is a white band, Process is cream, and the rest is dark.
+
+**Fonts:** Instrument Serif for headings, Inter for body text, Inter Tight for the hero, PT Sans Narrow for the "What I build" list, mono for eyebrows.
 
 **Architecture rules**
-- One page: `src/pages/index.astro` composes section components in `src/components/`. Throwaway prototypes live under `src/pages/lab/`.
-- **Reveal-on-load rule:** any `.reveal` already in the viewport reveals immediately; only below-the-fold waits for scroll. (Fixed a bug where the hero CTA hid until scroll.)
-- Images served from `public/` (e.g. `/clay-apps.jpg`).
+- One page: `src/pages/index.astro` composes the sections in `src/components/`. Throwaway prototypes go in `src/pages/lab/`.
+- Anything with `.reveal` + `data-delay` that's already in the viewport on load reveals immediately.
+- Images live in `public/` as **WebP** (`zaid.webp`, `clay-web.webp`, `clay-auto.webp`). The original PNG and JPG files are only kept as sources.
+- **Mobile rule:** every hover interaction needs a touch equivalent, gated with `(hover: none)` / `(hover: hover)`, not with screen width alone. Section 3 lists the equivalents.
 
-**Non-negotiables**
-- Commit freely; **never `git push` without asking**.
-- Verify in-browser before claiming done (the built-in browser pane; note it throttles rAF/CSS transitions while hidden — a blank canvas or opacity:0 there is usually the hidden tab, not a bug).
-- Delegation: research → Gemini (`Spawn-Gemini`/agy); Claude writes code unless the user names an agent; whole-codebase work stays with Claude.
-
-**Brand look:** minimal, black-on-white leaning inside an otherwise dark site. The **"What I build"** section is a deliberate white band. Warm accents over cold. Custom SVG/hand-made assets over stock/CDN.
-
----
-
-## 3. Current progress (built in the main session)
-
-Order on the page: **Navbar → Hero → Problem → WhatIBuild → Proof → Process → About → BookACall**.
-
-- **Navbar** — transparent, adapts to any background via `mix-blend-mode: difference`. Links: Work, About, Book a call.
-- **Hero** — headline "You've had the idea long enough." + sub + CTA "Book a 20-minute call" (calendar icon). White section. Two effects: (a) **cursor-origin expanding-circle fill** on the CTA (ported from Zaid's older `Zaid-Portfolio-website`), (b) **DotGrid** interactive canvas background — subtle grey dots that turn amber near the cursor, with inertia + click shockwave (`src/components/DotGrid.astro`). Right column has a showreel video placeholder.
-- **Problem** — "Knowing what to build was never the problem." → "Same idea. The date keeps sliding."
-- **WhatIBuild** — **expand-on-hover list** (faithful clone of `expand-on-hover-list.framer.website`): black-on-white band, three rows (Apps / Automations / Websites). Hover expands the row, reveals a one-line description + a **warm-clay image card that rotates into place** (settles −5°, 1.79 ratio matching the 16:9 images). Images are faceless-clay dioramas (`/clay-apps.jpg`, `/clay-auto.jpg`, `/clay-web.jpg`).
-- **Process** — curved-arc scroll timeline (5 phases: Discovery & Scope, Plan & Design, Build, Test & Ship, Handover & Support). Circles ride a real circle arc; eased scroll; a synthesized "revolver detent" click + haptic + ping on each step change. Custom 3D-shaded SVG icons.
-- **Proof / About / BookACall** — present; lighter polish.
-
-**Assets & taste locked:** the **warm faceless-clay** illustration style is the chosen visual language (people have blank rounded heads, dot eyes only — no nose/lips/ears). Ink & wash and needle-felt were runner-up styles, not used.
+**Working rules**
+- Commit freely at verified milestones. **Never `git push` without asking.**
+- **Stage specific paths only (`git add <paths>`), never `git add -A`.** `mockups/hero-styles/` holds unrelated untracked files that must stay out of commits.
+- Verify before claiming something is done:
+  - **Built-in browser pane:** it's often hidden or narrow. When it's hidden it pauses animation frames and transitions, so a blank canvas or `opacity: 0` there is usually not a bug.
+  - **Headless screenshots are more reliable for phone widths.** Use `puppeteer-core` (installed) with the system Chrome at `C:/Program Files/Google/Chrome/Application/chrome.exe`. The shell sandbox blocks localhost, so those commands need the sandbox disabled.
+  - If the dev server is down, restart it with `preview_start` name "dev".
+- Delegation: research goes to Gemini (agy). Claude writes code unless the user names an agent. Whole-codebase review stays with Claude.
 
 ---
 
-## 4. Ideation canvas — brainstorm these
+## 3. Current state
+
+Page order: **Navbar → Hero → Problem → WhatIBuild → Proof → Process → About → FAQ → BookACall (+ footer)**.
+
+- **Navbar:** transparent, with `mix-blend-mode: difference`. Links are Work, About and Book a call. On phones:
+  - It hides on scroll down and comes back on scroll up (headroom).
+  - "About" is hidden below 400px.
+  - Every link has at least a 44px tap area.
+- **Hero** (white):
+  - Headline "More customers shouldn't mean more hours." CTA "Book a free 20-min call", with a button fill that grows from the cursor.
+  - Trust line: "Fixed price, agreed upfront · Final payment when it works as agreed · You own everything".
+  - DotGrid canvas background. Dots follow the cursor; on touch, a tap sends out a shockwave.
+  - A showreel video placeholder sits on the right. It stacks under the text below 768px.
+- **Problem:** "Right now, every new customer costs you time." → "More customers. Same number of hours."
+- **WhatIBuild** (white band): an expand-on-hover list with two rows, Websites and Automations, each with a warm-clay card that rotates into place and settles at -5°.
+  - **Touch and phones:** rows stay open. Each card rotates in when its row scrolls into view (the `.is-on` class, set by an IntersectionObserver).
+  - On phones the card sits under the text.
+- **Proof:** "Examples", with two labelled **demo** projects built as coded mockups (a booking site and a lead follow-up automation) in `ProjectCard.astro`, with data in `src/data/projects.json`.
+  - On phones the booking mockup stacks like a mobile site and the automation flow runs vertically. The "01 / 02" counter shows only from md up.
+  - Later, real projects will replace the demos via the `youtubeId` / `liveUrl` fields.
+- **Process** (cream): a five-phase arc timeline.
+  - Desktop: numbers ride a vertical arc on the left.
+  - **At 1024px and below:** the same arc becomes a horizontal dial along the bottom of the screen. The active number sits at the top of the dial, with past phases to the left and upcoming ones to the right.
+  - The sound was removed.
+- **About:** photo plus a short story. The apps appear here as background. The social links are still **placeholders**.
+- **FAQ:** eight questions in a native `<details>` accordion (cost, time, what can be automated, keeping up with growth, technical, not liking it, ownership, after handover).
+- **BookACall:** "Tell me where your time goes." Cal.com inline embed plus email `hello.zaidhossain@gmail.com`.
+
+**Deferred technical pass (the user wants this last):**
+- Real Cal.com handle. `CAL_LINK = "zaid/20min"` currently returns a 404.
+- Hero showreel video (`/hero.mp4` + poster).
+- Real GitHub, X and LinkedIn links.
+- 2 or 3 personal details for About.
+- Real demo projects.
+
+**Illustration style:** warm faceless clay. The people have blank rounded heads with dot eyes only: no nose, lips or ears.
+
+---
+
+## 4. Ideation canvas (history)
+
+Resolved so far: A (demo projects), B (fixed price, final payment on delivery), D (copy done), E (FAQ added), G (mobile touch versions done). Still open: C (whether a short qualifier form beats a plain booking link), F (motion budget), H (naming and identity).
 
 The new session's job. Each item is an open branch; propose options, weigh them against §1–§2, recommend one.
 
