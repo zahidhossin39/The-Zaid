@@ -6,20 +6,15 @@
   --color-border: #26262B;
   --color-text: #F4F2ED;
   --color-muted: #9C9A94;
-  --color-accent: #FFA524;
-  --color-accent-hover: #FFB84D;
+  /* no colour accent: black & white only. "accent" = the brightest neutral */
+  --color-accent: #F4F2ED;
+  --color-accent-hover: #FFFFFF;
 
   --font-display: "Instrument Serif", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-/* PROTOTYPE — accent picker (?accent=cobalt|emerald|terracotta). Tailwind v4
-   utilities read these vars, so overriding them on <html> re-themes the page.
-   Delete these blocks once an accent is chosen and set it in @theme above. */
-[data-theme="cobalt"]     { --color-accent: #3B5BFF; --color-accent-hover: #6A83FF; }
-[data-theme="emerald"]    { --color-accent: #13A06A; --color-accent-hover: #2FC488; }
-[data-theme="terracotta"] { --color-accent: #D9582E; --color-accent-hover: #E97C57; }
 
 @layer base {
   html {

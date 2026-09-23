@@ -10,11 +10,6 @@ const { title, description, theme } = Astro.props;
     <meta charset="UTF-8" />
     <!-- Set before paint: reveal styles only apply when JS can undo them. -->
     <script is:inline>document.documentElement.classList.add("js");</script>
-    <!-- PROTOTYPE: ?accent=cobalt|emerald|terracotta, applied before paint -->
-    <script is:inline>
-      var accent = new URLSearchParams(location.search).get("accent");
-      if (accent) document.documentElement.dataset.theme = accent;
-    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
