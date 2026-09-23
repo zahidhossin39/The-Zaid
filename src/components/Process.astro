@@ -2,7 +2,7 @@
 // Process section — curved arc timeline (inspired by scrollservices.framer.website).
 // Numbers ride a real circle arc; connector is one smooth curve, black below the
 // active disc and grey above, running off both edges. Eased scroll, revolver-style
-// click + haptic on each step. Icons are placeholder 3D assets — swap for your own.
+// visual ping on each step. Icons are placeholder 3D assets — swap for your own.
 // Custom duotone icons — hand-drawn SVG, no external assets. Each carries a
 // light->shade gradient fill and a soft drop shadow for a puffy 3D feel.
 const defs = (id: string) => `<defs>
@@ -65,8 +65,8 @@ const phases = [
   },
   {
     n: "03", kick: "Phase 03", title: ["Build"],
-    body: "I build it in the open — clean, modern code you own. A website, an app, or an automation, shipped in small working pieces you can watch grow.",
-    tags: ["Web", "Apps", "AI"], svg: ICON.code,
+    body: "I build it in the open — clean, modern code you own. A website or an automation, shipped in small working pieces you can watch grow.",
+    tags: ["Websites", "Automations", "AI"], svg: ICON.code,
   },
   {
     n: "04", kick: "Phase 04", title: ["Test &", "Ship"],
@@ -186,38 +186,7 @@ const phases = [
     const grey = root.querySelector(".lineGrey") as unknown as SVGPathElement;
     const ink = root.querySelector(".lineInk") as unknown as SVGPathElement;
 
-    // revolver-style detent: pronounced but soft synth click + haptic
-    let ac: AudioContext | null = null;
-    const armAudio = () => {
-      if (!ac) { const AC = (window.AudioContext || (window as any).webkitAudioContext); if (AC) ac = new AC(); }
-      if (ac && ac.state === "suspended") ac.resume();
-    };
-    ["wheel", "keydown", "pointerdown", "touchstart"].forEach((e) =>
-      addEventListener(e, armAudio, { passive: true }));
-    const clickSound = () => {
-      if (!ac) return;
-      const t = ac.currentTime;
-      const master = ac.createGain(); master.gain.value = 0.95; master.connect(ac.destination);
-      const o = ac.createOscillator(), g = ac.createGain();
-      o.type = "triangle";
-      o.frequency.setValueAtTime(260, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.07);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.4, t + 0.006);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.19);
-      o.connect(g).connect(master); o.start(t); o.stop(t + 0.2);
-      const o3 = ac.createOscillator(), g3 = ac.createGain();
-      o3.type = "sine";
-      o3.frequency.setValueAtTime(150, t); o3.frequency.exponentialRampToValueAtTime(78, t + 0.09);
-      g3.gain.setValueAtTime(0.0001, t); g3.gain.exponentialRampToValueAtTime(0.3, t + 0.008);
-      g3.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
-      o3.connect(g3).connect(master); o3.start(t); o3.stop(t + 0.18);
-      const o2 = ac.createOscillator(), g2 = ac.createGain();
-      o2.type = "square"; o2.frequency.value = 1500;
-      g2.gain.setValueAtTime(0.16, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
-      o2.connect(g2).connect(master); o2.start(t); o2.stop(t + 0.04);
-    };
     const detent = (dot: HTMLElement) => {
-      clickSound();
-      if (navigator.vibrate) navigator.vibrate(12);
       dot.classList.remove("ping"); void dot.offsetWidth; dot.classList.add("ping");
     };
 
