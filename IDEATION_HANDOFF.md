@@ -90,6 +90,28 @@ Page order: **Navbar → Hero → Problem → WhatIBuild → Proof → Process �
 
 ---
 
+## 3b. Motion system (built 2026-09-24, reviewed by 3 critics)
+
+- **Rule:** motion either sets the reading order or shows how the service works. At most one scripted motion plays at a time. Each plays once in under 5s, then holds its final frame. No ambient loops, no invented numbers.
+- **Tools:** gsap core only (no ScrollTrigger, SplitText or DrawSVG), triggered by IntersectionObservers.
+  - Every animation lives inside `gsap.matchMedia("(prefers-reduced-motion: no-preference)")`.
+  - **The base CSS is always the final frame.** JS sets the start states, so reduced-motion and no-JS visitors see the finished design.
+- **Where motion lives:**
+  - **HoursBar.astro:** the Problem bar fills the day, then overflows to "+3 waiting". The Book a call reprise moves those dots into "handled for you".
+  - **ProjectCard.astro:** the booking demo (a cursor clicks, picks 10:30, a toast rises) and the automation demo (nodes light, wires fill, a new log row pushes the others down). These have a Demo tag and a Replay button, and a centre-line trigger makes sure only one demo plays at a time.
+  - **About:** the photo is uncovered after it decodes.
+  - **Navbar:** the pill appears after the hero CTA. On phones the pill stays when the rest of the nav hides.
+- **Deliberately not animated:**
+  - The hero headline (it's the LCP).
+  - The Book a call heading.
+  - The FAQ.
+  - Body paragraphs (their `.reveal` was removed).
+  - Scrubbed or scrambled text, marquees, count-ups, parallax and pinning.
+- **Performance:** Process and DotGrid stop their frame loops while off-screen.
+- **Failsafe:** the head script removes `.js` after 4s if the scripts never run, and Base restores it if they arrive late.
+- **Cal:** it loads on intent (hover, focus or tap of `[data-cal-intent]`), shows a placeholder, and switches to an email fallback if loading fails.
+- **Hero showreel:** it only renders when `public/hero.mp4` exists (checked at build time). It plays once and replays on click.
+
 ## 4. Asset notes (kept from the old research docs)
 
 **Hero showreel video.** It goes into the `<video>` in `src/components/Hero.astro`, a 316 x 176 slot.
@@ -115,7 +137,6 @@ Page order: **Navbar → Hero → Problem → WhatIBuild → Proof → Process �
 ## 5. Still open
 
 - **Conversion path:** is a single booking link enough, or would a 2 or 3 field "what takes your time" form do better?
-- **Motion budget:** the site has the DotGrid, the expand list, the arc/dial timeline and the button fill. Decide the ceiling before adding more. Use GSAP (already installed) for anything scroll-driven.
 - **Naming and identity:** is "Zaid Hossain" the brand, or is there a studio name? Logo and favicon direction (currently a plain wordmark).
 
 **Scoring habit:** when comparing options, score each out of 10 for fit and impact, push for 8.5 or higher, and converge on one recommendation.
