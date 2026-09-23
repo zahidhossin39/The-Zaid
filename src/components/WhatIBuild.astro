@@ -4,8 +4,8 @@
 // prototype) inset into the otherwise-dark site. Hover reveals the description
 // + a warm-clay image card that rotates into place (settles -5deg).
 const items = [
-  { n: "01", label: "Websites", sub: "A site with one clear job: getting customers to call, book or buy. Everything behind it is set up to make that happen.", img: "/clay-web.jpg" },
-  { n: "02", label: "Automations", sub: "The replies, follow-ups and record-keeping each new customer creates. They run on their own, so you're not the one doing them.", img: "/clay-auto.jpg" },
+  { n: "01", label: "Websites", sub: "A site with one clear job: getting customers to call, book or buy. Everything behind it is set up to make that happen.", img: "/clay-web.webp" },
+  { n: "02", label: "Automations", sub: "The replies, follow-ups and record-keeping each new customer creates. They run on their own, so you're not the one doing them.", img: "/clay-auto.webp" },
 ];
 ---
 <section class="band">
@@ -23,7 +23,7 @@ const items = [
             <h3 class="rtitle">{it.label}</h3>
             <p class="sub">{it.sub}</p>
           </span>
-          <span class="media"><span class="card"><img src={it.img} alt={it.label} /></span></span>
+          <span class="media"><span class="card"><img src={it.img} alt={it.label} loading="lazy" decoding="async" /></span></span>
           <span class="arrow-wrap">
             <span class="arrow">
               <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
