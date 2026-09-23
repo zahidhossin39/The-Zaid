@@ -1,9 +1,9 @@
 ---
 import DotGrid from "./DotGrid.astro";
 
-const HEAD = "You've had the idea long enough.";
+const HEAD = "More customers shouldn't mean more hours.";
 const SUB =
-  "I build websites that bring in customers and automations that give you your hours back. Fixed scope, fixed price, handed over working.";
+  "I build websites to bring customers in, and automations that reply, follow up and keep their details in one place, so you don't have to.";
 const CTA = "Book a free 20-min call";
 ---
 
@@ -42,7 +42,7 @@ const CTA = "Book a free 20-min call";
         >
         <a href="#proof" class="link">See examples ↓</a>
       </div>
-      <p class="trust reveal" data-delay="380">Fixed price, agreed upfront · You own everything · No pitch</p>
+      <p class="trust reveal" data-delay="380">Fixed price, agreed upfront · Final payment when it works as agreed · You own everything</p>
     </div>
 
     <div class="hero-media reveal" data-delay="260">
@@ -83,7 +83,7 @@ const CTA = "Book a free 20-min call";
     margin: 0 auto;
     padding: 6rem 2rem;
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
     align-items: start;
     gap: 5rem;
   }
@@ -91,11 +91,12 @@ const CTA = "Book a free 20-min call";
   .headline {
     margin: 0;
     font-weight: 700;
-    font-size: clamp(2.75rem, 6.2vw, 5.556rem);
+    font-size: clamp(2.5rem, 5vw, 4.6rem);
     line-height: 0.9;
     letter-spacing: -0.03em;
     text-transform: uppercase;
-    max-width: 14ch;
+    max-width: 16ch;
+    text-wrap: balance;
   }
 
   .sub {
