@@ -120,7 +120,7 @@ import HoursBar from "./HoursBar.astro";
         const mail = ph?.querySelector("a");
         if (ph && mail) ph.replaceChildren("Couldn't load the calendar. Email ", mail, " instead.");
       };
-      const failTimer = setTimeout(fail, 8000); // linkReady never came (blocked, offline)
+      const failTimer = setTimeout(fail, 15000); // linkReady never came (blocked, offline)
       w.Cal("on", {
         action: "linkReady",
         callback: () => { clearTimeout(failTimer); target.querySelector(".cal-ph")?.remove(); },
