@@ -2,8 +2,8 @@
   {
     "kind": "site",
     "title": "Harbor & Pine Dental: booking site",
-    "stuck": "A nice-looking site that nobody booked from. New patients still had to call during office hours.",
-    "now": "One clear 'Book an appointment' button, online booking day and night, and every request lands straight in the clinic's calendar.",
+    "stuck": "A nice-looking site that brought in few bookings. New patients had to call during office hours, and many never did.",
+    "now": "One clear 'Book an appointment' button. Patients book day or night, and every booking goes straight into the calendar, with no calls to answer.",
     "tags": [
       "Website",
       "Booking"
@@ -13,8 +13,8 @@
   {
     "kind": "auto",
     "title": "Automatic lead follow-up",
-    "stuck": "Enquiries sat in an inbox for a day. By the time someone replied, the customer had booked elsewhere.",
-    "now": "Every new lead gets a personal reply in under a minute and is saved to the customer list. The owner gets a one-line summary.",
+    "stuck": "Every enquiry waited until the owner had a free moment. Some waited a day, and those customers booked elsewhere.",
+    "now": "Every new lead gets a personal reply in under a minute and is saved to the customer list. The owner reads one short summary instead of every message.",
     "tags": [
       "Automation",
       "AI",
