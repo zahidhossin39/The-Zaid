@@ -1,0 +1,54 @@
+---
+// Native <details> accordion: no JS, keyboard + screen-reader accessible.
+const faqs = [
+  { q: "How much does it cost?",
+    a: "A fixed price, agreed upfront, before any work starts. No hourly meter running in the background. You pay part at the start and the final part only when it works." },
+  { q: "How long does it take?",
+    a: "It depends on the size of the job, but you get a real date on the call — not a range that keeps growing. Most projects ship in weeks, not months." },
+  { q: "Do I need to be technical?",
+    a: "No. You explain what's stuck in plain words; I handle the technical side and show you progress in things you can click, not jargon." },
+  { q: "What if I don't like what you build?",
+    a: "You see it working in small pieces as it's built, so there are no big reveals at the end. And the final payment only happens once it does what we agreed." },
+  { q: "Who owns the website or automation?",
+    a: "You do. The code, the accounts, the domain, the data — all in your name. Nothing is locked to me." },
+  { q: "What happens after it's handed over?",
+    a: "You get a short walkthrough and notes on how it works. I stay reachable for questions and fixes — no retainer required." },
+];
+---
+<section id="faq" class="mx-auto max-w-[64rem] px-6 py-20 md:px-8 md:py-32">
+  <div class="grid gap-12 md:grid-cols-[5fr_7fr] md:gap-14">
+    <div>
+      <p class="eyebrow reveal">Questions</p>
+      <h2 class="h2 reveal mt-5" data-delay="80">Before you book.</h2>
+      <p class="lead reveal mt-5" data-delay="160">
+        The things people usually ask first. Anything else, ask me on the call.
+      </p>
+    </div>
+
+    <div class="reveal border-t border-border" data-delay="120">
+      {faqs.map(({ q, a }) => (
+        <details class="faq group border-b border-border">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-[1.0625rem] font-medium text-text">
+            {q}
+            <span class="icon relative h-4 w-4 shrink-0" aria-hidden="true"></span>
+          </summary>
+          <p class="answer pb-6 pr-10 text-muted">{a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: #fff; }
+  /* plus that turns into a minus */
+  .icon::before, .icon::after { content: ""; position: absolute; left: 50%; top: 50%;
+    width: 14px; height: 1.5px; background: currentColor; transform: translate(-50%, -50%);
+    transition: transform .3s ease; }
+  .icon::after { transform: translate(-50%, -50%) rotate(90deg); }
+  .faq[open] .icon::after { transform: translate(-50%, -50%) rotate(0deg); }
+  .faq[open] .answer { animation: open .35s ease; }
+  @keyframes open { from { opacity: 0; transform: translateY(-4px); } }
+  @media (prefers-reduced-motion: reduce) { .faq[open] .answer { animation: none; } }
+</style>
