@@ -90,26 +90,32 @@ Page order: **Navbar → Hero → Problem → WhatIBuild → Proof → Process �
 
 ---
 
-## 4. Ideation canvas (history)
+## 4. Asset notes (kept from the old research docs)
 
-Resolved so far: A (demo projects), B (fixed price, final payment on delivery), D (copy done), E (FAQ added), G (mobile touch versions done). Still open: C (whether a short qualifier form beats a plain booking link), F (motion budget), H (naming and identity).
+**Hero showreel video.** It goes into the `<video>` in `src/components/Hero.astro`, a 316 x 176 slot.
+- **Export:** 632 x 352 (2x for retina). MP4 (h.264) plus WebM, and a poster of the final frame.
+- **Playback:**
+  - Plays once and holds its last frame. Remove `loop` from the tag.
+  - Don't start on page load. Start about 1s after the hero reveal finishes.
+  - On phones (below 768px, where it stacks under the text), start when it's at least half in view.
+  - Replay from the start on hover.
+- **The first frame decides.** The poster must look credible with no motion at all.
+- **One message.** Don't rotate several ideas through it.
+- **No bright white card behind it,** because the hero is already white and the video would seem to vanish.
+- **No clay in the video.** Zaid said clay reads like a cartoon to busy owners there.
+- **No invented results or client numbers.** He has no clients yet.
+- **Keep AI visibly out of it.** No image-model text (a common tell), because visible AI lowers trust for about a third of consumers.
 
-The new session's job. Each item is an open branch; propose options, weigh them against §1–§2, recommend one.
+**More clay images** (for the What I build cards):
+- The current cards use the "B1" clay style: landscape **1.792:1** to match the card, a single subject filling about 60% of the frame, and wide empty margins.
+- They also have a soft near-white cream background, one soft shadow, and no text or logos.
+- Style string: "Landscape, centered, wide margins, soft near-white cream background, gentle soft shadow, warm cream + orange + sage palette, studio soft lighting, matte clay texture, tilt-shift miniature, high detail, product render."
+- The people have blank rounded heads with dot eyes only.
 
-**A. Proof without clients.** Zaid has no clients yet. How does the site earn trust? Branches: personal build logs / "built in the open" artifacts, a self-built app as a live demo, process transparency, a spec-to-shipped case study of a *hypothetical or personal* project, guarantees ("working or you don't pay"). What goes in the Proof section concretely?
+## 5. Still open
 
-**B. Offer & pricing clarity.** Should the site name price ranges, engagement shapes (fixed-scope sprint vs. retainer), or timelines? What reduces the owner's risk enough to book a call?
+- **Conversion path:** is a single booking link enough, or would a 2 or 3 field "what takes your time" form do better?
+- **Motion budget:** the site has the DotGrid, the expand list, the arc/dial timeline and the button fill. Decide the ceiling before adding more. Use GSAP (already installed) for anything scroll-driven.
+- **Naming and identity:** is "Zaid Hossain" the brand, or is there a studio name? Logo and favicon direction (currently a plain wordmark).
 
-**C. Conversion path.** One CTA ("Book a 20-minute call") repeats. Is a single booking link enough, or is a lightweight qualifier (a 2–3 field "describe your stuck thing" form) better? Where should CTAs repeat down the page?
-
-**D. Content for each service.** Apps / Automations / Websites each need a concrete, owner-legible example story (the clay images imply one). Draft the copy and the "before → after" for each.
-
-**E. Section gaps.** Does the page need: an FAQ, a "how we'd work together" step list beyond Process, a short bio/"why me", a newsletter or lead magnet? What's missing between Process and booking?
-
-**F. Motion & delight budget.** The site already has DotGrid, expand-on-hover, arc-scroll timeline, button fill, revolver click. Where is the ceiling before it feels gimmicky? Which interactions earn their weight; which to cut?
-
-**G. Mobile experience.** Every marquee interaction is hover/pointer-based. Define the touch equivalents (the expand list, DotGrid, arc timeline) so mobile isn't a downgrade.
-
-**H. Naming & identity.** Is "Zaid Hossain" the brand, or is there a studio name? Tagline system, favicon/logo direction (currently a plain wordmark).
-
-**Scoring habit (from this project's culture):** when comparing options, score each /10 on fit-to-brand and expected impact; push for ≥8.5 before settling; when multiple AIs ideate, converge on one recommendation rather than listing everything.
+**Scoring habit:** when comparing options, score each out of 10 for fit and impact, push for 8.5 or higher, and converge on one recommendation.
