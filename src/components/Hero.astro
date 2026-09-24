@@ -4,6 +4,8 @@ import DotGrid from "./DotGrid.astro";
 
 // Showreel column only renders once public/hero.mp4 exists (checked at build).
 const hasReel = fs.existsSync("public/hero.mp4");
+// TEMP: show an empty grey slot until the video exists. Set to false before launch.
+const SHOW_EMPTY_SLOT = true;
 
 const HEAD = "More customers shouldn't mean more hours.";
 const SUB =
@@ -44,9 +46,9 @@ const CTA = "Book a free 20-min call";
       <p class="trust reveal" data-delay="380">Fixed price, agreed upfront · Final payment when it works as agreed · You own everything</p>
     </div>
 
-    {hasReel && (
+    {(hasReel || SHOW_EMPTY_SLOT) && (
       <div class="hero-media reveal" data-delay="260">
-        <video
+        {hasReel ? <video
           src="/hero.mp4#t=0.1"
           width="316"
           height="176"
@@ -55,7 +57,7 @@ const CTA = "Book a free 20-min call";
           preload="metadata"
           aria-hidden="true"
           tabindex="-1"
-        ></video>
+        ></video> : <div class="reel-slot" aria-hidden="true"></div>}
         <p class="caption">Showreel</p>
       </div>
     )}
@@ -181,7 +183,8 @@ const CTA = "Book a free 20-min call";
     justify-self: end;
   }
 
-  .hero-media video {
+  .hero-media video,
+  .reel-slot {
     display: block;
     cursor: pointer;
     width: 316px;
@@ -191,6 +194,8 @@ const CTA = "Book a free 20-min call";
     background: #f0f0f0;
     object-fit: cover;
   }
+
+  .reel-slot { cursor: default; }
 
   .caption {
     margin: 0.625rem 0 0;
