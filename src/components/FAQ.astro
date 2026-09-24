@@ -33,7 +33,7 @@ const faqs = [
       {faqs.map(({ q, a }) => (
         <details class="faq group border-b border-border">
           <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-[1.0625rem] font-medium text-text">
-            {q}
+            <span class="q">{q}</span>
             <span class="icon relative h-4 w-4 shrink-0" aria-hidden="true"></span>
           </summary>
           <p class="answer pb-6 pr-10 text-muted">{a}</p>
@@ -45,14 +45,44 @@ const faqs = [
 
 <style>
   summary::-webkit-details-marker { display: none; }
-  summary:hover { color: #fff; }
+  /* closed rows sit slightly muted so the open one stands out */
+  summary { position: relative; color: rgb(244 242 237 / .78); transition: color .3s; }
+  .faq[open] summary { color: var(--color-text); }
+  /* row highlight: absolutely positioned, bleeds 12px into the gutters, never moves layout */
+  summary::before { content: ""; position: absolute; inset: 0 -12px; border-radius: 6px;
+    background: rgb(244 242 237 / .03); opacity: 0; transition: opacity .3s; pointer-events: none; }
+  .q, .icon { transition: transform .3s cubic-bezier(.215, .61, .355, 1); }
   /* plus that turns into a minus */
   .icon::before, .icon::after { content: ""; position: absolute; left: 50%; top: 50%;
     width: 14px; height: 1.5px; background: currentColor; transform: translate(-50%, -50%);
     transition: transform .3s ease; }
   .icon::after { transform: translate(-50%, -50%) rotate(90deg); }
   .faq[open] .icon::after { transform: translate(-50%, -50%) rotate(0deg); }
+
+  @media (hover: hover) {
+    summary:hover { color: var(--color-text); }
+    summary:hover::before { opacity: 1; }
+    summary:hover .q { transform: translateX(6px); }
+  }
+  /* keyboard: same as hover, plus a ring drawn on the highlight so it wraps the full row */
+  summary:focus-visible { outline: none; color: var(--color-text); }
+  summary:focus-visible::before { opacity: 1; outline: 2px solid var(--color-accent); outline-offset: -2px; }
+  summary:focus-visible .q { transform: translateX(6px); }
+
   .faq[open] .answer { animation: open .35s ease; }
   @keyframes open { from { opacity: 0; transform: translateY(-4px); } }
-  @media (prefers-reduced-motion: reduce) { .faq[open] .answer { animation: none; } }
+
+  /* smooth height on open where supported; elsewhere it stays instant */
+  @supports (interpolate-size: allow-keywords) {
+    :global(:root) { interpolate-size: allow-keywords; }
+    .faq::details-content { block-size: 0; overflow: hidden;
+      transition: block-size .4s cubic-bezier(.215, .61, .355, 1), content-visibility .4s allow-discrete; }
+    .faq[open]::details-content { block-size: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq[open] .answer { animation: none; }
+    .q, .icon, summary:hover .q, summary:focus-visible .q { transform: none; }
+    .faq::details-content { transition: none; }
+  }
 </style>

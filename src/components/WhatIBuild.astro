@@ -38,7 +38,7 @@ const items = [
 <style>
   /* black-on-white band, same palette as the prototype (light section on dark site) */
   .band { background: #ffffff; color: #111111; }
-  .band .eyebrow { color: #9a968d; }
+  .band .eyebrow { color: #6f6c66; }
   .lead { font-family: "PT Sans Narrow", var(--font-sans); font-weight: 700;
           font-size: clamp(2.2rem, 4.4vw, 3.4rem); line-height: 1.02; letter-spacing: -.01em;
           color: #111111; }
@@ -49,12 +49,14 @@ const items = [
          border-top: 1px solid #e6e4e0; text-decoration: none; color: inherit;
          cursor: pointer; transition: min-height .55s cubic-bezier(.22,.61,.36,1); }
   .row:hover { min-height: 18rem; }
+  /* black ring to match the band (global ring is the site accent) */
+  .row:focus-visible { outline: 2px solid #111111; outline-offset: 6px; border-radius: 4px; }
 
   .num { font-family: "PT Sans Narrow", var(--font-sans); font-weight: 700; font-size: 2.5rem;
-         line-height: 1; color: #c3c0b9; transition: color .4s ease; }
+         line-height: 1; color: #6f6c66; transition: color .4s ease; }
   .rtitle { font-family: "PT Sans Narrow", var(--font-sans); font-weight: 700;
             font-size: clamp(1.7rem, 2.8vw, 2.2rem); line-height: 1; letter-spacing: .01em;
-            text-transform: uppercase; color: #c3c0b9; margin: 0; transition: color .4s ease; }
+            text-transform: uppercase; color: #6f6c66; margin: 0; transition: color .4s ease; }
   .sub { font-size: 1rem; line-height: 1.5; color: #6a675f; opacity: 0; margin-top: 0;
          max-width: 34ch; max-height: 0; overflow: hidden;
          transition: opacity .45s ease .05s, margin-top .5s ease, max-height .55s ease; }
@@ -73,13 +75,13 @@ const items = [
            color: #ffffff; display: grid; place-items: center; transition: transform .4s ease; }
   .arrow svg { width: 1.1rem; height: 1.1rem; }
 
-  /* desktop: hover expands the row */
+  /* desktop: hover or keyboard focus expands the row */
   @media (hover: hover) and (min-width: 721px) {
-    .row:hover { min-height: 18rem; }
-    .row:hover .num, .row:hover .rtitle { color: #111111; }
-    .row:hover .sub { opacity: 1; margin-top: .9rem; max-height: 6rem; }
-    .row:hover .media { opacity: 1; transform: translateY(-50%) rotate(-5deg) scale(1); }
-    .row:hover .arrow { transform: translateX(4px); }
+    .row:is(:hover, :focus-visible, :focus-within) { min-height: 18rem; }
+    .row:is(:hover, :focus-visible, :focus-within) :is(.num, .rtitle) { color: #111111; }
+    .row:is(:hover, :focus-visible, :focus-within) .sub { opacity: 1; margin-top: .9rem; max-height: 6rem; }
+    .row:is(:hover, :focus-visible, :focus-within) .media { opacity: 1; transform: translateY(-50%) rotate(-5deg) scale(1); }
+    .row:is(:hover, :focus-visible, :focus-within) .arrow { transform: translateX(4px); }
   }
 
   /* touch + phones: no hover, so rows stay open (no layout shift) and the

@@ -4,6 +4,33 @@
       <div data-about-photo class="aspect-[4/5] w-full max-w-[18rem] overflow-hidden rounded-lg border border-border bg-surface">
         <img src="/zaid.webp" alt="Zaid Hossain" width="640" height="800" class="h-full w-full object-cover" loading="eager" decoding="async" />
       </div>
+
+      <div class="reveal mt-5 w-full max-w-[18rem] rounded-lg border border-border bg-surface" data-delay="120">
+        <p class="flex items-center gap-3 border-b border-border px-4 py-3 text-[0.875rem] leading-5 text-text">
+          <span aria-hidden="true" class="size-1.5 shrink-0 rounded-full bg-text shadow-[0_0_0_3px_rgb(244_242_237/0.14)]"></span>
+          Taking on new projects
+        </p>
+        <dl class="divide-y divide-border border-b border-border">
+          {[
+            ["Replies", "Within 24 hours"],
+            ["Builds", "Websites · Automations"],
+            ["Works with", "Owners of small businesses"],
+          ].map(([label, value]) => (
+            <div class="px-4 py-3">
+              <dt class="font-mono text-[11px] uppercase leading-4 tracking-[0.08em] text-muted">{label}</dt>
+              <dd class="mt-1 text-[0.9375rem] leading-6 text-text">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <div class="px-4 pb-4 pt-3">
+          <p class="font-mono text-[11px] uppercase leading-4 tracking-[0.08em] text-muted">Tools</p>
+          <ul class="mt-2.5 flex flex-wrap gap-1.5" aria-label="Tools">
+            {["Astro", "Next.js", "n8n", "Make", "Zapier", "Claude", "GPT", "Gemini", "Google Sheets"].map((tool) => (
+              <li class="rounded-full border border-border px-2.5 py-0.5 text-[12px] leading-5 text-muted">{tool}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
 
     <div class="max-w-[42rem]">

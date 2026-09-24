@@ -9,13 +9,15 @@ import Process from "../components/Process.astro";
 import About from "../components/About.astro";
 import FAQ from "../components/FAQ.astro";
 import BookACall from "../components/BookACall.astro";
+import Footer from "../components/Footer.astro";
 ---
 <Base
   title="Zaid Hossain | Websites and automations for small businesses"
-  description="Websites and automations for small businesses with a stuck idea or a stuck process. You describe the problem, I build the thing."
+  description="I build websites that bring customers in and automations that handle the work they create, so more customers don't mean more hours. Fixed price, agreed upfront."
 >
-  <main>
-    <Navbar />
+  <a href="#main" class="skip-link">Skip to content</a>
+  <Navbar />
+  <main id="main" tabindex="-1">
     <Hero />
     <Problem />
     <WhatIBuild />
@@ -25,5 +27,31 @@ import BookACall from "../components/BookACall.astro";
     <FAQ />
     <BookACall />
   </main>
-
+  <Footer />
 </Base>
+
+<style>
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 100; /* above the navbar (50) */
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transform: translateY(-200%);
+  }
+  .skip-link:focus { transform: none; }
+  main:focus { outline: none; } /* focus target only, not a control */
+</style>
+
+<script>
+  // Base's Lenis handler preventDefaults #anchors, which skips the browser's
+  // fragment focus move. Do it ourselves so keyboard users land in main.
+  document.querySelector(".skip-link")?.addEventListener("click", () => {
+    document.getElementById("main")?.focus({ preventScroll: true });
+  });
+</script>

@@ -72,6 +72,15 @@
 }
 .js .reveal.in-view { opacity: 1; transform: none; }
 
+/* Heading line reveal (src/scripts/text-reveal.ts; same selector as HEADINGS).
+   Split headings skip the .reveal fade so it can't fight the GSAP lines, and
+   stay plain text with no JS. Masks get a little vertical room so ascenders
+   and descenders aren't clipped; the negative margins keep line spacing. */
+.js :is(main .h2, .band h2, .proc-head h2).reveal { opacity: 1; transform: none; transition: none; }
+.tr-line-mask { padding-block: 0.1em; margin-block: -0.1em; }
+/* adjacent negative margins collapse to -0.1em, not -0.2em: restore the full overlap */
+.tr-line-mask + .tr-line-mask { margin-top: -0.2em; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .js .reveal { opacity: 1; transform: none; transition: none; }
