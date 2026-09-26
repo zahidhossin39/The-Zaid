@@ -52,7 +52,7 @@ const CTA = "Book a free 20-min call";
           src="/hero.mp4"
           poster="/hero-poster.jpg"
           width="440"
-          height="550"
+          height="330"
           muted
           loop
           playsinline
@@ -227,7 +227,7 @@ const CTA = "Book a free 20-min call";
     width: 440px;
     max-width: 100%;
     height: auto;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 4 / 3;
     background: #f6f4ef;
     object-fit: cover;
     border-radius: 20px;
@@ -287,7 +287,7 @@ const CTA = "Book a free 20-min call";
     btn.addEventListener("mouseleave", (e) => drive(e, false));
   }
 
-  // Hero film (only in the DOM when public/hero.mp4 exists): a 16s loop whose
+  // Hero film (only in the DOM when public/hero.mp4 exists): a 23s loop whose
   // first and last frame is the poster. Pause button in its top-right corner. Reduced motion: poster only.
   const media = document.querySelector<HTMLElement>(".hero-media");
   const video = media?.querySelector("video");
