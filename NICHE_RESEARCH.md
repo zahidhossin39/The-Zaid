@@ -97,3 +97,40 @@ Shared by most of the niches above, ordered by strength of evidence.
 - Show **3**: calls, messages and bookings. Reviews and hiring belong lower on the page.
 - This does not break the "one message" rule. The three problems arrive from different channels (a missed call, an Instagram DM, a web form) and all settle into one calm state: **nothing waiting on you**. That single resolution is the message.
 - **Use no statistics in the hero.** The numbers above are for the sections below it and for sales calls, each with its source named.
+
+---
+
+## Update 2026-09-26: chosen niches and the hero story
+
+Zaid picked three niches: **doctors/dentists, wellness (gyms, studios, yoga), and personal trainers/coaches.** All three sell their time in appointment slots.
+
+**Risks to keep in mind**
+- Dental is the most crowded niche in the scoring above (7.0). In the US, any voice agent that handles patient information must run on a HIPAA-compliant vendor with a signed BAA.
+- Trainers and coaches have smaller budgets and get most enquiries by DM, so chat matters more than voice for them.
+- Med spas (9.1) fit the same calendar story and are the natural fourth niche.
+
+### Revised problems for these niches
+Gemini's niche research (2026-09-26) found the pains real but almost every statistic untraceable. The two ADA and IHRSA figures it quoted linked only to homepages, so they are treated as unverified. **Rule stands: no statistics in the hero.**
+
+| # | Problem | Fix | Outcome |
+|---|---|---|---|
+| 1 | New clients reach out (a call, an Instagram DM, a WhatsApp message) and nobody answers in time | Instant answers and booking on every channel | New enquiries become booked slots |
+| 2 | No-shows and last-minute cancellations leave empty slots | Reminders, plus automatic refill from a waitlist | Cancelled slots fill again |
+| 3 | Clients quietly stop coming back (lapsed patients, silent gym churn) | Automatic "time to come back" messages that rebook | Old clients return |
+| 4 | People find you but can't book easily | A website with 24/7 booking | Visitors book themselves |
+| 5 | Too few reviews | An automatic review request after every visit | Fresh reviews every week |
+
+Problems 2 and 3 are new compared with the general list. They matter more for appointment businesses than "can't hire", which has been dropped.
+
+### The hero story: "the calendar that fills itself"
+Replaces "nothing waiting on you", which sold relief. A calendar sells growth, and it is the same picture for a dental chair, a yoga class and a training session.
+
+- **World:** one weekly calendar that stays on screen the whole time. Empty slots are visible from the first frame; that visible incompleteness is the open loop.
+- **Beats, about 8 seconds, silent:**
+  1. A calendar with gaps.
+  2. A missed call is answered and becomes a booking in an empty slot.
+  3. An Instagram DM sent at 11:48 pm is answered and becomes a booking.
+  4. A booked slot flips to "Cancelled", then a waitlist client drops straight into it. This shows the system protects the calendar, not only fills it.
+  5. Every slot is full. The one warm-coloured block is the owner's own time, marked "Off". That is the outcome: a full calendar, with your time back.
+- **Pairs with the existing headline:** "More customers shouldn't mean more hours."
+- **No statistics, and no "AI" in the hero.** In Clutch's 2026 survey, visible AI use made more people think less of a brand (33%) than more of it (16%), and owners buy the full calendar, not the technology. Name the AI in the services section.
