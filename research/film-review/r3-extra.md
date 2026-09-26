@@ -1,0 +1,21 @@
+
+## Round 3 notes (read these first)
+- **This is v3.** The source is `D:/Vibe-coding/ZAID-WEBSITE/videos/hero-film/index.html`.
+- **v3 frames** are in `D:/Vibe-coding/ZAID-WEBSITE/research/film-review/v3/`:
+  - `at440-*.png`: desktop size
+  - `at327-*.png`: the real mobile width
+  - `sheet-2fps-at-327px.png`
+  - `page-desktop-1440.png` and `page-desktop-1280.png`: the real hero, showing the poster
+- **Round 2 reviews** are in `r2-gemini.md` and `r2-claude.md` in the same folder. Round 2 scored v2 at 7.85 (Gemini) and 6.6 (Claude).
+- **What changed in v3:**
+  - The poster is now "receipts": both businesses and both wins appear at frame 0, and the tally matches the film.
+  - The dental call is styled as a live call, with a call bar, a waveform and speaker tags.
+  - The threat pill reads "To voicemail…" with a ring countdown, then a 10 px strike that holds for 0.5 s.
+  - The waitlist reply is tagged "Waitlist" in a distinct style, and the seat fills in sync.
+  - "Empty spot" appears only once the seat empties.
+  - The relief beat now reads "Class done. Nothing to chase." at 2:46.
+  - The red dot is gone.
+  - Content is vertically centred.
+  - The poster slides back in with a shadowed edge.
+  - The hero is vertically centred, the caption is removed, and a pause button has been added.
+- **Score v3 fresh.** List only the problems that remain or are new. Be specific about what would get it to 9.5.

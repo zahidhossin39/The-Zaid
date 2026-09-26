@@ -9,164 +9,178 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/TextPlugin.min.js"></script>
     <style>
-      /* Type scale (1080 canvas shown at ~440 px desktop, ~340 px mobile): 56 floor, 72 story, 96 outcome */
+      /* 1080 canvas shown at ~440 px desktop (x0.41) and ~327 px mobile (x0.30). Floor 56, story 72, outcome 88+. */
       :root {
         --bg: #f6f4ef;
         --card: #ffffff;
         --ink: #0a0a0b;
         --soft: #3a3936;
-        --muted: #6f6c66;
+        --muted: #66635d;
         --line: #e4e0d7;
         --bubble: #efece6;
         --accent: #ffa524;
-        --busy: #e5484d;
       }
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { width: 1080px; height: 1350px; overflow: hidden; background: var(--bg); }
       #stage { position: relative; width: 1080px; height: 1350px; overflow: hidden; background: var(--bg); font-family: "Inter Tight", system-ui, sans-serif; color: var(--ink); letter-spacing: -0.02em; }
 
-      /* Top band: who you are and what you're doing right now */
-      #top { position: absolute; left: 60px; right: 60px; top: 56px; height: 230px; }
-      .who { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 22px; }
-      .who .row1 { display: flex; align-items: center; gap: 22px; }
       .badge { width: 88px; height: 88px; border-radius: 26px; background: var(--ink); display: grid; place-items: center; flex: none; }
       .badge svg { width: 54px; height: 54px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-      .who .name { font-size: 76px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; }
-      .who .row2 { display: flex; align-items: center; justify-content: space-between; }
+
+      /* Top band: who you are and what you're doing right now */
+      #top { position: absolute; left: 60px; right: 60px; top: 56px; height: 200px; }
+      .who { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 22px; }
+      .row1 { display: flex; align-items: center; gap: 22px; }
+      .name { font-size: 76px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; }
+      .row2 { display: flex; align-items: center; justify-content: space-between; }
       .state { display: flex; align-items: center; gap: 18px; padding: 16px 32px 16px 26px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 56px; font-weight: 600; line-height: 1; }
-      .state i { width: 26px; height: 26px; border-radius: 50%; background: var(--busy); box-shadow: 0 0 0 0 rgba(229,72,77,.5); }
-      .state.free { background: #fff; color: var(--ink); box-shadow: 0 0 0 3px var(--ink) inset; }
+      .state i { width: 24px; height: 24px; border-radius: 50%; background: #fff; }
+      .state.free { background: #fff; color: var(--ink); box-shadow: 0 0 0 4px var(--ink) inset; }
       .state.free i { background: transparent; box-shadow: 0 0 0 5px var(--ink) inset; }
-      .clock { font-size: 64px; font-weight: 700; font-variant-numeric: tabular-nums; }
-      .clock small { font-size: 40px; color: var(--muted); font-weight: 600; margin-left: 6px; }
+      .clock { font-size: 72px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
       /* Middle: one card, the thing that happens */
-      .card { position: absolute; left: 60px; top: 320px; width: 960px; height: 830px; border-radius: 56px; background: var(--card); box-shadow: 0 2px 0 var(--line) inset, 0 40px 80px -50px rgba(10,10,11,.35); overflow: hidden; }
-      .card .hd { position: absolute; left: 48px; right: 48px; top: 40px; display: flex; align-items: center; justify-content: space-between; }
+      .card { position: absolute; left: 60px; top: 284px; width: 960px; height: 880px; border-radius: 56px; background: var(--card); box-shadow: 0 2px 0 var(--line) inset, 0 40px 80px -50px rgba(10,10,11,.35); overflow: hidden; }
+      .hd { position: absolute; left: 48px; right: 48px; top: 40px; display: flex; align-items: center; justify-content: space-between; }
       .chan { display: flex; align-items: center; gap: 18px; font-size: 56px; font-weight: 700; }
       .chan svg { width: 60px; height: 60px; fill: none; stroke: var(--ink); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-      .pill { position: relative; display: grid; font-size: 56px; font-weight: 700; line-height: 1; }
-      .pill > * { grid-area: 1 / 1; justify-self: end; padding: 14px 26px; border-radius: 999px; white-space: nowrap; }
-      .pill .was { color: var(--muted); background: var(--bubble); }
-      .pill .was::after { content: ""; position: absolute; left: 18px; right: 18px; top: 50%; height: 6px; margin-top: -3px; background: var(--ink); border-radius: 3px; transform: scaleX(var(--strike, 0)); transform-origin: 0 50%; }
-      .pill .now { background: var(--ink); color: #fff; box-shadow: 0 0 0 5px var(--accent); opacity: 0; visibility: hidden; }
-      .body { position: absolute; left: 48px; right: 48px; top: 150px; bottom: 40px; display: flex; flex-direction: column; gap: 22px; }
-      .bub { max-width: 94%; padding: 24px 34px; border-radius: 44px; font-size: 72px; font-weight: 600; line-height: 1.1; opacity: 0; visibility: hidden; }
-      .bub.in { align-self: flex-start; background: var(--bubble); border-bottom-left-radius: 14px; }
-      .bub.out { align-self: flex-end; background: var(--ink); color: #fff; border-bottom-right-radius: 14px; }
-      .sys { align-self: center; font-size: 56px; font-weight: 600; color: var(--muted); opacity: 0; visibility: hidden; }
-      .booked { margin-top: auto; display: flex; align-items: center; gap: 24px; padding: 34px 40px; border-radius: 40px; background: var(--accent); font-size: 80px; font-weight: 800; white-space: nowrap; letter-spacing: -0.03em; line-height: 1; opacity: 0; visibility: hidden; }
-      .booked svg { width: 84px; height: 84px; flex: none; fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+      .pill { display: grid; font-size: 56px; font-weight: 700; line-height: 1; }
+      .pill > * { grid-area: 1 / 1; justify-self: end; padding: 14px 26px; border-radius: 999px; white-space: nowrap; position: relative; }
+      .pill .was { color: var(--ink); background: #fff; box-shadow: 0 0 0 4px var(--ink) inset; }
+      .pill .was::after { content: ""; position: absolute; left: 14px; right: 14px; top: 50%; height: 10px; margin-top: -5px; background: var(--ink); border-radius: 5px; transform: scaleX(var(--strike, 0)); transform-origin: 0 50%; }
+      .pill .now { background: var(--ink); color: #fff; box-shadow: 0 0 0 6px var(--accent); opacity: 0; visibility: hidden; }
+      .body { position: absolute; left: 48px; right: 48px; top: 170px; bottom: 44px; display: flex; flex-direction: column; justify-content: center; gap: 24px; }
+      .outcome { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 38px 40px; border-radius: 40px; background: var(--accent); font-size: 88px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; white-space: nowrap; opacity: 0; visibility: hidden; }
+      .outcome svg { width: 84px; height: 84px; flex: none; fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
 
-      /* Incoming call */
-      .ring { position: absolute; left: 50%; top: 250px; width: 240px; height: 240px; margin-left: -120px; border-radius: 50%; background: var(--ink); display: grid; place-items: center; }
+      /* Dental: a live call, not a chat */
+      .ring { position: absolute; left: 50%; top: 220px; width: 240px; height: 240px; margin-left: -120px; border-radius: 50%; background: var(--ink); display: grid; place-items: center; }
       .ring svg { width: 110px; height: 110px; fill: #fff; }
       .ring i { position: absolute; inset: 0; border-radius: 50%; border: 6px solid var(--ink); opacity: 0; }
-      .caller { position: absolute; left: 0; right: 0; top: 540px; text-align: center; font-size: 72px; font-weight: 700; }
+      .caller { position: absolute; left: 0; right: 0; top: 505px; text-align: center; font-size: 72px; font-weight: 700; }
       .caller small { display: block; font-size: 56px; color: var(--muted); font-weight: 600; margin-top: 10px; }
+      .countdown { position: absolute; left: 0; right: 0; top: 720px; display: flex; justify-content: center; gap: 22px; }
+      .countdown i { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); }
+      .callbar { display: flex; align-items: center; gap: 22px; padding: 22px 30px; border-radius: 32px; background: var(--ink); color: #fff; font-size: 56px; font-weight: 700; opacity: 0; visibility: hidden; }
+      .wave { display: flex; align-items: center; gap: 8px; height: 56px; margin-left: auto; }
+      .wave i { width: 10px; height: 100%; border-radius: 5px; background: #fff; }
+      .line { display: flex; flex-direction: column; gap: 6px; opacity: 0; visibility: hidden; }
+      .line b { font-size: 56px; font-weight: 600; color: var(--muted); }
+      .line span { font-size: 72px; font-weight: 700; line-height: 1.08; }
 
-      /* Class seats */
-      .seats { align-self: stretch; display: flex; flex-direction: column; gap: 18px; padding: 28px 32px; border-radius: 36px; box-shadow: 0 0 0 3px var(--line) inset; opacity: 0; visibility: hidden; }
-      .seats .lab { display: flex; justify-content: space-between; font-size: 56px; font-weight: 700; }
-      .seats .lab b { font-variant-numeric: tabular-nums; padding: 2px 18px; border-radius: 16px; }
+      /* Fitness: seats, a cancellation, the waitlist */
+      .seats { display: flex; flex-direction: column; gap: 18px; padding: 22px 30px; border-radius: 36px; box-shadow: 0 0 0 3px var(--line) inset; opacity: 0; visibility: hidden; }
+      .seats .lab { display: flex; justify-content: space-between; align-items: center; font-size: 60px; font-weight: 700; }
+      .seats .lab b { font-variant-numeric: tabular-nums; padding: 4px 18px; border-radius: 16px; }
       .dots { display: flex; gap: 12px; }
-      .dots i { flex: 1; height: 44px; border-radius: 12px; background: var(--ink); }
-      .dots i.gone { background: transparent; box-shadow: 0 0 0 4px var(--muted) inset; }
+      .dots i { flex: 1; height: 48px; border-radius: 14px; background: var(--ink); }
+      .dots i.gone { background: transparent; box-shadow: 0 0 0 5px var(--muted) inset; }
       .dots i.back { background: var(--accent); }
+      .bub { max-width: 94%; padding: 24px 34px; border-radius: 44px; font-size: 72px; font-weight: 600; line-height: 1.1; opacity: 0; visibility: hidden; }
+      .bub.in { align-self: flex-start; background: var(--bubble); border-bottom-left-radius: 14px; }
+      .from { display: flex; flex-direction: column; gap: 10px; align-self: flex-start; opacity: 0; visibility: hidden; }
+      .from b { align-self: flex-start; font-size: 56px; font-weight: 700; color: #fff; background: var(--ink); padding: 6px 20px; border-radius: 14px; }
+      .from .bub { opacity: 1; visibility: visible; background: #fff; box-shadow: 0 0 0 4px var(--ink) inset; }
+      .chip { align-self: center; font-size: 56px; font-weight: 700; padding: 14px 28px; border-radius: 999px; background: var(--bubble); opacity: 0; visibility: hidden; }
+      #card-f .body { justify-content: flex-start; gap: 14px; top: 160px; bottom: 30px; }
+      .from .bub { white-space: nowrap; max-width: none; }
+      .relief { position: absolute; left: 0; right: 0; bottom: 230px; text-align: center; font-size: 72px; font-weight: 800; opacity: 0; visibility: hidden; }
 
       /* Bottom band: the running tally */
-      #tally { position: absolute; left: 60px; right: 60px; bottom: 40px; height: 120px; display: flex; align-items: center; justify-content: space-between; font-size: 60px; font-weight: 700; }
-      #tally .n { display: inline-block; min-width: 1.2em; text-align: center; padding: 4px 16px; border-radius: 20px; background: #fff; box-shadow: 0 0 0 3px var(--line) inset; font-variant-numeric: tabular-nums; }
+      #tally { position: absolute; left: 60px; right: 60px; bottom: 36px; height: 110px; display: flex; align-items: center; justify-content: space-between; font-size: 58px; font-weight: 700; }
+      #tally .n { display: inline-block; min-width: 1.15em; text-align: center; padding: 2px 14px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 3px var(--line) inset; font-variant-numeric: tabular-nums; }
       #tally .n.hot { background: var(--accent); box-shadow: none; }
-      #tally span { color: var(--soft); }
 
-      /* Poster: the week, full, one evening kept */
-      #poster { position: absolute; inset: 0; background: var(--bg); padding: 70px 60px 0; z-index: 10; }
-      #poster h2 { font-size: 88px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; }
+      /* Poster: the receipts. First and last frame, and the reduced-motion still. */
+      #poster { position: absolute; inset: 0; background: var(--bg); padding: 90px 60px 0; z-index: 10; box-shadow: 0 50px 60px -30px rgba(10,10,11,.35); }
+      #poster h2 { font-size: 104px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
       #poster h2 em { font-family: "Instrument Serif", serif; font-weight: 400; letter-spacing: 0; }
-      .wk { margin-top: 56px; display: grid; grid-template-columns: 150px repeat(5, 1fr); gap: 14px; }
-      .wk .d { text-align: center; font-size: 56px; font-weight: 700; color: var(--soft); padding-bottom: 6px; }
-      .wk .r { font-size: 56px; font-weight: 600; color: var(--muted); padding-top: 38px; }
-      .wk .c { height: 250px; border-radius: 28px; background: var(--ink); }
-      .wk .c.new { background: var(--ink); box-shadow: 0 0 0 7px var(--accent) inset; }
-      .wk .off { background: var(--accent); display: grid; place-items: center; }
-      .wk .off span { font-family: "Instrument Serif", serif; font-style: italic; font-size: 104px; line-height: 1; }
-      #ptally { position: absolute; left: 60px; right: 60px; bottom: 60px; height: 120px; display: flex; align-items: center; gap: 22px; font-size: 60px; font-weight: 700; }
-      #ptally b { background: var(--accent); padding: 4px 18px; border-radius: 20px; }
+      .tiles { margin-top: 80px; display: flex; flex-direction: column; gap: 44px; }
+      .tile { background: #fff; border-radius: 48px; padding: 54px 48px; display: flex; flex-direction: column; gap: 26px; box-shadow: 0 2px 0 var(--line) inset, 0 30px 60px -45px rgba(10,10,11,.35); }
+      .tile .name { font-size: 70px; }
+      .tile .win { display: flex; align-items: center; gap: 22px; align-self: flex-start; padding: 20px 30px; border-radius: 28px; background: var(--accent); font-size: 74px; font-weight: 800; letter-spacing: -0.03em; }
+      .tile .win svg { width: 64px; height: 64px; fill: none; stroke: var(--ink); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+      #top, #who-f, #card-d, #card-f, #tally, #was-f { opacity: 0; visibility: hidden; }
+      #ptally { position: absolute; left: 60px; right: 60px; bottom: 64px; font-size: 64px; font-weight: 700; color: var(--soft); }
     </style>
   </head>
   <body>
-    <div id="stage" data-composition-id="main" data-start="0" data-duration="15" data-fps="30" data-width="1080" data-height="1350">
+    <div id="stage" data-composition-id="main" data-start="0" data-duration="14" data-fps="30" data-width="1080" data-height="1350">
       <div id="top">
         <div class="who" id="who-d">
           <div class="row1"><div class="badge"><svg viewBox="0 0 24 24"><path d="M7 3c-2 0-3.5 1.6-3.5 4 0 2 .8 3.4 1.3 5 .5 1.8.6 4 1.2 6.5.3 1.3 1.6 1.4 2 .1.5-1.6.8-4.1 2-4.1s1.5 2.5 2 4.1c.4 1.3 1.7 1.2 2-.1.6-2.5.7-4.7 1.2-6.5.5-1.6 1.3-3 1.3-5 0-2.4-1.5-4-3.5-4-1.6 0-2.3 1-3.5 1S8.6 3 7 3z"/></svg></div><div class="name">Brightside Dental</div></div>
-          <div class="row2"><div class="state" id="st-d"><i></i><span>With a patient</span></div><div class="clock"><span id="ck-d">2:04</span><small>PM</small></div></div>
+          <div class="row2"><div class="state"><i id="dot-d"></i><span>With a patient</span></div><div class="clock">2:04</div></div>
         </div>
         <div class="who" id="who-f">
           <div class="row1"><div class="badge"><svg viewBox="0 0 24 24"><path d="M8.5 9.5 8 7a4 4 0 0 1 8 0l-.5 2.5"/><circle cx="12" cy="15" r="6"/></svg></div><div class="name">Ember Fitness</div></div>
-          <div class="row2"><div class="state" id="st-f"><i></i><span id="st-f-t">Teaching a class</span></div><div class="clock"><span id="ck-f">2:31</span><small>PM</small></div></div>
+          <div class="row2"><div class="state" id="st-f"><i id="dot-f"></i><span id="st-f-t">Teaching a class</span></div><div class="clock" id="ck-f">2:31</div></div>
         </div>
       </div>
 
-      <!-- Dental: an incoming call, answered for you, booked -->
+      <!-- Dental: a new patient calls while you're with a patient. Answered for you, booked. -->
       <div class="card" id="card-d">
         <div class="hd">
           <div class="chan"><svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>Call</div>
-          <div class="pill"><span class="was" id="was-d">Voicemail</span><span class="now" id="now-d">Answered for you</span></div>
+          <div class="pill"><span class="was" id="was-d">To voicemail…</span><span class="now" id="now-d">Answered for you</span></div>
         </div>
         <div id="ringing">
           <div class="ring"><i></i><i></i><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></div>
           <div class="caller">New patient<small>calling…</small></div>
+          <div class="countdown"><i></i><i></i><i></i></div>
         </div>
         <div class="body">
-          <div class="bub in" id="d1">Toothache. Today?</div>
-          <div class="bub out" id="d2">4:30 today works?</div>
-          <div class="bub in" id="d3">Yes please!</div>
-          <div class="booked" id="d4"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Booked 4:30 PM</div>
+          <div class="callbar" id="d0">On call · 0:24<div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+          <div class="line" id="d1"><b>Patient</b><span>Toothache. Today?</span></div>
+          <div class="line" id="d2"><b>Brightside</b><span>Can you do 4:30?</span></div>
+          <div class="outcome" id="d3"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Booked 4:30 PM</div>
         </div>
       </div>
 
-      <!-- Fitness: a cancellation, refilled from the waitlist -->
+      <!-- Fitness: a cancellation leaves an empty spot. The waitlist fills it. -->
       <div class="card" id="card-f">
         <div class="hd">
-          <div class="chan"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12z"/></svg>Text</div>
+          <div class="chan"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.7 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12z"/></svg>Texts</div>
           <div class="pill"><span class="was" id="was-f">Empty spot</span><span class="now" id="now-f">Refilled for you</span></div>
         </div>
         <div class="body">
-          <div class="bub in" id="f1">Can't make 6am tmrw</div>
-          <div class="seats" id="f2">
-            <div class="lab">6am class <b id="f2n">12/12</b></div>
+          <div class="seats" id="f0">
+            <div class="lab">Tomorrow 6am <b id="f0n">12/12</b></div>
             <div class="dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i id="seat"></i><i></i><i></i></div>
           </div>
-          <div class="sys" id="f3">Offered to the waitlist</div>
-          <div class="bub in" id="f4">I'll take it!</div>
+          <div class="bub in" id="f1">Can't make it, sorry!</div>
+          <div class="chip" id="f2">Texted 3 on the waitlist</div>
+          <div class="from" id="f3"><b>Waitlist</b><div class="bub">I'll take it!</div></div>
         </div>
+        <div class="relief" id="relief">Class done. Nothing to chase.</div>
       </div>
 
-      <div id="tally"><div>Booked <span class="n" id="tb">0</span></div><div>Missed <span class="n">0</span></div></div>
+      <div id="tally"><div>Booked <span class="n" id="tb">0</span></div><div>Refilled <span class="n" id="tr">0</span></div><div>Missed <span class="n">0</span></div></div>
 
-      <!-- Poster: first and last frame, also the reduced-motion still -->
       <div id="poster">
         <h2>While you were <em>busy</em></h2>
-        <div class="wk" id="wk"></div>
-        <div id="ptally"><b>2 booked</b><b>1 refilled</b><span>0 missed</span></div>
+        <div class="tiles">
+          <div class="tile">
+            <div class="row1"><div class="badge"><svg viewBox="0 0 24 24"><path d="M7 3c-2 0-3.5 1.6-3.5 4 0 2 .8 3.4 1.3 5 .5 1.8.6 4 1.2 6.5.3 1.3 1.6 1.4 2 .1.5-1.6.8-4.1 2-4.1s1.5 2.5 2 4.1c.4 1.3 1.7 1.2 2-.1.6-2.5.7-4.7 1.2-6.5.5-1.6 1.3-3 1.3-5 0-2.4-1.5-4-3.5-4-1.6 0-2.3 1-3.5 1S8.6 3 7 3z"/></svg></div><div class="name">Brightside Dental</div></div>
+            <div class="win"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>New patient, 4:30 PM</div>
+          </div>
+          <div class="tile">
+            <div class="row1"><div class="badge"><svg viewBox="0 0 24 24"><path d="M8.5 9.5 8 7a4 4 0 0 1 8 0l-.5 2.5"/><circle cx="12" cy="15" r="6"/></svg></div><div class="name">Ember Fitness</div></div>
+            <div class="win"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>6am class full again</div>
+          </div>
+        </div>
+        <div id="ptally">1 booked · 1 refilled · 0 missed</div>
       </div>
     </div>
 
     <script>
       gsap.registerPlugin(TextPlugin);
-      const wk = document.getElementById("wk");
-      wk.innerHTML = "<div></div>" + ["M", "T", "W", "T", "F"].map((d) => `<div class="d">${d}</div>`).join("") +
-        ["9am", "2pm", "6pm"].map((r, ri) => `<div class="r">${r}</div>` + [0, 1, 2, 3, 4].map((c) =>
-          ri === 2 && c === 3 ? '<div class="c off"><span>Off</span></div>' : `<div class="c${(ri === 1 && c === 1) || (ri === 0 && c === 2) ? " new" : ""}"></div>`).join("")).join("");
-
       const IN = "expo.out", OUT = "power2.in";
       const tl = gsap.timeline({ paused: true });
       const show = (el, t, from = { y: 30 }) => tl.fromTo(el, { autoAlpha: 0, ...from }, { autoAlpha: 1, y: 0, x: 0, scale: 1, duration: 0.45, ease: IN }, t);
       const strike = (was, now, t) => {
-        tl.fromTo(was, { "--strike": 0 }, { "--strike": 1, duration: 0.3, ease: "power2.out" }, t);
-        tl.to(was, { autoAlpha: 0, duration: 0.15 }, t + 0.35);
-        tl.fromTo(now, { autoAlpha: 0, scale: 0.85 }, { autoAlpha: 1, scale: 1, duration: 0.4, ease: IN }, t + 0.4);
+        tl.fromTo(was, { "--strike": 0 }, { "--strike": 1, duration: 0.3, ease: "power2.out", immediateRender: false }, t);
+        tl.to(was, { autoAlpha: 0, duration: 0.15 }, t + 0.8); // hold the struck state so a glance catches it
+        tl.fromTo(now, { autoAlpha: 0, scale: 0.85 }, { autoAlpha: 1, scale: 1, duration: 0.4, ease: IN }, t + 0.85);
       };
       const roll = (el, v, t) => {
         tl.to(el, { yPercent: -40, autoAlpha: 0, duration: 0.15, ease: OUT }, t);
@@ -175,57 +189,67 @@
       };
 
       // Only one layer is ever live: the poster, or the afternoon under it
-      const scene = ["#top", "#card-d", "#tally"];
-      tl.set(["#who-f", "#card-f"], { autoAlpha: 0 }, 0);
-      tl.set(scene, { autoAlpha: 0 }, 0);
 
-      // 0-1.0 The poster (full week) lifts away to reveal the afternoon it came from
-      tl.set(scene, { autoAlpha: 1 }, 0.3);
-      tl.to("#poster", { yPercent: -100, duration: 0.7, ease: "power3.inOut" }, 0.3);
-      tl.set("#poster", { autoAlpha: 0 }, 1.0);
+      // 0-1.2 poster holds (both businesses, both wins); 1.2-1.9 it lifts off the afternoon
+      tl.set(["#top", "#card-d", "#tally"], { autoAlpha: 1 }, 1.2);
+      tl.to("#poster", { yPercent: -106, duration: 0.7, ease: "power3.inOut" }, 1.2);
+      tl.set("#poster", { autoAlpha: 0 }, 1.95);
 
-      // Dental: busy with a patient, a new patient calls, answered for you, booked
-      tl.fromTo("#ringing .ring", { scale: 1 }, { scale: 1.06, duration: 0.35, ease: "sine.inOut", yoyo: true, repeat: 3 }, 0.9);
+      // Busy dots breathe: you're with someone
+      tl.fromTo(["#dot-d", "#dot-f"], { scale: 1 }, { scale: 0.55, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 15 }, 1.2);
+
+      // Dental 1.9-3.8: ringing, about to go to voicemail
+      tl.fromTo("#ringing .ring", { scale: 1 }, { scale: 1.06, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 3 }, 1.9);
       document.querySelectorAll("#ringing .ring i").forEach((r, k) =>
-        tl.fromTo(r, { scale: 1, opacity: 0.5 }, { scale: 1.7, opacity: 0, duration: 0.9, ease: "power1.out" }, 0.9 + k * 0.45));
-      strike("#was-d", "#now-d", 1.9);
-      tl.to("#ringing", { autoAlpha: 0, y: -30, duration: 0.25, ease: OUT }, 2.5);
-      show("#d1", 2.7);
-      show("#d2", 3.8);
-      show("#d3", 4.8);
-      tl.fromTo("#d4", { autoAlpha: 0, scale: 0.8 }, { autoAlpha: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, 5.5); // the one back.out
-      roll("#tb", "1", 5.7);
-      tl.fromTo("#st-d i", { scale: 1 }, { scale: 1.35, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" }, 6.2); // still with a patient
+        tl.fromTo(r, { scale: 1, opacity: 0.5 }, { scale: 1.7, opacity: 0, duration: 0.8, ease: "power1.out" }, 1.9 + k * 0.4));
+      document.querySelectorAll(".countdown i").forEach((d, k) => tl.to(d, { scale: 0.3, opacity: 0.2, duration: 0.2, ease: OUT }, 2.1 + k * 0.3));
+      strike("#was-d", "#now-d", 2.9);
+      tl.to("#ringing", { autoAlpha: 0, y: -30, duration: 0.25, ease: OUT }, 3.5);
 
-      // Hand-off to fitness: the card slides left, the top band swaps
-      tl.to("#card-d", { xPercent: -115, duration: 0.55, ease: "power3.inOut" }, 7.1);
-      tl.fromTo("#card-f", { autoAlpha: 1, xPercent: 115 }, { xPercent: 0, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 7.1);
-      tl.to("#who-d", { autoAlpha: 0, y: -24, duration: 0.25, ease: OUT }, 7.1);
-      tl.set("#card-d", { autoAlpha: 0 }, 7.65);
-      tl.fromTo("#who-f", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: IN, immediateRender: false }, 7.35);
+      // 3.8-6.6 the call happens without you, and it books
+      show("#d0", 3.8);
+      document.querySelectorAll("#d0 .wave i").forEach((w, k) =>
+        tl.fromTo(w, { scaleY: 0.3 }, { scaleY: 1, duration: 0.22 + k * 0.03, ease: "sine.inOut", yoyo: true, repeat: 7 }, 3.9 + k * 0.05));
+      show("#d1", 4.2);
+      show("#d2", 5.0);
+      tl.fromTo("#d3", { autoAlpha: 0, scale: 0.8 }, { autoAlpha: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, 5.7); // the one back.out
+      roll("#tb", "1", 5.9);
 
-      // Fitness: a cancellation leaves an empty spot, the waitlist refills it
-      show("#f1", 7.8);
-      show("#f2", 8.4);
-      tl.set("#seat", { className: "gone" }, 8.9);
-      tl.set("#f2n", { text: "11/12" }, 8.9);
-      tl.fromTo("#seat", { scale: 1.2 }, { scale: 1, duration: 0.35, ease: IN, immediateRender: false }, 8.9);
-      show("#f3", 9.6);
-      show("#f4", 10.3);
-      tl.set("#seat", { className: "back" }, 11.0);
-      tl.fromTo("#seat", { scale: 0.5 }, { scale: 1, duration: 0.4, ease: IN, immediateRender: false }, 11.0);
-      tl.set("#f2n", { text: "12/12 Full", backgroundColor: "#ffa524" }, 11.0);
-      strike("#was-f", "#now-f", 11.2);
-      roll("#tb", "2", 11.3);
+      // 6.8 hand-off to fitness
+      tl.to("#card-d", { xPercent: -115, duration: 0.55, ease: "power3.inOut" }, 6.8);
+      tl.fromTo("#card-f", { autoAlpha: 1, xPercent: 115 }, { xPercent: 0, duration: 0.55, ease: "power3.inOut", immediateRender: false }, 6.8);
+      tl.set("#card-d", { autoAlpha: 0 }, 7.36);
+      tl.to("#who-d", { autoAlpha: 0, y: -24, duration: 0.25, ease: OUT }, 6.8);
+      tl.fromTo("#who-f", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: IN, immediateRender: false }, 7.05);
 
-      // Session over: free at 2:46, and the week comes back down, full
-      tl.set("#st-f", { className: "state free" }, 12.1);
-      tl.set("#st-f-t", { text: "Free" }, 12.1);
-      tl.set("#ck-f", { text: "2:46" }, 12.1);
-      tl.set("#poster", { autoAlpha: 1 }, 12.7);
-      tl.fromTo("#poster", { yPercent: -100 }, { yPercent: 0, duration: 0.7, ease: "power3.inOut", immediateRender: false }, 12.7);
-      tl.set(["#top", "#card-f", "#tally"], { autoAlpha: 0 }, 13.4);
-      tl.set({}, {}, 15);
+      // Fitness 7.4-10.6: full class, a cancellation opens a spot, the waitlist takes it
+      tl.fromTo("#f0", { autoAlpha: 0, clipPath: "inset(0% 100% 0% 0% round 36px)" }, { autoAlpha: 1, clipPath: "inset(0% 0% 0% 0% round 36px)", duration: 0.6, ease: "power3.out" }, 7.4);
+      show("#f1", 8.0);
+      tl.set("#seat", { className: "gone" }, 8.4);
+      tl.set("#f0n", { text: "11/12" }, 8.4);
+      tl.fromTo("#seat", { scale: 1.25 }, { scale: 1, duration: 0.35, ease: IN, immediateRender: false }, 8.4);
+      tl.fromTo("#was-f", { autoAlpha: 0, scale: 0.85 }, { autoAlpha: 1, scale: 1, duration: 0.35, ease: IN, immediateRender: false }, 8.4);
+      show("#f2", 9.0, { scale: 0.9, y: 0 });
+      show("#f3", 9.7);
+      tl.set("#seat", { className: "back" }, 9.8);
+      tl.fromTo("#seat", { scale: 0.4 }, { scale: 1, duration: 0.4, ease: IN, immediateRender: false }, 9.8);
+      tl.set("#f0n", { text: "12/12 Full", backgroundColor: "#ffa524" }, 9.8);
+      strike("#was-f", "#now-f", 10.0);
+      roll("#tr", "1", 10.3);
+
+      // 11.0-12.3 relief: class done, nothing to chase
+      tl.set("#st-f", { className: "state free" }, 11.0);
+      tl.set("#st-f-t", { text: "Class done" }, 11.0);
+      tl.set("#ck-f", { text: "2:46" }, 11.0);
+      tl.to(["#f1", "#f2", "#f3"], { autoAlpha: 0, duration: 0.25, ease: OUT }, 11.0);
+      show("#relief", 11.2);
+
+      // 12.4-13.1 the receipts come back down; the loop ends where it began
+      tl.to("#tally", { autoAlpha: 0, duration: 0.2 }, 12.2);
+      tl.set("#poster", { autoAlpha: 1 }, 12.4);
+      tl.fromTo("#poster", { yPercent: -106 }, { yPercent: 0, duration: 0.7, ease: "power3.inOut", immediateRender: false }, 12.4);
+      tl.set(["#top", "#card-f"], { autoAlpha: 0 }, 13.1);
+      tl.set({}, {}, 14);
 
       window.__timelines = window.__timelines || {};
       window.__timelines["main"] = tl;
