@@ -1,6 +1,5 @@
 ---
 import fs from "node:fs";
-// import DotGrid from "./DotGrid.astro"; // paused: testing GridBackground
 import GridBackground from "./GridBackground.astro";
 
 // Showreel column only renders once public/hero.mp4 exists (checked at build).
@@ -15,7 +14,6 @@ const CTA = "Book a free 20-min call";
 ---
 
 <section class="hero">
-  {/* <DotGrid /> */}
   <GridBackground />
   <div class="hero-inner">
     <div class="hero-copy">
@@ -79,10 +77,6 @@ const CTA = "Book a free 20-min call";
     background: #ffffff;
     color: #111111;
     font-family: "Inter Tight", system-ui, sans-serif;
-  }
-
-  .hero :global(.dotgrid-wrapper) {
-    z-index: 0;
   }
 
   .hero-inner {
