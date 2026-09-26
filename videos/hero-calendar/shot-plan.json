@@ -1,0 +1,56 @@
+{
+  "category": "webpage",
+  "category_note": "No form category fits an invented UI. Closest is webpage (UI animation), used asset-free: the calendar is hand-built HTML, not a captured page, so the module's capture step does not apply. Catalog search ('calendar booking UI card slides into grid slot') found no calendar block; grid-card-assemble is the nearest primitive but is a stagger-assemble, not a persistent world. Hand-author.",
+  "duration_s": 8,
+  "fps": 30,
+  "canvas": { "w": 1264, "h": 704, "aspect": "316:176 (4x of hero slot)" },
+  "style": "Light, crisp, minimal calendar. One persistent weekly grid, never cut or reset. Exactly one element at full emphasis at a time; everything else quiet but legible. Plays once, holds last frame (no loop).",
+  "palette": ["#0A0A0B", "#FFFFFF", "#F4F2ED", "#9C9A94", "#E6E4DE", "#FFA524"],
+  "palette_roles": { "ink": "#0A0A0B", "bg": "#FFFFFF", "surface": "#F4F2ED", "muted": "#9C9A94", "border": "#E6E4DE", "accent": "#FFA524" },
+  "accent_rule": "Amber only on (a) the travelling chip + a slot's first ~0.6s after landing, then it settles to surface, and (b) the final 'Off' block.",
+  "font": "Inter Tight (labels, 600) + Inter (body, 500). Instrument Serif italic for the single word 'Off' only.",
+  "min_text_px": 44,
+  "beats": [0.8, 2.3, 4.0, 4.5, 6.0, 6.9],
+  "export": "mp4",
+  "hold_last_frame": true,
+  "loop": false,
+  "asset_needs": [],
+  "block": null,
+  "customize": {},
+  "content": {
+    "layout": {
+      "margin": 48,
+      "calendar": { "x": 48, "y": 48, "w": 836, "h": 608, "time_gutter_w": 110, "header_h": 70, "cols": ["Tue", "Wed", "Thu"], "rows": ["9 am", "12 pm", "5 pm"], "slot_gap": 12, "slot_radius": 16 },
+      "rail": { "x": 916, "y": 48, "w": 300, "h": 608, "note": "One inbound card at a time, vertically centred. Chip paths start at the card's left edge." }
+    },
+    "initial_slots": {
+      "Tue-9am": "open", "Wed-9am": "booked", "Thu-9am": "booked",
+      "Tue-12pm": "booked", "Wed-12pm": "booked (will cancel)", "Thu-12pm": "booked",
+      "Tue-5pm": "booked", "Wed-5pm": "open", "Thu-5pm": "off (outline, quiet, label 'Off' muted)"
+    },
+    "slot_styles": {
+      "open": "white fill, 3px dashed #9C9A94 border, label 'Open' muted",
+      "booked": "#F4F2ED fill, #E6E4DE border, label 'Booked' ink at 70%",
+      "cancelled": "white fill, label 'Cancelled' muted with strike-through",
+      "new": "#FFA524 fill, label 'Booked' ink; settles to booked style after 0.6s",
+      "off_final": "#FFA524 fill, label 'Off' (Instrument Serif italic 64px) ink"
+    },
+    "scenes": [
+      { "id": "gaps", "start": 0.0, "end": 0.8, "focus": "Tue 9 am + Wed 5 pm (open)", "motion": "Grid fully present at frame 0 (no entrance). Dashed borders of the two open slots draw on 0.1-0.6s (stroke-dashoffset, cubic-bezier(0.16,1,0.3,1))." },
+      { "id": "missed-call", "start": 0.8, "end": 2.6, "focus": "rail card, then chip", "copy": ["Missed call", "6:12 pm", "Answered"], "motion": "Card slides in from right 0.8-1.2 (x+60, cubic-bezier(0.16,1,0.3,1)). 1.5: 'Answered' + check replaces muted '6:12 pm' (y-swap 0.3s). 1.7-2.3: amber chip 'Booked' leaves card along a drawn dotted arc to Tue 9 am (power2.inOut). 2.3 lands, slot amber; 2.9 settles to booked." },
+      { "id": "late-dm", "start": 2.6, "end": 4.3, "focus": "rail card, then chip", "copy": ["Instagram DM", "11:48 pm", "Replied"], "motion": "Call card exits up (0.25s power2.in) at 2.6; DM card enters 2.7-3.1. 3.3 'Replied' swaps in under '11:48 pm'. 3.4-4.0 chip travels to Wed 5 pm, lands 4.0, settles 4.6." },
+      { "id": "cancel-refill", "start": 4.3, "end": 6.3, "focus": "Wed 12 pm, then waitlist chip", "copy": ["Cancelled", "Waitlist", "Next in line", "Booked"], "motion": "DM card exits 4.3. 4.5: Wed 12 pm flips rotateX 0->90->0 (0.4s) to 'Cancelled'. 4.9-5.3 Waitlist card enters, 'Next in line' + check. 5.5-6.0 chip travels to Wed 12 pm and drops in with back.out(1.6) (the only back.out). Settles 6.3." },
+      { "id": "full-week-off", "start": 6.3, "end": 8.0, "focus": "Thu 5 pm 'Off'", "copy": ["Week full", "Off"], "motion": "Waitlist card exits 6.3. 6.5 rail shows muted 'Week full' (fade_in). 6.6-7.0 Off slot fills amber from bottom (scaleY, cubic-bezier(0.16,1,0.3,1)), 'Off' goes ink + serif. 7.0-8.0 hold, static." }
+    ],
+    "motion_rules": [
+      "entrances cubic-bezier(0.16,1,0.3,1) ~0.4s",
+      "exits power2.in ~0.25s",
+      "back.out once: waitlist drop-in",
+      "no cross-fades on full-frame layers",
+      "chips always travel a visible dotted path that draws ~0.15s ahead of the chip and fades after landing",
+      "no morphs, people, mascots, stats, chat bubbles; never the word 'AI'"
+    ],
+    "final_frame": "All 9 slots filled: 8 quiet 'Booked' (surface), Thu 5 pm amber 'Off'. Rail: muted 'Week full'. Doubles as poster + reduced-motion fallback.",
+    "social_cut_note": "Reuse timeline and slot ids. 1920x1080: scale grid 1.5x, rail keeps right third. 1080x1350: rail becomes a strip under the grid, chip paths curve upward. Dark: bg #0A0A0B, surface #1A1A1C, border #2A2A2D, text #F4F2ED, amber unchanged. Slow push scale 1.0->1.06 over 8s (sine.inOut) on the grid container only."
+  }
+}
