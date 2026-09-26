@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Same afternoon, twice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700;800&family=Instrument+Serif:ital@1&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/TextPlugin.min.js"></script>
+    <style>
+      :root {
+        --bg: #ece8df;
+        --panel: #fbfaf7;
+        --ink: #0a0a0b;
+        --soft: #3a3936;
+        --muted: #85827b;
+        --line: #e3dfd6;
+        --surface: #f1eee7;
+        --bar: #e3e0d8;
+        --accent: #ffa524;
+        --ios-blue: #0b84ff;
+        --ios-grey: #e9e9eb;
+        --ok: #34c759;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+      #stage {
+        position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg);
+        font-family: "Inter Tight", system-ui, sans-serif; color: var(--ink); letter-spacing: -0.015em;
+      }
+      #world { position: absolute; left: 0; top: 0; width: 3840px; height: 2160px; transform-origin: 0 0; }
+
+      /* A station is one business: label on the left, the owner's phone on the right */
+      .station { position: absolute; width: 1920px; height: 1080px; padding: 36px; }
+      .panel { position: relative; width: 100%; height: 100%; border-radius: 56px; background: var(--panel); box-shadow: 0 2px 0 var(--line) inset, 0 30px 60px -40px rgba(10,10,11,.25); }
+      .label { position: absolute; left: 130px; top: 150px; width: 900px; display: flex; flex-direction: column; gap: 26px; }
+      .cat { display: flex; align-items: center; gap: 18px; font-size: 46px; font-weight: 600; color: var(--muted); }
+      .cat svg { width: 58px; height: 58px; fill: none; stroke: var(--soft); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .name { font-size: 112px; font-weight: 800; line-height: .98; letter-spacing: -0.035em; }
+      .status { align-self: flex-start; display: flex; align-items: center; gap: 18px; padding: 16px 30px 16px 24px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 46px; font-weight: 600; }
+      .status .dot { width: 22px; height: 22px; border-radius: 50%; background: #ff453a; }
+      .clock { margin-top: 18px; font-size: 150px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+      .clock small { font-size: 60px; font-weight: 600; color: var(--muted); letter-spacing: 0; margin-left: 12px; }
+      .results { display: grid; justify-items: start; }
+      .results > * { grid-area: 1 / 1; }
+      .result { align-self: flex-start; display: flex; align-items: center; gap: 14px; padding: 16px 28px; border-radius: 24px; font-size: 46px; font-weight: 700; opacity: 0; visibility: hidden; }
+      .result.lost { background: #fff; border: 3px dashed var(--muted); color: var(--soft); }
+      .result.won { background: var(--accent); color: #0a0a0b; }
+      .classchip { align-self: flex-start; display: flex; align-items: center; gap: 22px; padding: 20px 28px; border-radius: 28px; border: 3px solid var(--line); background: #fff; font-size: 40px; font-weight: 600; position: relative; }
+      .classchip b { font-variant-numeric: tabular-nums; padding: 6px 18px; border-radius: 16px; background: var(--surface); }
+      .classchip b.empty { background: #fff; outline: 3px dashed var(--muted); color: var(--muted); }
+      .classchip b.full { background: var(--accent); }
+
+      /* Phone */
+      .phone { position: absolute; right: 150px; top: 60px; width: 480px; height: 936px; border-radius: 78px; background: #111; padding: 13px; box-shadow: 0 50px 80px -40px rgba(10,10,11,.55), 0 0 0 3px #2b2b2e inset; }
+      .screen { position: relative; width: 100%; height: 100%; border-radius: 66px; overflow: hidden; background: #000; font-family: Inter, system-ui, sans-serif; letter-spacing: -0.01em; }
+      .island { position: absolute; left: 50%; top: 16px; width: 150px; height: 44px; margin-left: -75px; border-radius: 22px; background: #000; z-index: 20; }
+      .layer { position: absolute; inset: 0; }
+      .dim { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 30; pointer-events: none; }
+
+      .lock { color: #fff; }
+      .lock .wall { position: absolute; inset: 0; }
+      .lock .date { position: absolute; top: 96px; width: 100%; text-align: center; font-size: 28px; font-weight: 600; opacity: .9; }
+      .lock .ltime { position: absolute; top: 128px; width: 100%; text-align: center; font-size: 150px; font-weight: 600; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+      .notifs { position: absolute; left: 16px; right: 16px; top: 350px; display: flex; flex-direction: column; gap: 12px; }
+      .notif { display: flex; gap: 16px; padding: 20px; border-radius: 34px; background: rgba(250,250,250,.86); color: #111; opacity: 0; visibility: hidden; }
+      .notif .ic { flex: none; width: 60px; height: 60px; border-radius: 15px; display: grid; place-items: center; }
+      .notif .ic svg { width: 36px; height: 36px; fill: #fff; }
+      .notif .tx { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+      .notif .t { font-size: 26px; font-weight: 700; display: flex; justify-content: space-between; gap: 10px; }
+      .notif .t span { font-weight: 500; color: #6b6b70; font-size: 22px; }
+      .notif .b { font-size: 29px; line-height: 1.22; }
+      .notif.summary { background: rgba(255,255,255,.95); }
+      .notif.summary .b b { color: #0a0a0b; }
+
+      /* Call screen */
+      .call { color: #fff; background: linear-gradient(180deg, #3a4a4f, #151b1d); visibility: hidden; opacity: 0; display: flex; flex-direction: column; align-items: center; }
+      .call .who { margin-top: 170px; font-size: 44px; font-weight: 600; }
+      .call .sub { margin-top: 12px; font-size: 28px; opacity: .75; }
+      .call .rings { position: absolute; top: 470px; left: 50%; width: 0; height: 0; }
+      .call .rings i { position: absolute; left: -90px; top: -90px; width: 180px; height: 180px; border-radius: 50%; border: 3px solid rgba(255,255,255,.5); opacity: 0; }
+      .call .btns { position: absolute; bottom: 110px; width: 100%; display: flex; justify-content: space-around; padding: 0 60px; }
+      .call .btns b { width: 120px; height: 120px; border-radius: 50%; display: grid; place-items: center; }
+      .call .btns svg { width: 56px; height: 56px; fill: #fff; }
+
+      /* Threads (lookalike messaging apps, no logos) */
+      .thread { visibility: hidden; opacity: 0; display: flex; flex-direction: column; }
+      .thread .hd { flex: none; height: 176px; padding: 70px 26px 0; display: flex; align-items: center; gap: 18px; border-bottom: 1px solid rgba(128,128,128,.25); }
+      .thread .av { flex: none; width: 70px; height: 70px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; font-weight: 700; color: #fff; }
+      .thread .hn { font-size: 32px; font-weight: 700; }
+      .thread .hs { font-size: 22px; opacity: .6; margin-top: 2px; }
+      .thread .list { flex: 1; padding: 26px 22px; display: flex; flex-direction: column; gap: 14px; }
+      .bub { max-width: 82%; padding: 18px 24px; border-radius: 34px; font-size: 31px; line-height: 1.24; opacity: 0; visibility: hidden; }
+      .bub.in { align-self: flex-start; }
+      .bub.out { align-self: flex-end; }
+      .tag { align-self: flex-end; font-size: 22px; font-weight: 700; color: #0a0a0b; background: var(--accent); padding: 8px 16px; border-radius: 999px; opacity: 0; visibility: hidden; }
+      .sys { align-self: center; font-size: 23px; font-weight: 600; opacity: 0; visibility: hidden; text-align: center; padding: 6px 12px; }
+      .booked { align-self: stretch; margin-top: 6px; display: flex; align-items: center; gap: 16px; padding: 22px 24px; border-radius: 28px; background: var(--accent); color: #0a0a0b; font-size: 29px; font-weight: 700; opacity: 0; visibility: hidden; font-family: "Inter Tight", Inter, sans-serif; }
+      .booked svg { flex: none; width: 40px; height: 40px; fill: none; stroke: #0a0a0b; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+      .app-sms { background: #fff; color: #000; }
+      .app-sms .in { background: var(--ios-grey); }
+      .app-sms .out { background: var(--ios-blue); color: #fff; }
+      .app-sms .sys { color: #6b6b70; }
+      .app-ig { background: #000; color: #fff; }
+      .app-ig .in { background: #262626; }
+      .app-ig .out { background: linear-gradient(135deg, #6b3cf6, #3d6df2); color: #fff; }
+      .app-ig .sys { color: #a8a8a8; }
+      .app-wa { background: #efe7de; color: #111b21; }
+      .app-wa .hd { background: #fff; }
+      .app-wa .bub { border-radius: 22px; box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+      .app-wa .in { background: #fff; }
+      .app-wa .out { background: #d9fdd3; }
+      .app-wa .sys { color: #54656f; background: #fff; border-radius: 12px; }
+      .app-call { background: #fff; color: #000; }
+      .app-call .hd { background: #e9f8ee; }
+      .app-call .in { background: var(--ios-grey); }
+      .app-call .out { background: #1f9d49; color: #fff; }
+
+      /* Overlay: captions, rewind bar, ending */
+      .cap { position: absolute; left: 50%; top: 22px; padding: 18px 36px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 44px; font-weight: 600; white-space: nowrap; opacity: 0; visibility: hidden; z-index: 50; }
+      #take2 { top: 50%; margin-top: -90px; padding: 34px 60px; font-size: 96px; font-weight: 800; letter-spacing: -0.03em; border-radius: 48px; }
+      #take2 em { font-family: "Instrument Serif", serif; font-weight: 400; letter-spacing: 0; color: var(--accent); }
+      #scrub { position: absolute; left: 50%; bottom: 70px; width: 900px; margin-left: -450px; height: 14px; border-radius: 7px; background: rgba(10,10,11,.2); opacity: 0; visibility: hidden; z-index: 50; }
+      #scrub i { position: absolute; left: 0; top: 0; height: 100%; width: 100%; border-radius: 7px; background: var(--ink); transform-origin: 0 50%; }
+      #veil { position: absolute; inset: 0; background: var(--bg); opacity: 0; z-index: 40; }
+
+      #end { position: absolute; inset: 0; background: var(--bg); visibility: hidden; z-index: 60; }
+      #week { position: absolute; left: 160px; top: 170px; width: 900px; }
+      #week h3 { font-size: 64px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 28px; }
+      .wk { display: grid; grid-template-columns: 90px repeat(5, 1fr); gap: 12px; }
+      .wk .d { text-align: center; font-size: 32px; font-weight: 600; color: var(--soft); padding-bottom: 6px; }
+      .wk .r { font-size: 26px; color: var(--muted); font-weight: 500; padding-top: 18px; }
+      .wk .c { height: 190px; border-radius: 22px; background: var(--surface); padding: 22px 18px; display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden; }
+      .wk .c i { display: block; height: 14px; border-radius: 7px; background: var(--bar); width: 80%; }
+      .wk .c i + i { width: 50%; }
+      .wk .off { background: var(--accent); align-items: center; justify-content: center; }
+      .wk .off span { font-family: "Instrument Serif", serif; font-style: italic; font-size: 76px; }
+      #pitch { position: absolute; left: 1150px; top: 290px; width: 640px; }
+      #pitch h2 { font-size: 92px; font-weight: 800; line-height: .98; letter-spacing: -0.035em; }
+      #pitch .cta { display: inline-flex; margin-top: 50px; padding: 30px 44px; border-radius: 22px; background: var(--ink); color: #fff; font-size: 42px; font-weight: 600; }
+      #pitch p { margin-top: 26px; font-size: 32px; color: var(--soft); line-height: 1.3; }
+    </style>
+  </head>
+  <body>
+    <div id="stage" data-composition-id="main" data-start="0" data-duration="57" data-fps="30" data-width="1920" data-height="1080">
+      <div id="world"></div>
+      <div id="veil"></div>
+      <div id="cap-open" class="cap">Tuesday, 2:14 PM. Everyone's busy.</div>
+      <div id="cap-246" class="cap">2:46 PM. Finally a minute.</div>
+      <div id="take2" class="cap">Same afternoon. <em>Take two.</em></div>
+      <div id="cap-t2" class="cap">Same messages. Still busy. All answered.</div>
+      <div id="scrub"><i></i></div>
+      <div id="end">
+        <div id="week">
+          <h3>Your week</h3>
+          <div class="wk" id="wk"></div>
+        </div>
+        <div id="pitch">
+          <h2>More customers shouldn't mean more hours.</h2>
+          <p>Every call and message answered and booked, while you work.</p>
+          <div class="cta">Book a free 20-min call</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      gsap.registerPlugin(TextPlugin);
+
+      // ---------- Data: one row per business. Niche words live only in client messages and the label. ----------
+      const ICON = {
+        tooth: '<path d="M7 3c-2 0-3.5 1.6-3.5 4 0 2 .8 3.4 1.3 5 .5 1.8.6 4 1.2 6.5.3 1.3 1.6 1.4 2 .1.5-1.6.8-4.1 2-4.1s1.5 2.5 2 4.1c.4 1.3 1.7 1.2 2-.1.6-2.5.7-4.7 1.2-6.5.5-1.6 1.3-3 1.3-5 0-2.4-1.5-4-3.5-4-1.6 0-2.3 1-3.5 1S8.6 3 7 3z"/>',
+        droplet: '<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/><path d="M9.5 15a2.5 2.5 0 0 0 2.5 2.5"/>',
+        kettle: '<path d="M8.5 9.5 8 7a4 4 0 0 1 8 0l-.5 2.5"/><circle cx="12" cy="15" r="6"/>',
+        watch: '<circle cx="12" cy="14" r="7"/><path d="M12 14v-4M10 3h4M12 3v4M18 7l1.5-1.5"/>',
+      };
+      const GLYPH = {
+        phone: '<path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/>',
+        bubble: '<path d="M12 3C6.5 3 2 6.6 2 11c0 2.4 1.3 4.6 3.4 6.1L4.5 21l4.3-2.4c1 .3 2.1.4 3.2.4 5.5 0 10-3.6 10-8s-4.5-8-10-8z"/>',
+        camera: '<rect x="4" y="4" width="16" height="16" rx="5" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="17" cy="7" r="1.2"/>',
+      };
+      const APPICON = {
+        phone: { bg: "#34c759", g: GLYPH.phone },
+        sms: { bg: "#34c759", g: GLYPH.bubble },
+        ig: { bg: "linear-gradient(45deg,#f9a13b,#e1306c 50%,#833ab4)", g: GLYPH.camera },
+        wa: { bg: "#25d366", g: GLYPH.phone },
+      };
+      const CHECK = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+
+      const N = [
+        {
+          id: "d", icon: "tooth", cat: "Dental practice", name: "Brightside<br>Dental", busy: "With a patient",
+          wall: "linear-gradient(160deg,#4d6f78,#1c2e33)", lead: "(555) 014-2290",
+          one: { kind: "call", time: "2:17", notif: { app: "phone", t: "Missed call", b: "(555) 014-2290<br>No voicemail" } },
+          chorus: { app: "sms", who: "(555) 014-2290", init: "#", avbg: "#6e7378", bubbles: [["out", "sorry just seeing this!! still need us?"], ["in", "all good, found someone 👍"]] },
+          two: { app: "call", who: "Call answered", hs: "0:38 · you're still with a patient", init: "☎", avbg: "#1f9d49",
+            steps: [["in", "“my tooth is killing me, any chance today?”"], ["out", "I can see you today at 4:30."], ["booked", "Booked · Emergency exam · 4:30 PM"]] },
+          summary: "While you were with a patient",
+          got: "Emergency exam booked, 4:30 PM",
+          win: "Emergency exam, 4:30",
+        },
+        {
+          id: "m", icon: "droplet", cat: "Med spa", name: "Glow<br>Med Spa", busy: "In treatment",
+          wall: "linear-gradient(160deg,#8a4f5c,#3a1c26)",
+          one: { kind: "notif", time: "2:22", notif: { app: "ig", t: "jess.m", b: "how much is lip filler?" } },
+          chorus: { app: "ig", who: "jess.m", init: "J", avbg: "linear-gradient(45deg,#f9a13b,#e1306c)", bubbles: [["in", "how much is lip filler?"], ["out", "sorry just seeing this!!"], ["in", "all good, found someone 👍"]] },
+          two: { app: "ig", who: "jess.m", hs: "Active now", init: "J", avbg: "linear-gradient(45deg,#f9a13b,#e1306c)",
+            steps: [["in", "how much is lip filler?"], ["tag", "Replied in 4 sec"], ["out", "From $450. Thu 11am or Sat 9:30?"], ["in", "sat 9:30 pls!"], ["booked", "Booked · Lip filler consult · Sat 9:30"]] },
+          summary: "While you were in treatment",
+          got: "Lip filler consult booked, Sat 9:30",
+          win: "Consult booked, Sat",
+        },
+        {
+          id: "s", icon: "kettle", cat: "Fitness studio", name: "Ember<br>Studio", busy: "Teaching 2pm class", classchip: true,
+          wall: "linear-gradient(160deg,#8a5a2e,#3a2412)",
+          one: { kind: "notif", time: "2:31", notif: { app: "sms", t: "Maya", b: "can't make 6am tmrw, sorry!" } },
+          chorus: { app: "sms", who: "Maya", init: "M", avbg: "#6e7378", bubbles: [["in", "can't make 6am tmrw, sorry!"], ["out", "sorry just seeing this!!"], ["in", "all good! hope u fill it"]] },
+          two: { app: "sms", who: "Maya", hs: "Text message", init: "M", avbg: "#6e7378",
+            steps: [["in", "can't make 6am tmrw, sorry!"], ["tag", "Replied in 3 sec"], ["out", "No problem, spot released 👍"], ["sys", "Spot offered to the waitlist · Priya: YES!"], ["booked", "6am Reformer · 12/12 Full"]] },
+          summary: "While you were teaching",
+          got: "6am spot refilled from the waitlist",
+          win: "6am spot refilled",
+        },
+        {
+          id: "t", icon: "watch", cat: "Personal trainer", name: "Forge<br>Training", busy: "Mid-session",
+          wall: "linear-gradient(160deg,#56627c,#1b2233)",
+          one: { kind: "notif", time: "2:38", notif: { app: "wa", t: "Sam", b: "saw your IG, do u coach online?" } },
+          chorus: { app: "wa", who: "Sam", init: "S", avbg: "#7c8a96", bubbles: [["in", "saw your IG, do u coach online?"], ["out", "sorry just seeing this!!"], ["in", "all good, found someone 👍"]] },
+          two: { app: "wa", who: "Sam", hs: "online", init: "S", avbg: "#7c8a96",
+            steps: [["in", "saw your IG, do u coach online?"], ["tag", "Replied in 5 sec"], ["out", "Yes! Free intro call: Mon 7pm or Tue 8am?"], ["in", "tue 8 👍"], ["booked", "Booked · Intro call · Tue 8:00 AM"]] },
+          summary: "While you were mid-session",
+          got: "Intro call booked, Tue 8:00 AM",
+          win: "Intro call booked",
+        },
+      ];
+      const POS = [[0, 0], [1920, 0], [0, 1080], [1920, 1080]];
+
+      // ---------- Build DOM (synchronous, deterministic) ----------
+      const world = document.getElementById("world");
+      const h = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+      const icon = (k) => `<div class="ic" style="background:${APPICON[k].bg}"><svg viewBox="0 0 24 24">${APPICON[k].g}</svg></div>`;
+      const threadHTML = (cls, c, rows) => `
+        <div class="layer thread app-${c.app} ${cls}">
+          <div class="hd"><div class="av" style="background:${c.avbg}">${c.init}</div><div><div class="hn">${c.who}</div><div class="hs">${c.hs || ""}</div></div></div>
+          <div class="list">${rows.map(([k, t]) => k === "booked" ? `<div class="booked">${CHECK}<span>${t}</span></div>` : `<div class="${k === "in" || k === "out" ? "bub " + k : k}">${t}</div>`).join("")}</div>
+        </div>`;
+
+      const S = N.map((n, i) => {
+        const node = h(`
+          <div class="station" id="st-${n.id}" style="left:${POS[i][0]}px;top:${POS[i][1]}px">
+            <div class="panel">
+              <div class="label">
+                <div class="cat"><svg viewBox="0 0 24 24">${ICON[n.icon]}</svg>${n.cat}</div>
+                <div class="name">${n.name}</div>
+                <div class="status"><i class="dot"></i><span class="st">${n.busy}</span></div>
+                <div class="clock"><span class="ck">2:14</span><small>PM</small></div>
+                ${n.classchip ? `<div class="classchip">Tomorrow · 6am Reformer <b class="cc">12/12</b></div>` : ""}
+                <div class="results">${n.classchip ? "" : `<div class="result lost">✕ Booked elsewhere</div>`}<div class="result won">✓ ${n.win}</div></div>
+              </div>
+              <div class="phone"><div class="screen">
+                <div class="island"></div>
+                <div class="layer lock"><div class="wall" style="background:${n.wall}"></div>
+                  <div class="date">Tuesday 14 October</div><div class="ltime">2:14</div>
+                  <div class="notifs">
+                    <div class="notif n1">${icon(n.one.notif.app)}<div class="tx"><div class="t">${n.one.notif.t}<span>now</span></div><div class="b">${n.one.notif.b}</div></div></div>
+                    <div class="notif summary n2">${icon("sms")}<div class="tx"><div class="t">${n.summary}</div><div class="b"><b>✓</b> ${n.got}</div></div></div>
+                  </div>
+                </div>
+                ${n.one.kind === "call" ? `<div class="layer call"><div class="who">${n.lead}</div><div class="sub">calling…</div><div class="rings"><i></i><i></i></div>
+                  <div class="btns"><b style="background:#ff3b30"><svg viewBox="0 0 24 24" style="transform:rotate(135deg)">${GLYPH.phone}</svg></b><b style="background:#34c759"><svg viewBox="0 0 24 24">${GLYPH.phone}</svg></b></div></div>` : ""}
+                ${threadHTML("tA", n.chorus, n.chorus.bubbles)}
+                ${threadHTML("tB", n.two, n.two.steps)}
+                <div class="dim"></div>
+              </div></div>
+            </div>
+          </div>`);
+        world.appendChild(node);
+        const q = (s) => node.querySelector(s);
+        return {
+          n, node, ck: q(".ck"), st: q(".st"), dot: q(".dot"), ltime: q(".ltime"), dim: q(".dim"),
+          lock: q(".lock"), n1: q(".n1"), n2: q(".n2"), call: q(".call"), rings: node.querySelectorAll(".rings i"),
+          lost: q(".result.lost"), won: q(".result.won"), tA: q(".tA"), tAi: q(".tA .list").children, tB: q(".tB"), tBi: q(".tB .list").children, cc: q(".cc"),
+        };
+      });
+
+      // Week grid for the ending: every slot booked, Thursday evening kept
+      const wk = document.getElementById("wk");
+      wk.innerHTML = '<div></div>' + ["Mon", "Tue", "Wed", "Thu", "Fri"].map((d) => `<div class="d">${d}</div>`).join("") +
+        ["9 am", "1 pm", "6 pm"].map((r, ri) => `<div class="r">${r}</div>` + [0, 1, 2, 3, 4].map((c) =>
+          ri === 2 && c === 3 ? '<div class="c off"><span>Off</span></div>' : '<div class="c"><i></i><i></i></div>').join("")).join("");
+
+      // ---------- Timeline ----------
+      const IN = "expo.out", OUT = "power2.in", MOVE = "power2.inOut";
+      const tl = gsap.timeline({ paused: true });
+      const WIDE = { x: 96, y: 96, scale: 0.45 };
+      const at = (i) => ({ x: -POS[i][0], y: -POS[i][1], scale: 1 });
+      const cam = (to, t, d = 0.8) => tl.to("#world", { ...to, duration: d, ease: MOVE }, t);
+      const show = (el, t, from = { y: 18 }) => tl.fromTo(el, { autoAlpha: 0, ...from }, { autoAlpha: 1, y: 0, x: 0, duration: 0.4, ease: IN }, t);
+      const hide = (el, t, d = 0.2) => tl.to(el, { autoAlpha: 0, duration: d, ease: OUT }, t);
+      const openLayer = (el, t) => tl.fromTo(el, { autoAlpha: 1, yPercent: 100 }, { yPercent: 0, duration: 0.45, ease: IN, immediateRender: false }, t);
+      const txt = (el, s, t) => tl.set(el, { text: s }, t);
+      const clock = (s, v, t) => { txt(s.ck, v, t); txt(s.ltime, v, t); };
+      const cap = (id, t, d) => { show(id, t, { y: -12 }); hide(id, t + d); };
+
+      tl.set("#world", WIDE, 0);
+      tl.set(".cap", { xPercent: -50 }, 0);
+
+      // 0-3.6 Four businesses, everyone busy. Status chips pop in so the eye lands on each owner's own words.
+      cap("#cap-open", 0.2, 3.2);
+      S.forEach((s, i) => tl.fromTo(s.node.querySelector(".status"), { scale: 0.8, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.45, ease: IN }, 0.5 + i * 0.18));
+
+      // Take one: each phone lights up unseen, then goes dark. The camera relays along the four businesses.
+      let t = 3.6;
+      S.forEach((s, i) => {
+        cam(at(i), t, i === 0 ? 0.9 : 0.75);
+        const a = t + (i === 0 ? 0.9 : 0.75) + 0.1;
+        clock(s, s.n.one.time, a);
+        if (s.n.one.kind === "call") {
+          openLayer(s.call, a);
+          s.rings.forEach((r, k) => tl.fromTo(r, { scale: 1, opacity: 0.6 }, { scale: 1.8, opacity: 0, duration: 0.8, ease: "power1.out", repeat: 1 }, a + 0.2 + k * 0.4));
+          tl.set(s.lock, { autoAlpha: 0 }, a + 0.45);
+          tl.set(s.lock, { autoAlpha: 1 }, a + 1.8);
+          hide(s.call, a + 1.8, 0.25);
+          show(s.n1, a + 2.0, { y: -30 });
+          tl.to(s.dim, { opacity: 0.45, duration: 0.6, ease: "power1.inOut" }, a + 3.1);
+          t = a + 3.1;
+        } else {
+          show(s.n1, a + 0.2, { y: -30 });
+          if (s.cc) { txt(s.cc, "11/12 · 1 empty", a + 1.1); tl.set(s.cc, { className: "cc empty" }, a + 1.1); tl.fromTo(s.cc, { scale: 1.15 }, { scale: 1, duration: 0.4, ease: IN, immediateRender: false }, a + 1.1); }
+          tl.to(s.dim, { opacity: 0.45, duration: 0.6, ease: "power1.inOut" }, a + 2.4);
+          t = a + 2.6;
+        }
+      });
+
+      // 2:46 chorus: the session ends, every owner finally looks, and every client is already gone.
+      cam(WIDE, t, 0.9);
+      const c = t + 0.9;
+      cap("#cap-246", c, 3.8);
+      S.forEach((s, i) => {
+        clock(s, "2:46", c);
+        txt(s.st, "Free", c);
+        tl.to(s.dot, { backgroundColor: "#8e8e93", duration: 0.2 }, c);
+        tl.to(s.dim, { opacity: 0, duration: 0.3 }, c);
+        openLayer(s.tA, c + 0.2 + i * 0.08);
+        tl.set(s.lock, { autoAlpha: 0 }, c + 0.7 + i * 0.08);
+        const b = [...s.tAi];
+        const first = b.length === 3 ? 1 : 0;
+        if (first) tl.set(b[0], { autoAlpha: 1 }, c + 0.2);
+        show(b[first], c + 1.0 + i * 0.1);
+        show(b[first + 1], c + 2.2 + i * 0.12);
+        if (s.lost) show(s.lost, c + 2.5 + i * 0.12, { scale: 0.9 });
+      });
+      t = c + 4.2;
+
+      // Rewind: the whole afternoon runs backwards to 2:14.
+      const r = t;
+      show("#scrub", r, { y: 10 });
+      tl.fromTo("#scrub i", { scaleX: 1 }, { scaleX: 0, duration: 2.0, ease: "power2.inOut" }, r);
+      [["2:46", 0], ["2:38", 0.35], ["2:31", 0.7], ["2:22", 1.05], ["2:17", 1.4], ["2:14", 1.75]].forEach(([v, d]) => S.forEach((s) => clock(s, v, r + d)));
+      S.forEach((s, i) => {
+        tl.set(s.lock, { autoAlpha: 1 }, r + 0.2);
+        tl.to(s.tA, { yPercent: 100, duration: 0.5, ease: OUT }, r + 0.2 + i * 0.05);
+        tl.set(s.tA, { autoAlpha: 0 }, r + 0.75);
+        hide(s.n1, r + 1.2);
+        if (s.lost) hide(s.lost, r + 0.4);
+        txt(s.st, s.n.busy, r + 1.8);
+        tl.to(s.dot, { backgroundColor: "#ff453a", duration: 0.2 }, r + 1.8);
+        if (s.cc) { txt(s.cc, "12/12", r + 1.3); tl.set(s.cc, { className: "cc" }, r + 1.3); }
+      });
+      show("#take2", r + 0.6, { scale: 0.92 });
+      hide("#take2", r + 2.6, 0.25);
+      hide("#scrub", r + 2.4);
+      t = r + 2.9;
+
+      // Take two: the same messages arrive, the owner is still busy, every one is answered and booked.
+      cap("#cap-t2", t + 0.9, 3.0);
+      S.forEach((s, i) => {
+        cam(at(i), t, i === 0 ? 0.9 : 0.75);
+        const a = t + (i === 0 ? 0.9 : 0.75) + 0.1;
+        clock(s, s.n.one.time, a);
+        let k = a;
+        tl.set(s.lock, { autoAlpha: 0 }, a + 0.45);
+        if (s.n.one.kind === "call") {
+          openLayer(s.call, a);
+          s.rings.forEach((rg, j) => tl.fromTo(rg, { scale: 1, opacity: 0.6 }, { scale: 1.8, opacity: 0, duration: 0.8, ease: "power1.out" }, a + 0.2 + j * 0.3));
+          k = a + 0.9;
+          tl.set(s.tB, { autoAlpha: 1 }, k);
+          tl.set(s.call, { autoAlpha: 0 }, k + 0.05);
+        } else {
+          openLayer(s.tB, a);
+        }
+        const steps = [...s.tBi];
+        steps.forEach((el, j) => {
+          const when = k + 0.35 + j * 0.75;
+          if (el.classList.contains("booked") && s.cc) {
+            show(el, when);
+            txt(s.cc, "12/12 Full", when);
+            tl.set(s.cc, { className: "cc full" }, when);
+            tl.fromTo(s.cc, { scale: 0.6 }, { scale: 1, duration: 0.6, ease: "back.out(2)", immediateRender: false }, when); // the one back.out
+          } else if (el.classList.contains("booked")) {
+            tl.fromTo(el, { autoAlpha: 0, scale: 0.9 }, { autoAlpha: 1, scale: 1, duration: 0.45, ease: IN }, when);
+          } else show(el, when);
+        });
+        t = k + 0.35 + steps.length * 0.75 + 0.6;
+      });
+
+      // Chorus two: 2:46 again, and this time every phone shows what got done.
+      cam(WIDE, t, 0.9);
+      const c2 = t + 0.9;
+      S.forEach((s, i) => {
+        clock(s, "2:46", c2);
+        txt(s.st, "Free", c2);
+        tl.to(s.dot, { backgroundColor: "#8e8e93", duration: 0.2 }, c2);
+        tl.set(s.lock, { autoAlpha: 1 }, c2 - 0.3);
+        tl.to(s.tB, { yPercent: 100, duration: 0.45, ease: OUT }, c2 - 0.3 + i * 0.05);
+        tl.set(s.tB, { autoAlpha: 0 }, c2 + 0.25);
+        show(s.n2, c2 + 0.4 + i * 0.15, { y: -30 });
+        tl.fromTo(s.won, { autoAlpha: 0, scale: 0.85 }, { autoAlpha: 1, scale: 1, duration: 0.45, ease: IN }, c2 + 0.7 + i * 0.15);
+      });
+      t = c2 + 3.0;
+
+      // Ending: the week, full, one evening kept. Then the promise and the ask.
+      tl.to("#world", { yPercent: -8, autoAlpha: 0, duration: 0.5, ease: OUT }, t);
+      tl.set("#end", { autoAlpha: 1 }, t + 0.45);
+      tl.fromTo("#week", { y: 60, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, ease: IN }, t + 0.5);
+      tl.fromTo(".wk .c", { scale: 0.85, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.4, ease: IN, stagger: { each: 0.03, from: "start" } }, t + 0.7);
+      tl.fromTo(".wk .off", { backgroundColor: "#f1eee7" }, { backgroundColor: "#ffa524", duration: 0.5, ease: "power1.inOut", immediateRender: false }, t + 1.8);
+      tl.fromTo("#pitch h2", { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, ease: IN }, t + 2.4);
+      tl.fromTo("#pitch p", { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, ease: IN }, t + 2.8);
+      tl.fromTo("#pitch .cta", { y: 30, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6, ease: IN }, t + 3.1);
+      tl.set({}, {}, 57);
+      window.__END = t;
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
