@@ -49,16 +49,18 @@ const CTA = "Book a free 20-min call";
     {(hasReel || SHOW_EMPTY_SLOT) && (
       <div class="hero-media reveal" data-delay="260">
         {hasReel ? <video
-          src="/hero.mp4#t=0.1"
-          width="316"
-          height="176"
+          src="/hero.mp4"
+          poster="/hero-poster.jpg"
+          width="440"
+          height="550"
           muted
+          loop
           playsinline
           preload="metadata"
           aria-hidden="true"
           tabindex="-1"
         ></video> : <div class="reel-slot" aria-hidden="true"></div>}
-        <p class="caption">Showreel</p>
+        <p class="caption">What happens while you work</p>
       </div>
     )}
   </div>
@@ -84,9 +86,9 @@ const CTA = "Book a free 20-min call";
     margin: 0 auto;
     padding: 6rem 2rem;
     display: grid;
-    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     align-items: start;
-    gap: 5rem;
+    gap: 4rem;
   }
 
   .headline {
@@ -187,12 +189,15 @@ const CTA = "Book a free 20-min call";
   .reel-slot {
     display: block;
     cursor: pointer;
-    width: 316px;
+    width: 440px;
     max-width: 100%;
     height: auto;
-    aspect-ratio: 316 / 176;
-    background: #f0f0f0;
+    aspect-ratio: 4 / 5;
+    background: #f6f4ef;
     object-fit: cover;
+    border-radius: 20px;
+    border: 1px solid #e4e0d7;
+    box-shadow: 0 30px 60px -35px rgba(10, 10, 11, 0.35);
   }
 
   .reel-slot { cursor: default; }
@@ -254,8 +259,8 @@ const CTA = "Book a free 20-min call";
     btn.addEventListener("mouseleave", (e) => drive(e, false));
   }
 
-  // Showreel (only in the DOM when public/hero.mp4 exists): plays once, then
-  // holds its last frame (no loop). Click replays. Reduced motion: no autoplay.
+  // Hero film (only in the DOM when public/hero.mp4 exists): a 15s loop whose
+  // first and last frame is the poster. Click restarts. Reduced motion: poster only.
   const media = document.querySelector<HTMLElement>(".hero-media");
   const video = media?.querySelector("video");
   if (media && video) {
