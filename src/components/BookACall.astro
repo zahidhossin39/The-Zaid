@@ -24,7 +24,7 @@ import HoursBar from "./HoursBar.astro";
 
     <div class="mt-10"><HoursBar variant="book" /></div>
 
-    <div class="reveal mx-auto mt-10 max-w-[64rem] overflow-hidden rounded-xl border border-border bg-surface" data-delay="240">
+    <div class="reveal mx-auto mt-10 max-w-[64rem]" data-delay="240">
       <div id="cal-embed" class="relative min-h-[34rem] w-full" data-cal-link={CAL_LINK}>
         <!-- Sits behind the embed; removed once Cal says the calendar is ready. -->
         <p class="cal-ph absolute inset-x-0 top-0 z-0 p-10 text-muted">
@@ -104,7 +104,7 @@ import HoursBar from "./HoursBar.astro";
       });
       w.Cal("ui", {
         theme: "dark",
-        cssVarsPerTheme: { dark: { "cal-brand": "#F4F2ED" } },
+        cssVarsPerTheme: { dark: { "cal-brand": "#F4F2ED", "cal-bg": "transparent", "cal-bg-muted": "transparent", "cal-border-booker": "transparent", "cal-border-booker-width": "0px" } },
         hideEventTypeDetails: false,
       });
       const fail = () => {
