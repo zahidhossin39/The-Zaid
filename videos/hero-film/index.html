@@ -38,6 +38,7 @@
       .state.free { background: #fff; color: var(--ink); box-shadow: 0 0 0 4px var(--ink) inset; }
       .state.free i { background: transparent; box-shadow: 0 0 0 5px var(--ink) inset; }
       .clock { font-size: 72px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .clock small { font-size: 56px; font-weight: 600; color: var(--muted); margin-left: 8px; }
 
       /* Middle: one card, the thing that happens */
       .card { position: absolute; left: 60px; top: 276px; width: 960px; height: 900px; border-radius: 56px; background: var(--card); box-shadow: 0 2px 0 var(--line) inset, 0 40px 80px -50px rgba(10,10,11,.35); overflow: hidden; }
@@ -59,9 +60,9 @@
       #ringing { position: absolute; inset: 0; }
       .ring { position: absolute; left: 50%; top: 190px; width: 240px; height: 240px; margin-left: -120px; border-radius: 50%; background: var(--ink); display: grid; place-items: center; }
       .ring > svg { width: 110px; height: 110px; fill: #fff; }
-      .arc { position: absolute; left: 50%; top: 160px; width: 300px; height: 300px; margin-left: -150px; transform: rotate(-90deg); }
-      .arc circle { fill: none; stroke-width: 12; }
-      .arc .track { stroke: var(--line); }
+      .arc { position: absolute; left: 50%; top: 145px; width: 330px; height: 330px; margin-left: -165px; transform: rotate(-90deg); }
+      .arc circle { fill: none; stroke-width: 22; }
+      .arc .track { stroke: #d6d0c4; }
       .arc .fill { stroke: var(--ink); stroke-linecap: round; }
       .caller { position: absolute; left: 0; right: 0; top: 500px; text-align: center; font-size: 72px; font-weight: 700; }
       .vm { position: absolute; left: 50%; top: 610px; transform: translateX(-50%); display: inline-block; padding: 10px 26px; font-size: 72px; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -88,8 +89,9 @@
       .msg.wait b { background: var(--ink); color: #fff; }
       .msg.wait .t { background: #fff; box-shadow: 0 0 0 4px var(--ink) inset; }
       .chip { align-self: center; font-size: 56px; font-weight: 700; padding: 12px 28px; border-radius: 999px; background: var(--bubble); opacity: 0; visibility: hidden; }
-      .relief { position: absolute; left: 0; right: 0; top: 400px; text-align: center; font-size: 84px; font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; opacity: 0; visibility: hidden; }
-      .relief span { display: inline-block; padding: 26px 44px; border-radius: 40px; background: #fff; box-shadow: 0 30px 60px -30px rgba(10,10,11,.35), 0 0 0 3px var(--line) inset; }
+      .relief { position: absolute; left: 0; right: 0; top: 350px; bottom: 0; padding: 0 48px 40px; display: flex; flex-direction: column; justify-content: center; gap: 34px; background: #fff; opacity: 0; visibility: hidden; }
+      .relief .outcome { opacity: 1; visibility: visible; }
+      .relief p { text-align: center; font-size: 80px; font-weight: 800; letter-spacing: -0.03em; }
 
       /* Bottom band: the running tally */
       #tally { position: absolute; left: 60px; right: 60px; bottom: 34px; height: 110px; display: flex; align-items: center; justify-content: space-between; font-size: 58px; font-weight: 700; }
@@ -107,19 +109,19 @@
       .tile .how { font-size: 56px; font-weight: 600; color: var(--muted); }
       #ptally { font-size: 64px; font-weight: 700; color: var(--ink); }
 
-      #top, #who-f, #card-d, #card-f, #tally, #was-f, #f0 { opacity: 0; visibility: hidden; }
+      #top, #who-f, #card-d, #card-f, #tally, #was-f { opacity: 0; visibility: hidden; }
     </style>
   </head>
   <body>
-    <div id="stage" data-composition-id="main" data-start="0" data-duration="13.6" data-fps="30" data-width="1080" data-height="1350">
+    <div id="stage" data-composition-id="main" data-start="0" data-duration="16" data-fps="30" data-width="1080" data-height="1350">
       <div id="top">
         <div class="who" id="who-d">
           <div class="row1"><div class="badge"><svg viewBox="0 0 24 24"><path d="M7 3c-2 0-3.5 1.6-3.5 4 0 2 .8 3.4 1.3 5 .5 1.8.6 4 1.2 6.5.3 1.3 1.6 1.4 2 .1.5-1.6.8-4.1 2-4.1s1.5 2.5 2 4.1c.4 1.3 1.7 1.2 2-.1.6-2.5.7-4.7 1.2-6.5.5-1.6 1.3-3 1.3-5 0-2.4-1.5-4-3.5-4-1.6 0-2.3 1-3.5 1S8.6 3 7 3z"/></svg></div><div class="name">Brightside Dental</div></div>
-          <div class="row2"><div class="state" id="st-d"><i id="dot-d"></i><span id="st-d-t">With a patient</span></div><div class="clock">2:04</div></div>
+          <div class="row2"><div class="state" id="st-d"><i id="dot-d"></i><span id="st-d-t">With a patient</span></div><div class="clock"><span id="ck-d">2:04</span><small>PM</small></div></div>
         </div>
         <div class="who" id="who-f">
           <div class="row1"><div class="badge"><svg viewBox="0 0 24 24"><path d="M8.5 9.5 8 7a4 4 0 0 1 8 0l-.5 2.5"/><circle cx="12" cy="15" r="6"/></svg></div><div class="name">Ember Fitness</div></div>
-          <div class="row2"><div class="state" id="st-f"><i id="dot-f"></i><span id="st-f-t">Teaching a class</span></div><div class="clock" id="ck-f">2:31</div></div>
+          <div class="row2"><div class="state" id="st-f"><i id="dot-f"></i><span id="st-f-t">Teaching a class</span></div><div class="clock"><span id="ck-f">2:31</span><small>PM</small></div></div>
         </div>
       </div>
 
@@ -130,7 +132,7 @@
           <div class="pill"><span class="now" id="now-d">Answered for you</span></div>
         </div>
         <div id="ringing">
-          <svg class="arc" viewBox="0 0 300 300"><circle class="track" cx="150" cy="150" r="140"/><circle class="fill" id="arc" cx="150" cy="150" r="140" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></svg>
+          <svg class="arc" viewBox="0 0 330 330"><circle class="track" cx="165" cy="165" r="150"/><circle class="fill" id="arc" cx="165" cy="165" r="150" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></svg>
           <div class="ring"><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></div>
           <div class="caller">New patient calling…</div>
           <div class="vm strikable" id="vm">Voicemail in <span id="vmn">3</span></div>
@@ -158,7 +160,7 @@
           <div class="chip" id="f2">Texted 3 on the waitlist</div>
           <div class="msg wait" id="f3"><b>From waitlist</b><div class="t">I'll take it!</div></div>
         </div>
-        <div class="relief" id="relief" data-layout-allow-overlap><span>Class done.<br />Nothing to chase.</span></div>
+        <div class="relief" id="relief"><div class="outcome" id="f4"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Spot refilled, 12/12</div><p>Nothing to chase.</p></div>
       </div>
 
       <div id="tally"><div>Booked <span class="n" id="tb">0</span></div><div>Refilled <span class="n" id="tr">0</span></div><div>Missed <span class="n" id="tm">0</span></div></div>
@@ -169,7 +171,7 @@
           <div class="tile">
             <div class="row1"><div class="badge"><svg viewBox="0 0 24 24"><path d="M7 3c-2 0-3.5 1.6-3.5 4 0 2 .8 3.4 1.3 5 .5 1.8.6 4 1.2 6.5.3 1.3 1.6 1.4 2 .1.5-1.6.8-4.1 2-4.1s1.5 2.5 2 4.1c.4 1.3 1.7 1.2 2-.1.6-2.5.7-4.7 1.2-6.5.5-1.6 1.3-3 1.3-5 0-2.4-1.5-4-3.5-4-1.6 0-2.3 1-3.5 1S8.6 3 7 3z"/></svg></div><div class="name">Brightside Dental</div></div>
             <div class="win"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>New patient, 4:30 PM</div>
-            <div class="how">Missed call, answered and booked</div>
+            <div class="how">Call answered for you, booked</div>
           </div>
           <div class="tile">
             <div class="row1"><div class="badge"><svg viewBox="0 0 24 24"><path d="M8.5 9.5 8 7a4 4 0 0 1 8 0l-.5 2.5"/><circle cx="12" cy="15" r="6"/></svg></div><div class="name">Ember Fitness</div></div>
@@ -193,74 +195,76 @@
         tl.fromTo(el, { yPercent: 40, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.3, ease: IN, immediateRender: false }, t + 0.15);
       };
 
-      // 0-0.8 poster holds (both businesses, both wins, how they happened); 0.8-1.4 it lifts off the afternoon
-      tl.set(["#top", "#card-d", "#tally"], { autoAlpha: 1 }, 0.8);
-      tl.to("#poster", { yPercent: -106, duration: 0.6, ease: "power3.inOut" }, 0.8);
-      tl.set("#poster", { autoAlpha: 0 }, 1.45);
+      // 0-1.0 poster holds (second half of a ~3.4 s hold across the loop); 1.0-1.6 it lifts off the afternoon
+      tl.set(["#top", "#card-d", "#tally"], { autoAlpha: 1 }, 1.0);
+      tl.to("#poster", { yPercent: -106, duration: 0.6, ease: "power3.inOut" }, 1.0);
+      tl.set("#poster", { autoAlpha: 0 }, 1.65);
 
       // Busy dots breathe: you're with someone
-      tl.fromTo(["#dot-d", "#dot-f"], { scale: 1 }, { scale: 0.55, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 15 }, 0.8);
+      tl.fromTo(["#dot-d", "#dot-f"], { scale: 1 }, { scale: 0.55, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 17 }, 1.0);
 
-      // 1.4-2.9 ringing, and the call is about to go to voicemail (Missed is about to tick)
-      tl.fromTo(".ring", { scale: 1 }, { scale: 1.05, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 5 }, 1.4);
-      tl.to("#arc", { strokeDashoffset: 0, duration: 1.2, ease: "none" }, 1.4);
-      tl.set("#vmn", { text: "2" }, 1.8);
-      tl.set("#vmn", { text: "1" }, 2.2);
-      tl.fromTo("#tm", { boxShadow: "0 0 0 3px #e4e0d7 inset" }, { boxShadow: "0 0 0 6px #0a0a0b inset", duration: 0.25, yoyo: true, repeat: 3, ease: "sine.inOut" }, 1.6);
-      strike("#vm", 2.55);
-      show("#now-d", 2.9, { scale: 0.85, y: 0 });
-      tl.to("#ringing", { autoAlpha: 0, duration: 0.2, ease: OUT }, 3.2);
+      // 1.6-3.0 ringing, about to go to voicemail; Missed is about to tick
+      tl.fromTo(".ring", { scale: 1 }, { scale: 1.05, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 5 }, 1.6);
+      tl.to("#arc", { strokeDashoffset: 0, duration: 1.4, ease: "none" }, 1.6);
+      tl.set("#vmn", { text: "2" }, 2.1);
+      tl.set("#vmn", { text: "1" }, 2.6);
+      tl.fromTo("#tm", { scale: 1 }, { scale: 1.2, duration: 0.25, yoyo: true, repeat: 3, ease: "sine.inOut" }, 1.9);
+      strike("#vm", 3.0);
+      show("#now-d", 3.2, { scale: 0.85, y: 0 });
 
-      // 3.3-6.4 the call happens without you, and it books
-      tl.set("#calltime", { text: "0:18" }, 3.3);
-      show("#wave", 3.3, { scale: 0.6, y: 0 });
+      // 3.5-6.6 the call happens without you, and it books (the first line enters as the ring leaves: no empty card)
+      tl.to("#ringing", { autoAlpha: 0, duration: 0.2, ease: OUT }, 3.5);
+      tl.set("#calltime", { text: "0:01" }, 3.5);
+      show("#wave", 3.5, { scale: 0.6, y: 0 });
       document.querySelectorAll("#wave i").forEach((w, k) =>
-        tl.fromTo(w, { scaleY: 0.3 }, { scaleY: 1, duration: 0.2 + k * 0.04, ease: "sine.inOut", yoyo: true, repeat: 7 }, 3.35 + k * 0.05));
-      ["0:19", "0:20", "0:21", "0:22", "0:23", "0:24"].forEach((v, k) => tl.set("#calltime", { text: v }, 3.8 + k * 0.45));
-      show("#d1", 3.5, { x: -24, y: 0 });
-      show("#d2", 4.3, { x: 24, y: 0 });
-      show("#d3", 5.1, { x: -24, y: 0 });
-      tl.fromTo("#d4", { autoAlpha: 0, scale: 0.8 }, { autoAlpha: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, 5.8); // the one back.out
-      roll("#tb", "1", 6.0);
-      tl.set("#st-d", { className: "state free" }, 6.4);
-      tl.set("#st-d-t", { text: "Patient done" }, 6.4);
+        tl.fromTo(w, { scaleY: 0.3 }, { scaleY: 1, duration: 0.2 + k * 0.04, ease: "sine.inOut", yoyo: true, repeat: 7 }, 3.55 + k * 0.05));
+      ["0:02", "0:03", "0:04", "0:05", "0:06", "0:07"].forEach((v, k) => tl.set("#calltime", { text: v }, 4.0 + k * 0.45));
+      show("#d1", 3.55, { x: -24, y: 0 });
+      show("#d2", 4.35, { x: 24, y: 0 });
+      show("#d3", 5.15, { x: -24, y: 0 });
+      tl.fromTo("#d4", { autoAlpha: 0, scale: 0.8 }, { autoAlpha: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, 5.95);
+      roll("#tb", "1", 6.15);
+      tl.set("#st-d", { className: "state free" }, 6.6);
+      tl.set("#st-d-t", { text: "Patient done" }, 6.6);
+      tl.set("#ck-d", { text: "2:05" }, 6.6);
 
-      // 7.0-7.6 hand-off: dental lifts away like a finished card, fitness rises into place (seats already in)
-      tl.fromTo("#card-d", { clipPath: "inset(0% 0% 0% 0% round 56px)" }, { clipPath: "inset(0% 0% 100% 0% round 56px)", y: -40, duration: 0.4, ease: "power3.in", immediateRender: false }, 7.0);
-      tl.set("#card-d", { autoAlpha: 0 }, 7.4);
-      tl.set("#f0", { autoAlpha: 1 }, 7.0);
-      tl.fromTo("#card-f", { autoAlpha: 1, y: 40, clipPath: "inset(100% 0% 0% 0% round 56px)" }, { y: 0, clipPath: "inset(0% 0% 0% 0% round 56px)", duration: 0.5, ease: "power3.out", immediateRender: false }, 7.35);
-      tl.to("#who-d", { autoAlpha: 0, y: -24, duration: 0.25, ease: OUT }, 7.0);
-      tl.fromTo("#who-f", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: IN, immediateRender: false }, 7.25);
+      // 7.4-8.1 hand-off: dental folds up, fitness unfolds (overlapping), already holding the class and Maya's text
+      tl.fromTo("#card-d", { clipPath: "inset(0% 0% 0% 0% round 56px)" }, { clipPath: "inset(0% 0% 100% 0% round 56px)", y: -40, duration: 0.35, ease: "power3.in", immediateRender: false }, 7.4);
+      tl.set("#card-d", { autoAlpha: 0 }, 7.75);
+      tl.set("#f1", { autoAlpha: 1 }, 7.4);
+      tl.fromTo("#card-f", { autoAlpha: 1, y: 40, clipPath: "inset(100% 0% 0% 0% round 56px)" }, { y: 0, clipPath: "inset(0% 0% 0% 0% round 56px)", duration: 0.5, ease: "power3.out", immediateRender: false }, 7.75);
+      tl.to("#who-d", { autoAlpha: 0, y: -24, duration: 0.25, ease: OUT }, 7.4);
+      tl.fromTo("#who-f", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: IN, immediateRender: false }, 7.65);
 
-      // 7.8-10.3 a member cancels, the spot empties, the waitlist takes it
-      show("#f1", 7.9, { x: -24, y: 0 });
-      tl.set("#seat", { className: "gone" }, 8.3);
-      tl.set("#f0n", { text: "11/12" }, 8.3);
-      tl.fromTo("#seat", { scale: 1.25 }, { scale: 1, duration: 0.35, ease: IN, immediateRender: false }, 8.3);
-      show("#was-f", 8.3, { scale: 0.85, y: 0 });
-      show("#f2", 8.9, { scale: 0.9, y: 0 });
-      show("#f3", 9.5, { y: 30 });
-      tl.set("#seat", { className: "back" }, 9.6);
-      tl.fromTo("#seat", { scale: 0.4 }, { scale: 1, duration: 0.4, ease: IN, immediateRender: false }, 9.6);
-      tl.set("#f0n", { text: "12/12 Full", className: "full" }, 9.6);
-      strike("#was-f", 9.8);
-      tl.to("#was-f", { autoAlpha: 0, duration: 0.15 }, 10.3);
-      show("#now-f", 10.35, { scale: 0.85, y: 0 });
-      roll("#tr", "1", 10.4);
+      // 8.4-11.1 the spot empties, the waitlist takes it
+      tl.set("#seat", { className: "gone" }, 8.4);
+      tl.set("#f0n", { text: "11/12" }, 8.4);
+      tl.fromTo("#seat", { scale: 1.25 }, { scale: 1, duration: 0.35, ease: IN, immediateRender: false }, 8.4);
+      show("#was-f", 8.4, { scale: 0.85, y: 0 });
+      show("#f2", 9.0, { scale: 0.9, y: 0 });
+      show("#f3", 9.7, { y: 30 });
+      tl.set("#seat", { className: "back" }, 9.8);
+      tl.fromTo("#seat", { scale: 0.4 }, { scale: 1, duration: 0.4, ease: IN, immediateRender: false }, 9.8);
+      tl.set("#f0n", { text: "12/12 Full", className: "full" }, 9.8);
+      strike("#was-f", 10.0);
+      tl.to("#was-f", { autoAlpha: 0, duration: 0.15 }, 10.5);
+      show("#now-f", 10.55, { scale: 0.85, y: 0 });
 
-      // 11.0-12.3 relief: class done, nothing to chase, sitting over the evidence
-      tl.set("#st-f", { className: "state free" }, 11.0);
-      tl.set("#st-f-t", { text: "Class done" }, 11.0);
-      tl.set("#ck-f", { text: "2:46" }, 11.0);
-      tl.to(["#f0", "#f1", "#f2", "#f3"], { opacity: 0.22, duration: 0.3, ease: "power1.out" }, 11.0);
-      show("#relief", 11.15, { y: 24 });
+      // 11.1-13.0 fitness gets the same win as dental (an amber slab), then relief
+      tl.fromTo("#relief", { autoAlpha: 1, clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "power3.out", immediateRender: false }, 11.1);
+      tl.fromTo("#f4", { scale: 0.8 }, { scale: 1, duration: 0.6, ease: "back.out(1.8)", immediateRender: false }, 11.1);
+      tl.fromTo("#relief p", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.45, ease: IN }, 11.7);
+      roll("#tr", "1", 11.3);
+      tl.set(["#f1", "#f2", "#f3"], { autoAlpha: 0 }, 11.5);
+      tl.set("#st-f", { className: "state free" }, 11.7);
+      tl.set("#st-f-t", { text: "Class done" }, 11.7);
+      tl.set("#ck-f", { text: "2:46" }, 11.7);
 
-      // 12.3-13.0 the receipts come back down over the whole afternoon; the loop ends where it began
-      tl.set("#poster", { autoAlpha: 1 }, 12.3);
-      tl.fromTo("#poster", { yPercent: -106 }, { yPercent: 0, duration: 0.7, ease: "power3.inOut", immediateRender: false }, 12.3);
-      tl.set(["#top", "#card-f", "#tally"], { autoAlpha: 0 }, 12.75);
-      tl.set({}, {}, 13.6);
+      // 13.0-13.6 the receipts come back down; hold to 16.0 (with the 1.0 s at the start, ~3.4 s of poster per loop)
+      tl.set("#poster", { autoAlpha: 1 }, 13.0);
+      tl.fromTo("#poster", { yPercent: -106 }, { yPercent: 0, duration: 0.6, ease: "power3.inOut", immediateRender: false }, 13.0);
+      tl.set(["#top", "#card-f", "#tally"], { autoAlpha: 0 }, 13.45);
+      tl.set({}, {}, 16);
 
       window.__timelines = window.__timelines || {};
       window.__timelines["main"] = tl;

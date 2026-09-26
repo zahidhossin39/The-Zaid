@@ -193,8 +193,8 @@ const CTA = "Book a free 20-min call";
   /* Pause control: WCAG 2.2.2 for a looping autoplay video */
   .pp {
     position: absolute;
-    right: 0;
-    bottom: -44px;
+    right: 12px;
+    top: 12px;
     width: 32px;
     height: 32px;
     border: 0;
@@ -231,7 +231,6 @@ const CTA = "Book a free 20-min call";
     background: #f6f4ef;
     object-fit: cover;
     border-radius: 20px;
-    border: 1px solid #e4e0d7;
     box-shadow: 0 30px 60px -35px rgba(10, 10, 11, 0.35);
   }
 
@@ -288,8 +287,8 @@ const CTA = "Book a free 20-min call";
     btn.addEventListener("mouseleave", (e) => drive(e, false));
   }
 
-  // Hero film (only in the DOM when public/hero.mp4 exists): a 13.6s loop whose
-  // first and last frame is the poster. Pause button below it. Reduced motion: poster only.
+  // Hero film (only in the DOM when public/hero.mp4 exists): a 16s loop whose
+  // first and last frame is the poster. Pause button in its top-right corner. Reduced motion: poster only.
   const media = document.querySelector<HTMLElement>(".hero-media");
   const video = media?.querySelector("video");
   if (media && video) {

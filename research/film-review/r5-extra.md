@@ -1,0 +1,33 @@
+
+## Round 5 notes (read these first)
+- **This is v5.** The source is `D:/Vibe-coding/ZAID-WEBSITE/videos/hero-film/index.html` (16 s loop, rendered at 1080x1350, shipped at 880x1100). The site slot is 440x550 on desktop and 327x409 on mobile.
+- **v5 frames** are in `D:/Vibe-coding/ZAID-WEBSITE/research/film-review/v5/`: `at440-*`, `at327-*`, the sheet, and the page screenshots.
+- **Round 4 scores:** Claude 8.4, Gemini 7.3. Gemini's round 4 is in `r4-gemini.md`.
+- **Claude's round 4 asks:**
+  - The poster was on screen only about 1.6 s per loop.
+  - Fitness had no climax.
+  - "Missed call" in the poster copy sat above "0 missed".
+  - Empty card frames.
+  - The messy relief overlay.
+  - The call timer started at 0:18, and the clock had no PM.
+  - The arc was invisible.
+  - The Missed pulse was invisible.
+  - The hand-off had a blank stage.
+  - Nested frames.
+  - The pause dot floated.
+  - The file was 2.1 MB.
+- **What changed in v5:**
+  - The poster is held about 3.4 s per loop (2.4 s at the end plus 1.0 s at the start).
+  - Fitness now gets its own amber slab, "Spot refilled, 12/12", with the same back.out as dental, plus "Nothing to chase." on a solid card that wipes in.
+  - The poster line now reads "Call answered for you, booked".
+  - The first call line enters as the ringing exits, and the fitness card arrives already holding the class and Maya's text.
+  - The call timer runs 0:01 to 0:07.
+  - Clocks read "2:04 PM", then "2:05 PM" at "Patient done".
+  - The arc stroke is 22 px on a darker track.
+  - The Missed chip scales up while pulsing.
+  - The hand-off is a quick sequential fold and unfold.
+  - The video border is removed.
+  - The pause button sits inside the top-right corner, clear of the content.
+  - The web file is 880x1100 at 0.7 MB.
+  - The ring-to-call transition is tighter.
+- **Score v5 fresh.** List only the problems that remain or are new, ranked by impact. Say plainly whether it has reached 9 and what is still between it and 9.5.
