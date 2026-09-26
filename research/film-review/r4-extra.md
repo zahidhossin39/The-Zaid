@@ -1,0 +1,30 @@
+
+## Round 4 notes (read these first)
+- **This is v4.** The source is `D:/Vibe-coding/ZAID-WEBSITE/videos/hero-film/index.html` (13.6 s loop, 1080x1350). The site slot is 440x550 on desktop and 327x409 on mobile.
+- **v4 frames** are in `D:/Vibe-coding/ZAID-WEBSITE/research/film-review/v4/`: `at440-*`, `at327-*`, `sheet-2fps-at-327px.png`, and `page-desktop-1440.png` / `page-desktop-1280.png`. The grey CTA in the page shots is a capture during the page's fade-in reveal; the real button is solid black.
+- **Round 3 reviews** are in `r3-gemini.md` (7.8) and the Claude round 3 review (7.4). Claude's round 3 key asks were:
+  - the patient never says yes
+  - the countdown isn't readable
+  - the poster shows no mechanism
+  - dental has no relief beat
+  - two headlines
+  - the pause button covers the tally
+  - the carousel hand-off
+  - a frozen timer
+  - the sub copy doesn't match the film
+- **What changed in v4:**
+  - The patient now says "Perfect, see you then." before "Booked".
+  - A centred "Voicemail in 3/2/1" with an arc filling around the ring, then struck through.
+  - The Missed tally pulses during the countdown.
+  - The call timer ticks 0:18 to 0:24 alongside a waveform.
+  - Call lines alternate left and right.
+  - Dental flips to "Patient done".
+  - The hand-off is a fold-up and unfold (clip wipe), not a slide.
+  - The canceller is tagged "Maya"; the reply is tagged "From waitlist".
+  - "12/12 Full" is ink, not amber.
+  - The relief reads "Class done. / Nothing to chase." on a card over the dimmed thread.
+  - The poster has a smaller grey label, "While you were busy", plus a "how" line under each win.
+  - The pause button sits below the video.
+  - Screen-reader text is added.
+  - The sub copy now reads "systems that answer your calls, reply to messages and refill cancelled spots".
+- **Score v4 fresh.** List only the problems that remain or are new, ranked. Be concrete about what would take it to 9.5 or higher.

@@ -9,7 +9,7 @@ const SHOW_EMPTY_SLOT = true;
 
 const HEAD = "More customers shouldn't mean more hours.";
 const SUB =
-  "I build websites to bring customers in, and automations that reply, follow up and keep their details in one place, so you don't have to.";
+  "I build websites that bring customers in, and systems that answer your calls, reply to messages and refill cancelled spots, so you don't have to.";
 const CTA = "Book a free 20-min call";
 ---
 
@@ -60,6 +60,7 @@ const CTA = "Book a free 20-min call";
           aria-hidden="true"
           tabindex="-1"
         ></video> : <div class="reel-slot" aria-hidden="true"></div>}
+        <p class="sr-only">Example: while the owner was busy, a missed call to a dental practice was answered and booked for 4:30 PM, and a cancelled 6am class spot at a gym was refilled from the waitlist.</p>
         <button class="pp" type="button" aria-label="Pause video" hidden>
           <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
           <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
@@ -192,10 +193,10 @@ const CTA = "Book a free 20-min call";
   /* Pause control: WCAG 2.2.2 for a looping autoplay video */
   .pp {
     position: absolute;
-    right: 12px;
-    bottom: 12px;
-    width: 36px;
-    height: 36px;
+    right: 0;
+    bottom: -44px;
+    width: 32px;
+    height: 32px;
     border: 0;
     border-radius: 999px;
     background: rgba(10, 10, 11, 0.72);
@@ -211,10 +212,18 @@ const CTA = "Book a free 20-min call";
   .pp .i-play, .pp.paused .i-pause { display: none; }
   .pp.paused .i-play { display: block; }
 
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
   .hero-media video,
   .reel-slot {
     display: block;
-    cursor: pointer;
     width: 440px;
     max-width: 100%;
     height: auto;
@@ -279,8 +288,8 @@ const CTA = "Book a free 20-min call";
     btn.addEventListener("mouseleave", (e) => drive(e, false));
   }
 
-  // Hero film (only in the DOM when public/hero.mp4 exists): a 15s loop whose
-  // first and last frame is the poster. Click restarts. Reduced motion: poster only.
+  // Hero film (only in the DOM when public/hero.mp4 exists): a 13.6s loop whose
+  // first and last frame is the poster. Pause button below it. Reduced motion: poster only.
   const media = document.querySelector<HTMLElement>(".hero-media");
   const video = media?.querySelector("video");
   if (media && video) {
