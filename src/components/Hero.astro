@@ -1,6 +1,7 @@
 ---
 import fs from "node:fs";
-import DotGrid from "./DotGrid.astro";
+// import DotGrid from "./DotGrid.astro"; // paused: testing GridBackground
+import GridBackground from "./GridBackground.astro";
 
 // Showreel column only renders once public/hero.mp4 exists (checked at build).
 const hasReel = fs.existsSync("public/hero.mp4");
@@ -14,7 +15,8 @@ const CTA = "Book a free 20-min call";
 ---
 
 <section class="hero">
-  <DotGrid />
+  {/* <DotGrid /> */}
+  <GridBackground />
   <div class="hero-inner">
     <div class="hero-copy">
       <h1 class="headline reveal" data-delay="120">{HEAD}</h1>
