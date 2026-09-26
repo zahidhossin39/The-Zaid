@@ -41,7 +41,6 @@ const CTA = "Book a free 20-min call";
             </svg>{CTA}</span
           ><span class="btn-fill" aria-hidden="true"></span></a
         >
-        <a href="#proof" class="link">See examples ↓</a>
       </div>
       <p class="trust reveal" data-delay="380">Fixed price, agreed upfront · Final payment when it works as agreed · You own everything</p>
     </div>
@@ -51,8 +50,8 @@ const CTA = "Book a free 20-min call";
         {hasReel ? <video
           src="/hero.mp4"
           poster="/hero-poster.jpg"
-          width="440"
-          height="330"
+          width="460"
+          height="345"
           muted
           loop
           playsinline
@@ -60,11 +59,12 @@ const CTA = "Book a free 20-min call";
           aria-hidden="true"
           tabindex="-1"
         ></video> : <div class="reel-slot" aria-hidden="true"></div>}
-        <p class="sr-only">Example: while the owner was busy, a missed call to a dental practice was answered and booked for 4:30 PM, and a cancelled 6am class spot at a gym was refilled from the waitlist.</p>
+        <p class="sr-only">Example: while the owner was busy, a call to a dental practice was answered and a new patient booked into the calendar for 4:30 PM, and an Instagram DM to a gym was answered and the client booked into tomorrow's 6 AM class.</p>
         <button class="pp" type="button" aria-label="Pause video" hidden>
           <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
           <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
         </button>
+        <a href="#proof" class="link media-link">See examples ↓</a>
       </div>
     )}
   </div>
@@ -91,7 +91,8 @@ const CTA = "Book a free 20-min call";
     padding: 6rem 2rem;
     display: grid;
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    align-items: center;
+    align-content: center; /* row hugs content, centred in the viewport */
+    align-items: start;
     gap: 4rem;
   }
 
@@ -185,15 +186,21 @@ const CTA = "Book a free 20-min call";
     padding-bottom: 1px;
   }
 
+  /* top edge lines up with the headline */
   .hero-media {
     justify-self: end;
     position: relative;
   }
 
+  .media-link {
+    display: table;
+    margin: 1.1rem 0 0 auto;
+  }
+
   /* Pause control: WCAG 2.2.2 for a looping autoplay video */
   .pp {
     position: absolute;
-    right: 12px;
+    left: 12px;
     top: 12px;
     width: 32px;
     height: 32px;
@@ -224,7 +231,7 @@ const CTA = "Book a free 20-min call";
   .hero-media video,
   .reel-slot {
     display: block;
-    width: 440px;
+    width: 460px;
     max-width: 100%;
     height: auto;
     aspect-ratio: 4 / 3;
@@ -258,6 +265,10 @@ const CTA = "Book a free 20-min call";
     .hero-media {
       justify-self: start;
     }
+
+    .media-link {
+      margin-left: 0;
+    }
   }
 </style>
 
@@ -287,7 +298,7 @@ const CTA = "Book a free 20-min call";
     btn.addEventListener("mouseleave", (e) => drive(e, false));
   }
 
-  // Hero film (only in the DOM when public/hero.mp4 exists): a 23s loop whose
+  // Hero film (only in the DOM when public/hero.mp4 exists): a 27.5s loop whose
   // first and last frame is the poster. Pause button in its top-right corner. Reduced motion: poster only.
   const media = document.querySelector<HTMLElement>(".hero-media");
   const video = media?.querySelector("video");

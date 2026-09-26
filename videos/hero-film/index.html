@@ -9,105 +9,163 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/TextPlugin.min.js"></script>
     <style>
-      /* 1440x1080 (4:3) shown at ~440x330 on desktop (x0.31). Smallest text 50px (~15px shown), story text 60-64px. */
+      /* 1440x1080 (4:3) shown at ~460x345 on desktop (x0.32). Left story text 52-64px, phone text 40-48px. */
       :root {
         --bg: #f5f3ee;
         --ink: #0b0b0c;
         --soft: #3b3a37;
         --muted: #6d6a64;
         --line: #e5e1d8;
-        --ok: #1f9d55;       /* booked / confirmed */
-        --ok-soft: #e4f4ea;
-        --call-a: #2c3b40;
-        --call-b: #0f1416;
-        --ig-a: #8a3ab9;
-        --ig-b: #4c68d7;
-        --ig-in: #efefef;
+        --ok: #1f9d55;
+        --ios-red: #ff3b30;
+        --ios-green: #34c759;
+        --ios-blue: #3478f6;
       }
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { width: 1440px; height: 1080px; overflow: hidden; background: var(--bg); }
       #stage { position: relative; width: 1440px; height: 1080px; overflow: hidden; background: var(--bg); font-family: "Inter Tight", system-ui, sans-serif; color: var(--ink); letter-spacing: -0.02em; }
       svg.i { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+      svg.f { fill: currentColor; stroke: none; }
 
-      /* ---------- a scene = left context + right app screen ---------- */
+      /* ---------- a scene = left context + a real phone ---------- */
       .scene { position: absolute; inset: 0; visibility: hidden; opacity: 0; }
-      .ctx { position: absolute; left: 90px; top: 110px; width: 540px; display: flex; flex-direction: column; gap: 30px; }
-      .biz { display: flex; align-items: center; gap: 24px; }
-      .badge { width: 104px; height: 104px; border-radius: 30px; background: var(--ink); color: #fff; display: grid; place-items: center; flex: none; }
-      .badge svg { width: 62px; height: 62px; }
-      .biz h3 { font-size: 64px; font-weight: 800; letter-spacing: -0.035em; line-height: 0.98; }
-      .state { align-self: flex-start; display: flex; align-items: center; gap: 16px; padding: 14px 30px 14px 24px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 54px; font-weight: 600; line-height: 1; }
+      .ctx { position: absolute; left: 90px; top: 0; bottom: 0; width: 680px; display: flex; flex-direction: column; justify-content: center; gap: 32px; }
+      .biz { display: flex; align-items: center; gap: 26px; }
+      .badge { width: 110px; height: 110px; border-radius: 32px; background: var(--ink); color: #fff; display: grid; place-items: center; flex: none; }
+      .badge svg { width: 64px; height: 64px; }
+      .biz h3 { font-size: 68px; font-weight: 800; letter-spacing: -0.035em; line-height: 0.98; }
+      .state { align-self: flex-start; display: flex; align-items: center; gap: 16px; padding: 14px 32px 14px 26px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 56px; font-weight: 600; line-height: 1; }
       .state i { width: 22px; height: 22px; border-radius: 50%; background: #ff5b4f; }
       .state.free { background: #fff; color: var(--ink); box-shadow: 0 0 0 4px var(--ink) inset; }
       .state.free i { background: var(--ok); }
-      .clock { font-size: 104px; font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; margin-top: 6px; }
-      .clock small { font-size: 56px; color: var(--muted); font-weight: 600; margin-left: 10px; letter-spacing: 0; }
-      .via { align-self: flex-start; display: flex; align-items: center; gap: 16px; font-size: 52px; font-weight: 600; color: var(--soft); }
-      .via .ic { width: 78px; height: 78px; border-radius: 22px; display: grid; place-items: center; color: #fff; }
-      .via .ic svg { width: 46px; height: 46px; }
-      .won { align-self: flex-start; display: flex; align-items: center; gap: 14px; font-size: 54px; font-weight: 700; color: var(--ok); opacity: 0; visibility: hidden; }
-      .won svg { width: 54px; height: 54px; stroke-width: 2.6; }
+      .clock { font-size: 110px; font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; line-height: 1; }
+      .clock small { font-size: 58px; color: var(--muted); font-weight: 600; margin-left: 10px; letter-spacing: 0; }
+      .via { align-self: flex-start; display: flex; align-items: center; gap: 18px; font-size: 54px; font-weight: 600; color: var(--soft); }
+      .via .ic { width: 82px; height: 82px; border-radius: 22px; display: grid; place-items: center; color: #fff; }
+      .via .ic svg { width: 48px; height: 48px; }
+      .won { align-self: flex-start; display: flex; align-items: center; gap: 14px; font-size: 58px; font-weight: 700; color: var(--ok); opacity: 0; visibility: hidden; }
+      .won svg { width: 58px; height: 58px; stroke-width: 2.6; }
 
-      .screen { position: absolute; left: 690px; top: 60px; width: 680px; height: 960px; border-radius: 72px; overflow: hidden; background: #fff; box-shadow: 0 0 0 10px #101112, 0 50px 90px -40px rgba(11,11,12,.55); }
+      /* ---------- iPhone ---------- */
+      .phone { position: absolute; left: 836px; top: 26px; width: 520px; height: 1028px; border-radius: 88px; background: #0a0a0b; padding: 14px; box-shadow: 0 0 0 3px #9a9ca1, 0 0 0 7px #3a3b3f, 0 60px 90px -40px rgba(11,11,12,.6); }
+      .phone::before { content: ""; position: absolute; right: -10px; top: 250px; width: 5px; height: 130px; border-radius: 3px; background: #7c7e83; }
+      .phone::after { content: ""; position: absolute; left: -10px; top: 210px; width: 5px; height: 90px; border-radius: 3px; background: #7c7e83; box-shadow: 0 130px 0 #7c7e83; }
+      .scr { position: relative; width: 100%; height: 100%; border-radius: 74px; overflow: hidden; background: #fff; font-family: Inter, sans-serif; letter-spacing: -0.01em; }
+      .island { position: absolute; top: 20px; left: 50%; width: 156px; height: 46px; margin-left: -78px; border-radius: 23px; background: #000; z-index: 30; }
+      .sb { position: absolute; top: 0; left: 0; right: 0; height: 86px; padding: 0 40px 0 62px; display: flex; align-items: center; justify-content: space-between; font-size: 32px; font-weight: 600; color: #000; z-index: 25; }
+      .sb.lt { color: #fff; }
+      .sb .r { display: flex; align-items: center; gap: 10px; }
+      .sb .r svg { height: 24px; }
+      .bat { position: relative; width: 50px; height: 25px; border-radius: 8px; border: 2.5px solid currentColor; opacity: 0.9; padding: 2.5px; }
+      .bat i { display: block; width: 78%; height: 100%; border-radius: 4px; background: currentColor; }
+      .bat::after { content: ""; position: absolute; right: -7px; top: 6px; width: 3px; height: 8px; border-radius: 2px; background: currentColor; opacity: .5; }
+      .home { position: absolute; bottom: 14px; left: 50%; width: 176px; height: 8px; margin-left: -88px; border-radius: 4px; background: #000; z-index: 25; }
+      .home.lt { background: #fff; }
       .layer { position: absolute; inset: 0; }
 
-      /* ---------- phone call (iPhone-style) ---------- */
-      .call { background: linear-gradient(180deg, var(--call-a), var(--call-b)); color: #fff; font-family: Inter, sans-serif; letter-spacing: -0.01em; }
-      .call .top { position: absolute; top: 90px; width: 100%; text-align: center; font-size: 50px; font-weight: 500; opacity: 0.75; }
-      .call .who { position: absolute; top: 170px; width: 100%; text-align: center; font-size: 76px; font-weight: 600; }
-      .call .num { position: absolute; top: 272px; width: 100%; text-align: center; font-size: 52px; opacity: 0.7; }
-      .call .ringwrap { position: absolute; left: 50%; top: 400px; width: 220px; height: 220px; margin-left: -110px; }
-      .call .ringwrap i { position: absolute; inset: 0; border-radius: 50%; border: 5px solid rgba(255,255,255,.55); opacity: 0; }
-      .call .ringwrap b { position: absolute; inset: 30px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center; }
-      .call .ringwrap svg { width: 82px; height: 82px; stroke-width: 1.6; }
-      .call .btns { position: absolute; bottom: 110px; left: 0; right: 0; display: flex; justify-content: space-around; padding: 0 70px; }
-      .call .btn { display: flex; flex-direction: column; align-items: center; gap: 16px; font-size: 50px; font-weight: 500; }
-      .call .btn b { width: 158px; height: 158px; border-radius: 50%; display: grid; place-items: center; }
-      .call .btn svg { width: 76px; height: 76px; fill: #fff; stroke: none; }
-      .call .btn.no b { background: #ff3b30; }
-      .call .btn.no svg { transform: rotate(135deg); }
-      .call .btn.yes b { background: #34c759; }
-
-      .incall .hd { position: absolute; top: 70px; left: 50px; right: 50px; display: flex; align-items: center; justify-content: space-between; }
-      .tag { display: flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 999px; background: #34c759; color: #04210f; font-size: 50px; font-weight: 700; }
-      .tag svg { width: 46px; height: 46px; stroke-width: 2.6; }
-      .timer { font-size: 54px; font-weight: 500; opacity: 0.8; font-variant-numeric: tabular-nums; }
-      .wave { position: absolute; top: 190px; left: 50px; right: 50px; height: 70px; display: flex; align-items: center; gap: 10px; }
-      .wave .timer { flex: none; margin-right: 14px; }
-      .wave i { flex: 1; height: 100%; border-radius: 6px; background: rgba(255,255,255,.6); transform-origin: 50% 50%; }
-      .caps { position: absolute; top: 300px; left: 50px; right: 50px; display: flex; flex-direction: column; gap: 34px; }
-      .cap { display: flex; flex-direction: column; gap: 8px; opacity: 0; visibility: hidden; }
-      .cap b { font-size: 50px; font-weight: 600; opacity: 0.6; }
-      .cap p { font-size: 62px; font-weight: 600; line-height: 1.12; }
+      /* ---------- iOS call ---------- */
+      .call { color: #fff; background: radial-gradient(90% 55% at 15% 12%, #3f6170 0%, transparent 65%), radial-gradient(80% 50% at 95% 85%, #4b3b62 0%, transparent 65%), #13171a; }
+      .call .nm { position: absolute; top: 150px; width: 100%; text-align: center; font-size: 60px; font-weight: 500; }
+      .call .sub { position: absolute; top: 232px; width: 100%; text-align: center; font-size: 36px; opacity: 0.7; }
+      .avawrap { position: absolute; left: 50%; top: 350px; width: 210px; height: 210px; margin-left: -105px; }
+      .avawrap i { position: absolute; inset: 0; border-radius: 50%; border: 4px solid rgba(255,255,255,.5); opacity: 0; }
+      .ava { position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(180deg, #a9aeb6, #7d828a); display: grid; place-items: end center; overflow: hidden; }
+      .ava svg { width: 72%; height: 72%; fill: #fff; margin-bottom: -6px; }
+      .minis { position: absolute; bottom: 300px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 74px; }
+      .mini { display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 30px; }
+      .mini b { width: 86px; height: 86px; border-radius: 50%; background: rgba(255,255,255,.16); display: grid; place-items: center; }
+      .mini svg { width: 42px; height: 42px; }
+      .btns { position: absolute; bottom: 96px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 54px; }
+      .btn { display: flex; flex-direction: column; align-items: center; gap: 14px; font-size: 34px; font-weight: 500; }
+      .btn b { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; }
+      .btn svg { width: 70px; height: 70px; }
+      .btn.no b { background: var(--ios-red); }
+      .btn.no svg, .end svg { transform: rotate(135deg); }
+      .btn.yes b { background: var(--ios-green); }
+      .incall .nm { top: 116px; font-size: 50px; }
+      .incall .sub { top: 184px; font-variant-numeric: tabular-nums; }
+      .tag { position: absolute; top: 252px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 12px 26px 12px 20px; border-radius: 999px; background: var(--ios-green); color: #04210f; font-size: 36px; font-weight: 700; white-space: nowrap; opacity: 0; visibility: hidden; }
+      .tag svg { width: 38px; height: 38px; stroke-width: 2.8; }
+      .caps { position: absolute; top: 360px; left: 34px; right: 34px; display: flex; flex-direction: column; gap: 22px; }
+      .cap { padding: 22px 28px 26px; border-radius: 36px; background: rgba(255,255,255,.1); opacity: 0; visibility: hidden; }
+      .cap b { display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 600; opacity: 0.65; margin-bottom: 6px; }
+      .cap p { font-size: 42px; font-weight: 600; line-height: 1.16; }
+      .cap.us { background: rgba(52,199,89,.16); }
       .cap.us b { color: #7ee2a0; opacity: 1; }
+      .wv { display: inline-flex; gap: 4px; align-items: center; height: 26px; }
+      .wv i { width: 5px; height: 100%; border-radius: 3px; background: currentColor; }
       .w { display: inline-block; opacity: 0; }
+      .end { position: absolute; bottom: 70px; left: 50%; width: 130px; height: 130px; margin-left: -65px; border-radius: 50%; background: var(--ios-red); display: grid; place-items: center; }
+      .end svg { width: 62px; height: 62px; }
 
-      /* ---------- Instagram-style DM ---------- */
-      .dm { background: #fff; font-family: Inter, sans-serif; letter-spacing: -0.01em; }
-      .dm .hd { height: 200px; padding: 80px 44px 0; display: flex; align-items: center; gap: 22px; border-bottom: 2px solid #efefef; }
-      .dm .back { width: 50px; height: 50px; }
-      .ring { width: 96px; height: 96px; border-radius: 50%; padding: 5px; background: conic-gradient(from 200deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75); flex: none; }
-      .ring span { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; border: 5px solid #fff; background: #e9dccb; font-size: 44px; font-weight: 700; color: #6b4f2a; }
-      .dm .nm { font-size: 54px; font-weight: 700; line-height: 1.05; }
-      .dm .sub { font-size: 44px; color: #8e8e8e; }
-      .dm .list { position: absolute; left: 40px; right: 40px; top: 240px; bottom: 60px; display: flex; flex-direction: column; justify-content: flex-start; gap: 20px; }
-      .bub { max-width: 88%; padding: 22px 32px; border-radius: 44px; font-size: 60px; line-height: 1.14; opacity: 0; visibility: hidden; }
-      .bub.in { align-self: flex-start; background: var(--ig-in); }
-      .bub.out { align-self: flex-end; color: #fff; background: linear-gradient(135deg, var(--ig-a), var(--ig-b)); }
-      .typing { align-self: flex-start; display: flex; gap: 12px; padding: 30px 34px; border-radius: 44px; background: var(--ig-in); opacity: 0; visibility: hidden; }
-      .typing.out { align-self: flex-end; background: linear-gradient(135deg, var(--ig-a), var(--ig-b)); }
-      .typing i { width: 20px; height: 20px; border-radius: 50%; background: #8e8e8e; }
-      .typing.out i { background: #fff; }
+      /* ---------- iOS notification banner ---------- */
+      .note { position: absolute; top: 74px; left: 16px; right: 16px; z-index: 28; display: flex; align-items: center; gap: 22px; padding: 22px 24px; border-radius: 44px; background: rgba(246,246,248,.97); color: #000; box-shadow: 0 20px 50px -10px rgba(0,0,0,.45); opacity: 0; visibility: hidden; }
+      .calic { width: 84px; height: 84px; flex: none; border-radius: 20px; background: #fff; box-shadow: 0 0 0 2px #e4e4e7 inset; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+      .calic small { font-size: 17px; font-weight: 700; color: var(--ios-red); letter-spacing: 0.04em; }
+      .calic span { font-size: 44px; font-weight: 400; letter-spacing: -0.03em; margin-top: 2px; }
+      .note .t { flex: 1; min-width: 0; }
+      .note .app { display: flex; justify-content: space-between; font-size: 26px; color: #6e6e73; font-weight: 500; }
+      .note h5 { font-size: 32px; font-weight: 700; margin-top: 4px; white-space: nowrap; }
+      .note p { font-size: 30px; color: #333; white-space: nowrap; }
 
-      /* ---------- booking confirmation (slides up over any app) ---------- */
-      .conf { position: absolute; left: 36px; right: 36px; bottom: 36px; padding: 40px 42px; border-radius: 52px; background: #fff; color: var(--ink); box-shadow: 0 30px 70px -20px rgba(0,0,0,.45), 0 0 0 3px var(--line) inset; display: flex; align-items: center; gap: 30px; opacity: 0; visibility: hidden; font-family: "Inter Tight", sans-serif; }
-      .conf .tick { width: 120px; height: 120px; border-radius: 34px; background: var(--ok); color: #fff; display: grid; place-items: center; flex: none; }
-      .conf .tick svg { width: 76px; height: 76px; stroke-width: 2.4; }
-      .conf h4 { font-size: 66px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
-      .conf p { font-size: 52px; font-weight: 600; color: var(--muted); margin-top: 10px; }
+      /* ---------- iOS Calendar, day view ---------- */
+      .cal { background: #fff; color: #000; visibility: hidden; }
+      .cal .top { position: absolute; top: 96px; left: 30px; right: 34px; display: flex; justify-content: space-between; align-items: center; color: var(--ios-red); font-size: 36px; font-weight: 500; }
+      .cal .top svg { width: 40px; height: 40px; }
+      .cal .top .l { display: flex; align-items: center; gap: 4px; }
+      .week { position: absolute; top: 160px; left: 18px; right: 18px; display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+      .week small { font-size: 22px; color: #76767a; font-weight: 600; }
+      .week span { display: grid; place-items: center; width: 62px; height: 62px; margin: 6px auto 0; border-radius: 50%; font-size: 34px; font-weight: 500; }
+      .week span.on { background: var(--ios-red); color: #fff; font-weight: 700; }
+      .dayt { position: absolute; top: 268px; left: 0; right: 0; text-align: center; font-size: 28px; font-weight: 600; padding-bottom: 16px; border-bottom: 2px solid #ececec; }
+      .grid { position: absolute; top: 330px; left: 0; right: 0; bottom: 0; }
+      .hr { position: absolute; left: 0; right: 0; height: 2px; }
+      .hr span { position: absolute; left: 20px; top: -16px; width: 90px; font-size: 26px; color: #8e8e93; }
+      .hr::after { content: ""; position: absolute; left: 110px; right: 0; top: 0; height: 2px; background: #ececec; }
+      .ev { position: absolute; left: 118px; right: 14px; border-radius: 12px; padding: 12px 18px 12px 22px; border-left: 7px solid var(--ios-blue); background: #e7effd; color: #1a4c9a; overflow: hidden; }
+      .ev h6 { font-size: 34px; font-weight: 700; line-height: 1.1; }
+      .ev p { font-size: 28px; font-weight: 500; opacity: 0.8; margin-top: 4px; }
+      .ev.new { border-left-color: var(--ok); background: #d9f3e3; color: #0c5a2e; opacity: 0; visibility: hidden; }
+      .now { position: absolute; left: 104px; right: 0; height: 3px; background: var(--ios-red); }
+      .now::before { content: ""; position: absolute; left: -8px; top: -7px; width: 17px; height: 17px; border-radius: 50%; background: var(--ios-red); }
+      .ppl { display: flex; align-items: center; margin-top: 10px; }
+      .ppl i { width: 44px; height: 44px; border-radius: 50%; border: 3px solid #e7effd; margin-left: -10px; font-style: normal; font-size: 22px; font-weight: 700; display: grid; place-items: center; color: #fff; }
+      .ppl i:first-child { margin-left: 0; }
+      .ppl .me { background: var(--ok); opacity: 0; visibility: hidden; }
+      .cnt { margin-left: 14px; font-size: 28px; font-weight: 700; white-space: nowrap; }
+
+      /* ---------- Instagram DM ---------- */
+      .dm { background: #fff; color: #000; }
+      .dm .hd { position: absolute; top: 88px; left: 0; right: 0; height: 116px; padding: 0 30px 0 22px; display: flex; align-items: center; gap: 16px; border-bottom: 2px solid #efefef; }
+      .dm .hd .bk { width: 48px; height: 48px; stroke-width: 2.2; }
+      .ring { width: 78px; height: 78px; border-radius: 50%; padding: 4px; background: conic-gradient(from 200deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75); flex: none; }
+      .ring span, .pic { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(160deg, #f2c9a0, #c98a5a); font-size: 34px; font-weight: 700; color: #5a3312; }
+      .ring span { border: 4px solid #fff; }
+      .dm .who { flex: 1; min-width: 0; }
+      .dm .who b { display: block; font-size: 36px; font-weight: 700; line-height: 1.1; }
+      .dm .who small { font-size: 28px; color: #8e8e8e; }
+      .dm .hd .act { display: flex; gap: 30px; }
+      .dm .hd .act svg { width: 48px; height: 48px; stroke-width: 2; }
+      .thread { position: absolute; left: 22px; right: 22px; top: 224px; bottom: 150px; display: flex; flex-direction: column; gap: 14px; }
+      .ts { align-self: center; font-size: 26px; color: #8e8e8e; font-weight: 500; margin-bottom: 8px; }
+      .msg { display: flex; align-items: flex-end; gap: 12px; opacity: 0; visibility: hidden; }
+      .msg .pic { width: 52px; height: 52px; font-size: 24px; flex: none; }
+      .msg.out { justify-content: flex-end; }
+      .bub { max-width: 380px; padding: 18px 28px; border-radius: 40px; font-size: 42px; line-height: 1.2; background: #efefef; }
+      .msg.out .bub { color: #fff; background: linear-gradient(160deg, #8a3ffc, #5b5ff3 55%, #3797f0); }
+      .typing { display: flex; gap: 10px; padding: 26px 28px; border-radius: 40px; background: #efefef; }
+      .typing i { width: 16px; height: 16px; border-radius: 50%; background: #8e8e8e; }
+      .msg.out .typing { background: linear-gradient(160deg, #8a3ffc, #3797f0); }
+      .msg.out .typing i { background: #fff; }
+      .seen { align-self: flex-end; font-size: 26px; color: #8e8e8e; opacity: 0; visibility: hidden; }
+      .comp { position: absolute; left: 20px; right: 20px; bottom: 52px; height: 92px; border-radius: 46px; background: #efefef; display: flex; align-items: center; gap: 18px; padding: 0 26px 0 10px; font-size: 34px; color: #767676; }
+      .comp .cam { width: 72px; height: 72px; border-radius: 50%; background: var(--ios-blue); color: #fff; display: grid; place-items: center; }
+      .comp .cam svg { width: 40px; height: 40px; stroke-width: 2.2; }
+      .comp .sp { flex: 1; }
+      .comp > svg { width: 44px; height: 44px; color: #000; stroke-width: 2; }
 
       /* ---------- poster: first and last frame ---------- */
-      #poster { position: absolute; inset: 0; background: var(--bg); z-index: 10; padding: 0 90px 40px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 40px 50px -30px rgba(11,11,12,.3); }
+      #poster { position: absolute; inset: 0; background: var(--bg); z-index: 40; padding: 0 90px 40px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 40px 50px -30px rgba(11,11,12,.3); }
       #poster h2 { font-size: 62px; font-weight: 700; color: var(--muted); letter-spacing: -0.02em; }
       .rows { margin-top: 56px; display: flex; flex-direction: column; gap: 34px; }
       .row { display: flex; align-items: center; gap: 34px; padding: 40px 44px; border-radius: 52px; background: #fff; box-shadow: 0 0 0 3px var(--line) inset; }
@@ -123,7 +181,7 @@
     </style>
   </head>
   <body>
-    <div id="stage" data-composition-id="main" data-start="0" data-duration="23" data-fps="30" data-width="1440" data-height="1080">
+    <div id="stage" data-composition-id="main" data-start="0" data-duration="27.5" data-fps="30" data-width="1440" data-height="1080">
 
       <!-- Scene 1: dental. A new patient calls while you're with a patient. -->
       <div class="scene" id="s1">
@@ -131,31 +189,58 @@
           <div class="biz"><div class="badge"><svg class="i" viewBox="0 0 24 24"><path d="M7.5 3C5.3 3 4 4.8 4 7c0 1.8.7 3.2 1.1 4.8.5 1.9.6 4.3 1.3 7 .3 1.3 1.7 1.5 2.1.1.5-1.7.8-4.2 3.5-4.2s3 2.5 3.5 4.2c.4 1.4 1.8 1.2 2.1-.1.7-2.7.8-5.1 1.3-7C19.3 10.2 20 8.8 20 7c0-2.2-1.3-4-3.5-4-1.8 0-2.6 1.2-4.5 1.2S9.3 3 7.5 3z"/></svg></div><h3>Brightside<br />Dental</h3></div>
           <div class="state" id="st1"><i></i><span id="st1t">With a patient</span></div>
           <div class="clock"><span id="ck1">2:04</span><small>PM</small></div>
-          <div class="via"><span class="ic" style="background:#34c759"><svg class="i" viewBox="0 0 24 24" style="fill:#fff;stroke:none"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></span>Phone call</div>
+          <div class="via"><span class="ic" style="background:#34c759"><svg class="f" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></span>Phone call</div>
           <div class="won" id="won1"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>New patient booked</div>
         </div>
-        <div class="screen">
+        <div class="phone" id="ph1"><div class="scr">
+          <div class="island"></div>
+          <div class="sb lt" id="sb1"><span>2:04</span><span class="r"></span></div>
+
           <div class="layer call" id="ring">
-            <div class="top">Incoming call</div>
-            <div class="who">New patient</div>
-            <div class="num">(555) 014-2290</div>
-            <div class="ringwrap"><i></i><i></i><i></i><b><svg class="i" viewBox="0 0 24 24"><path d="M15 3h6v6M21 3l-7 7"/><path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></b></div>
+            <div class="nm">(555) 014-2290</div>
+            <div class="sub">mobile</div>
+            <div class="avawrap"><i></i><i></i><i></i><div class="ava"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4.5"/><path d="M3 24c0-5 4-8.5 9-8.5s9 3.5 9 8.5z"/></svg></div></div>
+            <div class="minis">
+              <div class="mini"><b><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7"/><path d="M12 10v3l2 1.5M5 4 2.5 6.5M19 4l2.5 2.5"/></svg></b>Remind Me</div>
+              <div class="mini"><b><svg class="f" viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.7 2 11.3c0 2.6 1.4 4.9 3.7 6.4L5 21l3.9-2.1c1 .3 2 .4 3.1.4 5.5 0 10-3.7 10-8.3S17.5 3 12 3z"/></svg></b>Message</div>
+            </div>
             <div class="btns">
-              <div class="btn no"><b><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></b>Decline</div>
-              <div class="btn yes" id="accept"><b><svg viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></b>Accept</div>
+              <div class="btn no"><b><svg class="f" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></b>Decline</div>
+              <div class="btn yes" id="accept"><b><svg class="f" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></b>Accept</div>
             </div>
           </div>
+
           <div class="layer call incall" id="incall" style="visibility:hidden">
-            <div class="hd"><div class="tag" id="tag1"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Answered for you</div></div>
-            <div class="wave" id="wave"><div class="timer" id="tm">0:01</div><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="nm">(555) 014-2290</div>
+            <div class="sub" id="tm">0:01</div>
+            <div class="tag" id="tag1"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>Answered for you</div>
             <div class="caps">
-              <div class="cap" id="c1"><b>Caller</b><p>Toothache. Can you see me today?</p></div>
-              <div class="cap us" id="c2"><b>Brightside</b><p>Yes, 4:30 today. Shall I book it?</p></div>
+              <div class="cap" id="c1"><b>Caller</b><p>Hi, I have a toothache. Can you see me today?</p></div>
+              <div class="cap us" id="c2"><b>Brightside <span class="wv"><i></i><i></i><i></i><i></i></span></b><p>Yes, we have 4:30 today. Shall I book you in?</p></div>
               <div class="cap" id="c3"><b>Caller</b><p>Yes please!</p></div>
             </div>
+            <div class="end"><svg class="f" viewBox="0 0 24 24" style="fill:#fff"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></div>
           </div>
-          <div class="conf" id="conf1"><div class="tick"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></div><div><h4>Booked</h4><p>Today, 4:30 PM</p></div></div>
-        </div>
+
+          <div class="note" id="n1" data-layout-allow-overlap><div class="calic"><small>TUE</small><span>23</span></div><div class="t"><div class="app"><span>CALENDAR</span><span>now</span></div><h5>New patient booked</h5><p>Today, 4:30 PM</p></div></div>
+
+          <div class="layer cal" id="cal1">
+            <div class="top"><span class="l"><svg class="i" viewBox="0 0 24 24" style="stroke-width:2.4"><path d="m15 18-6-6 6-6"/></svg>September</span><svg class="i" viewBox="0 0 24 24" style="stroke-width:2.4"><path d="M12 5v14M5 12h14"/></svg></div>
+            <div class="week"><div><small>S</small><span>21</span></div><div><small>M</small><span>22</span></div><div><small>T</small><span class="on">23</span></div><div><small>W</small><span>24</span></div><div><small>T</small><span>25</span></div><div><small>F</small><span>26</span></div><div><small>S</small><span>27</span></div></div>
+            <div class="dayt">Tuesday, 23 September</div>
+            <div class="grid">
+              <div class="hr" style="top:30px"><span>2 PM</span></div>
+              <div class="hr" style="top:190px"><span>3 PM</span></div>
+              <div class="hr" style="top:350px"><span>4 PM</span></div>
+              <div class="hr" style="top:510px"><span>5 PM</span></div>
+              <div class="ev" style="top:34px;height:130px"><h6>Cleaning · Maria O.</h6><p>2:00 – 2:50 PM</p></div>
+              <div class="ev" style="top:232px;height:112px"><h6>Filling · Dan L.</h6><p>3:15 – 4:00 PM</p></div>
+              <div class="ev new" id="ev1" style="top:432px;height:116px"><h6>New patient</h6><p>Toothache · 4:30 PM</p></div>
+              <div class="now" style="top:43px"></div>
+            </div>
+          </div>
+          <div class="home lt" id="hm1"></div>
+        </div></div>
       </div>
 
       <!-- Scene 2: fitness. A new client DMs on Instagram while you're teaching. -->
@@ -167,23 +252,48 @@
           <div class="via"><span class="ic" style="background:linear-gradient(45deg,#feda75,#fa7e1e 30%,#d62976 60%,#962fbf 85%,#4f5bd5)"><svg class="i" viewBox="0 0 24 24" style="stroke:#fff;stroke-width:2.2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r=".6" fill="#fff"/></svg></span>Instagram DM</div>
           <div class="won" id="won2"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>New member booked</div>
         </div>
-        <div class="screen">
-          <div class="layer dm">
-            <div class="hd">
-              <svg class="i back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+        <div class="phone" id="ph2"><div class="scr">
+          <div class="island"></div>
+          <div class="sb" id="sb2"><span>2:31</span><span class="r"></span></div>
+
+          <div class="layer dm" data-layout-allow-overlap>
+            <div class="hd" data-layout-allow-overlap>
+              <svg class="i bk" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
               <div class="ring"><span>J</span></div>
-              <div><div class="nm">jess.moves</div><div class="sub">Instagram</div></div>
+              <div class="who"><b>Jess Moreno</b><small>jess.moves</small></div>
+              <div class="act"><svg class="i" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg><svg class="i" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="m16 10.5 6-3.5v10l-6-3.5"/></svg></div>
             </div>
-            <div class="list">
-              <div class="bub in" id="m1">hi! any spots left in tomorrow's 6am class?</div>
-              <div class="typing out" id="t1"><i></i><i></i><i></i></div>
-              <div class="bub out" id="m2">Yes, 2 left! Want me to save you one?</div>
-              <div class="typing" id="t2"><i></i><i></i><i></i></div>
-              <div class="bub in" id="m3">yes please!! 🙌</div>
+            <div class="thread" data-layout-allow-overlap>
+              <div class="ts">Today 2:31 PM</div>
+              <div class="msg in" id="m1"><div class="pic">J</div><div class="bub">hi! any spots left in tomorrow's 6am class?</div></div>
+              <div class="msg out" id="t1"><div class="typing"><i></i><i></i><i></i></div></div>
+              <div class="msg out" id="m2"><div class="bub">Yes, 2 left! Want me to save you one?</div></div>
+              <div class="msg in" id="t2"><div class="pic">J</div><div class="typing"><i></i><i></i><i></i></div></div>
+              <div class="msg in" id="m3"><div class="pic">J</div><div class="bub">yes please!! 🙌</div></div>
+            </div>
+            <div class="comp"><span class="cam"><svg class="i" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span class="sp">Message...</span>
+              <svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+              <svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="1.8"/><path d="m21 15-5-5L5 21"/></svg></div>
+          </div>
+
+          <div class="note" id="n2" data-layout-allow-overlap><div class="calic"><small>WED</small><span>24</span></div><div class="t"><div class="app"><span>CALENDAR</span><span>now</span></div><h5>New class booking</h5><p>Jess M. · 6 AM HIIT</p></div></div>
+
+          <div class="layer cal" id="cal2">
+            <div class="top"><span class="l"><svg class="i" viewBox="0 0 24 24" style="stroke-width:2.4"><path d="m15 18-6-6 6-6"/></svg>September</span><svg class="i" viewBox="0 0 24 24" style="stroke-width:2.4"><path d="M12 5v14M5 12h14"/></svg></div>
+            <div class="week"><div><small>S</small><span>21</span></div><div><small>M</small><span>22</span></div><div><small>T</small><span>23</span></div><div><small>W</small><span class="on">24</span></div><div><small>T</small><span>25</span></div><div><small>F</small><span>26</span></div><div><small>S</small><span>27</span></div></div>
+            <div class="dayt">Wednesday, 24 September</div>
+            <div class="grid">
+              <div class="hr" style="top:30px"><span>5 AM</span></div>
+              <div class="hr" style="top:190px"><span>6 AM</span></div>
+              <div class="hr" style="top:350px"><span>7 AM</span></div>
+              <div class="hr" style="top:510px"><span>8 AM</span></div>
+              <div class="ev" id="ev2" style="top:194px;height:152px"><h6>6 AM HIIT class</h6>
+                <div class="ppl"><i style="background:#c77d4a">A</i><i style="background:#6a7fd0">R</i><i style="background:#b8578e">K</i><i style="background:#4b9b8e">T</i><i class="me" id="me">J</i><span class="cnt" id="cnt">11/12</span></div></div>
+              <div class="ev" style="top:514px;height:112px"><h6>PT · Sam R.</h6><p>8:00 – 9:00 AM</p></div>
             </div>
           </div>
-          <div class="conf" id="conf2"><div class="tick"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></div><div><h4>Booked</h4><p>Tomorrow, 6:00 AM class</p></div></div>
-        </div>
+          <div class="home" id="hm2"></div>
+        </div></div>
       </div>
 
       <!-- Poster: the receipts. First and last frame, and the still. -->
@@ -193,7 +303,7 @@
           <div class="row">
             <div class="badge"><svg class="i" viewBox="0 0 24 24"><path d="M7.5 3C5.3 3 4 4.8 4 7c0 1.8.7 3.2 1.1 4.8.5 1.9.6 4.3 1.3 7 .3 1.3 1.7 1.5 2.1.1.5-1.7.8-4.2 3.5-4.2s3 2.5 3.5 4.2c.4 1.4 1.8 1.2 2.1-.1.7-2.7.8-5.1 1.3-7C19.3 10.2 20 8.8 20 7c0-2.2-1.3-4-3.5-4-1.8 0-2.6 1.2-4.5 1.2S9.3 3 7.5 3z"/></svg></div>
             <div class="txt"><h4>Brightside Dental</h4><p><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>New patient booked, 4:30 PM</p>
-              <div class="src"><span class="ic" style="background:#34c759"><svg class="i" viewBox="0 0 24 24" style="fill:#fff;stroke:none"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></span>Call answered for you</div></div>
+              <div class="src"><span class="ic" style="background:#34c759"><svg class="f" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></span>Call answered for you</div></div>
           </div>
           <div class="row">
             <div class="badge"><svg class="i" viewBox="0 0 24 24"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.66 21.49a2 2 0 1 1-2.83-2.83l-1.77 1.77a2 2 0 1 1-2.83-2.83l6.37-6.36a2 2 0 1 1 2.83 2.83l-1.77 1.77a2 2 0 1 1 2.83 2.83z"/><path d="m21.5 21.5-1.4-1.4M3.9 3.9 2.5 2.5"/><path d="M6.4 12.77a2 2 0 1 1-2.83-2.83l1.77-1.77a2 2 0 1 1-2.83-2.83l2.83-2.83a2 2 0 1 1 2.83 2.83l1.77-1.77a2 2 0 1 1 2.83 2.83z"/></svg></div>
@@ -209,78 +319,98 @@
       const IN = "expo.out", OUT = "power2.in";
       const tl = gsap.timeline({ paused: true });
 
-      // Split a caption into words so it can type out like live speech
+      // iOS status bar icons (signal, wifi, battery)
+      document.querySelectorAll(".sb .r").forEach((r) => {
+        r.innerHTML = '<svg class="f" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx=".8"/><rect x="5" y="5.5" width="3" height="6.5" rx=".8"/><rect x="10" y="3" width="3" height="9" rx=".8"/><rect x="15" y="0" width="3" height="12" rx=".8"/></svg>' +
+          '<svg class="i" viewBox="0 0 24 18" style="stroke-width:3"><path d="M2 6.5a15 15 0 0 1 20 0"/><path d="M6 10.5a9 9 0 0 1 12 0"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>' +
+          '<span class="bat"><i></i></span>';
+      });
+
+      // Split captions into words so they type out like live speech
       document.querySelectorAll(".cap p").forEach((p) => {
         p.innerHTML = p.textContent.split(" ").map((w) => `<span class="w">${w}</span>`).join(" ");
       });
       const words = (sel, t, per = 0.09) => {
-        tl.set(`${sel}`, { autoAlpha: 1 }, t);
-        tl.fromTo(`${sel} .w`, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out", stagger: per }, t);
+        tl.fromTo(sel, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.4, ease: IN }, t);
+        tl.fromTo(`${sel} .w`, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out", stagger: per }, t + 0.15);
       };
-      const pop = (el, t, origin = "0% 100%") =>
-        tl.fromTo(el, { autoAlpha: 0, scale: 0.6, transformOrigin: origin }, { autoAlpha: 1, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, t);
-      const typing = (el, t, d) => {
-        pop(el, t, el.includes("t1") ? "100% 100%" : "0% 100%");
-        tl.fromTo(`${el} i`, { y: 0 }, { y: -12, duration: 0.22, ease: "sine.inOut", yoyo: true, repeat: Math.round(d / 0.22), stagger: 0.1 }, t + 0.1);
+      const pop = (el, t, origin) =>
+        tl.fromTo(el, { autoAlpha: 0, scale: 0.7, transformOrigin: origin }, { autoAlpha: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, t);
+      const typing = (el, t, d, origin) => {
+        pop(el, t, origin);
+        tl.fromTo(`${el} .typing i`, { y: 0 }, { y: -10, duration: 0.22, ease: "sine.inOut", yoyo: true, repeat: Math.round(d / 0.22), stagger: 0.1 }, t + 0.1);
         tl.set(el, { autoAlpha: 0, display: "none" }, t + d);
       };
-      const confirm = (el, t) => tl.fromTo(el, { autoAlpha: 1, yPercent: 130 }, { yPercent: 0, duration: 0.7, ease: "expo.out", immediateRender: false }, t);
+      // Notification drops from the island, then opens into Calendar
+      const notify = (n, cal, sb, hm, t) => {
+        tl.fromTo(n, { autoAlpha: 0, y: -140, scale: 0.9 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.4)" }, t);
+        tl.fromTo(cal, { autoAlpha: 1, clipPath: "inset(74px 16px 820px 16px round 44px)" }, { clipPath: "inset(0px 0px 0px 0px round 74px)", duration: 0.75, ease: "power3.inOut", immediateRender: false }, t + 1.3);
+        tl.to(n, { autoAlpha: 0, duration: 0.25 }, t + 1.35);
+        if (sb) { tl.set(sb, { className: "sb" }, t + 1.6); tl.set(hm, { className: "home" }, t + 1.6); }
+      };
 
       // 0-1.5 poster; 1.5-2.1 it lifts to reveal the first afternoon
       tl.set("#s1", { autoAlpha: 1 }, 1.5);
       tl.to("#poster", { yPercent: -106, duration: 0.6, ease: "power3.inOut" }, 1.5);
       tl.set("#poster", { autoAlpha: 0 }, 2.15);
 
-      // Scene 1: ringing (you can't pick up)
-      tl.fromTo("#st1 i", { scale: 1 }, { scale: 0.5, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 17 }, 1.5);
-      document.querySelectorAll("#ring .ringwrap i").forEach((r, k) =>
-        tl.fromTo(r, { scale: 0.8, opacity: 0.7 }, { scale: 1.7, opacity: 0, duration: 1.2, ease: "power1.out", repeat: 1 }, 2.1 + k * 0.4));
-      tl.fromTo("#accept b", { scale: 1 }, { scale: 1.08, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.4);
+      // Scene 1: the phone rings and buzzes (you can't pick up)
+      tl.fromTo("#st1 i", { scale: 1 }, { scale: 0.5, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 21 }, 1.5);
+      document.querySelectorAll("#ring .avawrap i").forEach((r, k) =>
+        tl.fromTo(r, { scale: 0.9, opacity: 0.7 }, { scale: 1.6, opacity: 0, duration: 1.2, ease: "power1.out", repeat: 1 }, 2.0 + k * 0.4));
+      [2.2, 3.0].forEach((t) => tl.to("#ph1", { keyframes: { rotation: [0, -1.2, 1.2, -1.2, 1.2, 0] }, duration: 0.45, ease: "none" }, t));
+      tl.fromTo("#accept b", { scale: 1 }, { scale: 1.07, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.4);
       // answered for you
       tl.to("#accept b", { scale: 0.86, duration: 0.12, ease: "power2.in" }, 3.8);
-      tl.to("#accept b", { scale: 1, boxShadow: "0 0 0 30px rgba(52,199,89,0)", duration: 0.35, ease: "power2.out" }, 3.92);
-      tl.fromTo("#incall", { autoAlpha: 1, clipPath: "circle(0% at 72% 86%)" }, { clipPath: "circle(150% at 72% 86%)", duration: 0.7, ease: "power3.inOut", immediateRender: false }, 4.0);
+      tl.to("#accept b", { scale: 1, duration: 0.3, ease: "power2.out" }, 3.92);
+      tl.fromTo("#incall", { autoAlpha: 1, clipPath: "circle(0% at 76% 84%)" }, { clipPath: "circle(150% at 76% 84%)", duration: 0.7, ease: "power3.inOut", immediateRender: false }, 4.0);
       tl.set("#ring", { autoAlpha: 0 }, 4.7);
-      pop("#tag1", 4.5, "0% 50%");
-      ["0:02", "0:03", "0:04", "0:05", "0:06", "0:07", "0:08", "0:09", "0:10", "0:11"].forEach((v, k) => tl.set("#tm", { text: v }, 5.0 + k * 0.6));
-      document.querySelectorAll("#wave i").forEach((w, k) =>
-        tl.fromTo(w, { scaleY: 0.25 }, { scaleY: 0.4 + ((k * 37) % 60) / 100, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 17 }, 4.6 + k * 0.03));
+      pop("#tag1", 4.5, "50% 50%");
+      ["0:02", "0:03", "0:04", "0:05", "0:06", "0:07", "0:08", "0:09", "0:10", "0:11", "0:12", "0:13"].forEach((v, k) => tl.set("#tm", { text: v }, 5.0 + k * 0.7));
       // the conversation, word by word, with time to read
       words("#c1", 5.0);
-      words("#c2", 6.9);
-      words("#c3", 8.7, 0.12);
-      tl.to("#c1", { autoAlpha: 0, duration: 0.3 }, 9.5);
-      tl.to("#incall .caps", { y: -250, duration: 0.7, ease: "power3.inOut" }, 9.5);
-      confirm("#conf1", 9.7);
-      tl.set("#st1", { className: "state free" }, 10.8);
-      tl.set("#st1t", { text: "Patient done" }, 10.8);
-      tl.set("#ck1", { text: "2:05" }, 10.8);
-      tl.fromTo("#won1", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: IN }, 10.9);
+      words("#c2", 7.0);
+      document.querySelectorAll("#c2 .wv i").forEach((w, k) =>
+        tl.fromTo(w, { scaleY: 0.3 }, { scaleY: 1, duration: 0.18 + k * 0.04, ease: "sine.inOut", yoyo: true, repeat: 7 }, 7.0 + k * 0.05));
+      tl.to("#c1", { autoAlpha: 0, duration: 0.3 }, 8.7);
+      tl.to("#incall .caps", { y: -300, duration: 0.7, ease: "power3.inOut" }, 8.7);
+      words("#c3", 9.1, 0.12);
+      // booked: Calendar notification, then the real calendar with the new patient in it
+      notify("#n1", "#cal1", "#sb1", "#hm1", 10.0);
+      tl.fromTo("#ev1", { autoAlpha: 0, scaleY: 0.2, transformOrigin: "50% 0%" }, { autoAlpha: 1, scaleY: 1, duration: 0.55, ease: "back.out(1.6)" }, 11.6);
+      tl.fromTo("#ev1", { boxShadow: "0 0 0 0px rgba(31,157,85,.45)" }, { boxShadow: "0 0 0 16px rgba(31,157,85,0)", duration: 0.9, ease: "power2.out", immediateRender: false }, 12.1);
+      tl.set("#st1", { className: "state free" }, 12.4);
+      tl.set("#st1t", { text: "Patient done" }, 12.4);
+      tl.set("#ck1", { text: "2:05" }, 12.4);
+      tl.set("#sb1 span:first-child", { text: "2:05" }, 12.4);
+      tl.fromTo("#won1", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: IN }, 12.5);
 
       // Hand-off to scene 2
-      tl.to("#s1", { autoAlpha: 0, y: -40, duration: 0.4, ease: OUT }, 12.2);
-      tl.fromTo("#s2", { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", immediateRender: false }, 12.55);
+      tl.to("#s1", { autoAlpha: 0, y: -40, duration: 0.4, ease: OUT }, 14.2);
+      tl.fromTo("#s2", { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", immediateRender: false }, 14.55);
 
       // Scene 2: an Instagram DM while you teach
-      tl.fromTo("#st2 i", { scale: 1 }, { scale: 0.5, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 11 }, 12.6);
-      pop("#m1", 13.2, "0% 100%");
-      typing("#t1", 14.9, 1.0);
-      pop("#m2", 15.9, "100% 100%");
-      typing("#t2", 17.4, 0.7);
-      pop("#m3", 18.1, "0% 100%");
-      tl.to("#m1", { autoAlpha: 0, duration: 0.3 }, 18.7);
-      tl.to(".dm .list", { y: -240, duration: 0.7, ease: "power3.inOut" }, 18.7);
-      confirm("#conf2", 18.9);
-      tl.set("#st2", { className: "state free" }, 19.7);
-      tl.set("#st2t", { text: "Class done" }, 19.7);
-      tl.set("#ck2", { text: "2:46" }, 19.7);
-      tl.fromTo("#won2", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: IN }, 19.8);
+      tl.fromTo("#st2 i", { scale: 1 }, { scale: 0.5, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 15 }, 14.6);
+      pop("#m1", 15.2, "0% 100%");
+      typing("#t1", 16.9, 1.0, "100% 100%");
+      pop("#m2", 17.9, "100% 100%");
+      typing("#t2", 19.4, 0.7, "0% 100%");
+      pop("#m3", 20.1, "0% 100%");
+      notify("#n2", "#cal2", null, null, 20.9);
+      tl.fromTo("#me", { autoAlpha: 0, scale: 0.3 }, { autoAlpha: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, 22.6);
+      tl.set("#cnt", { text: "12/12 Full" }, 22.8);
+      tl.fromTo("#ev2", { borderLeftColor: "#3478f6", boxShadow: "0 0 0 0px rgba(31,157,85,.45)" }, { borderLeftColor: "#1f9d55", boxShadow: "0 0 0 16px rgba(31,157,85,0)", duration: 0.9, ease: "power2.out", immediateRender: false }, 22.8);
+      tl.set("#st2", { className: "state free" }, 23.3);
+      tl.set("#st2t", { text: "Class done" }, 23.3);
+      tl.set("#ck2", { text: "2:46" }, 23.3);
+      tl.set("#sb2 span:first-child", { text: "2:46" }, 23.3);
+      tl.fromTo("#won2", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: IN }, 23.4);
 
-      // 21.0-21.6 the receipts come back down; hold to 23
-      tl.set("#poster", { autoAlpha: 1 }, 21.0);
-      tl.fromTo("#poster", { yPercent: -106 }, { yPercent: 0, duration: 0.6, ease: "power3.inOut", immediateRender: false }, 21.0);
-      tl.set("#s2", { autoAlpha: 0 }, 21.6);
-      tl.set({}, {}, 23);
+      // 25.0-25.6 the receipts come back down; hold to 27.5
+      tl.set("#poster", { autoAlpha: 1 }, 25.0);
+      tl.fromTo("#poster", { yPercent: -106 }, { yPercent: 0, duration: 0.6, ease: "power3.inOut", immediateRender: false }, 25.0);
+      tl.set("#s2", { autoAlpha: 0 }, 25.6);
+      tl.set({}, {}, 27.5);
 
       window.__timelines = window.__timelines || {};
       window.__timelines["main"] = tl;
