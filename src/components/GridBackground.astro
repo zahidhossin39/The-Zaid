@@ -2,7 +2,7 @@
 // Framer-style "Plus + Lines" grid, registered to the hero layout: the cell is
 // the content width / 20 and the origin is the content-left edge + headline
 // top, so lines land on the layout's edges. Marks near the cursor darken and
-// fade back. Quiet (35%) behind [data-quiet] copy, faded at top and bottom.
+// fade back. Quiet (35%) behind each line of [data-quiet] text, faded at top and bottom.
 ---
 
 <div class="grid-bg" aria-hidden="true">
@@ -82,24 +82,32 @@
       return { l: c.l - 8, t: c.t - 8, r: c.r + 8, b: c.b + 8 };
     });
 
-    // mask: 35% behind the copy (soft edge), fade over top 96px and bottom 160px
+    // mask: 35% behind each text line (tight soft edge), fade over top and bottom 96px
     mctx.clearRect(0, 0, w, h);
     mctx.globalCompositeOperation = "source-over";
     mctx.fillStyle = "#000";
     mctx.fillRect(0, 0, w, h);
     mctx.globalCompositeOperation = "destination-out";
-    mctx.filter = "blur(32px)";
+    mctx.filter = "blur(10px)";
     mctx.fillStyle = "rgba(0,0,0,.65)";
     hero.querySelectorAll<HTMLElement>("[data-quiet]").forEach((el) => {
       const q = box(el);
-      mctx.fillRect(q.l - 16, q.t - 16, q.r - q.l + 32, q.b - q.t + 32);
+      // one rect per rendered line, only as wide as its words (not the whole block);
+      // measured relative to the element so the reveal animation's transform cancels out
+      const er = el.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      for (const lr of range.getClientRects()) {
+        if (lr.width < 1) continue;
+        mctx.fillRect(q.l + lr.left - er.left - 6, q.t + lr.top - er.top - 6, lr.width + 12, lr.height + 12);
+      }
     });
     mctx.filter = "none";
     mctx.globalCompositeOperation = "destination-in";
     const g = mctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, "rgba(0,0,0,0)");
     g.addColorStop(Math.min(0.45, 96 / h), "#000");
-    g.addColorStop(Math.max(0.55, 1 - 160 / h), "#000");
+    g.addColorStop(Math.max(0.55, 1 - 96 / h), "#000");
     g.addColorStop(1, "rgba(0,0,0,0)");
     mctx.fillStyle = g;
     mctx.fillRect(0, 0, w, h);
