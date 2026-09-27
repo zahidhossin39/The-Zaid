@@ -1,6 +1,195 @@
-<footer class="border-t border-border">
-  <div class="mx-auto flex max-w-[64rem] flex-col gap-2 px-6 py-8 text-sm text-muted md:flex-row md:items-center md:justify-between md:px-8">
-    <p>© {new Date().getFullYear()} Zaid Hossain</p>
-    <p class="text-xs">Built by me.</p>
+---
+const EMAIL = "hello.zaidhossain@gmail.com";
+const CAL_URL = "https://cal.com/zaid-hossain/20min";
+const year = new Date().getFullYear();
+
+const pages = [
+  ["Work", "#proof"],
+  ["How I work", "#process"],
+  ["About", "#about"],
+  ["FAQ", "#faq"],
+  ["Book a call", "#book"],
+];
+
+// Icons: 24px grid, drawn as fills so they sit at one visual weight.
+const socials = [
+  {
+    label: "GitHub",
+    handle: "zahidhossin39",
+    href: "https://github.com/zahidhossin39",
+    d: "M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.7 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.7 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z",
+  },
+  {
+    label: "X",
+    handle: "@ZaidHossain_",
+    href: "https://x.com/ZaidHossain_",
+    d: "M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23Zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64Z",
+  },
+  {
+    label: "LinkedIn",
+    handle: "zaid-hossain",
+    href: "https://www.linkedin.com/in/zaid-hossain",
+    d: "M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z",
+  },
+];
+---
+
+<footer class="ft">
+  <div class="ft-inner">
+    <div class="ft-top">
+      <div class="ft-pitch">
+        <p class="ft-line">More customers.<br /><em>Not more hours.</em></p>
+        <div class="ft-actions">
+          <a class="ft-btn" href={CAL_URL} target="_blank" rel="noopener noreferrer">
+            Book a free 20-min call
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
+          </a>
+          <a class="ft-mail" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+        </div>
+      </div>
+
+      <nav class="ft-col" aria-label="Footer">
+        <h2 class="ft-h">Site</h2>
+        <ul>
+          {pages.map(([label, href]) => <li><a href={href}>{label}</a></li>)}
+        </ul>
+      </nav>
+
+      <div class="ft-col">
+        <h2 class="ft-h">Elsewhere</h2>
+        <ul>
+          {socials.map((s) => (
+            <li>
+              <a class="ft-social" href={s.href} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d={s.d} /></svg>
+                <span>{s.label}</span>
+                <span class="ft-handle">{s.handle}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <p class="ft-mark" aria-hidden="true">Zaid Hossain</p>
+
+    <div class="ft-base">
+      <p>© {year} Zaid Hossain. Websites and automations for small businesses.</p>
+      <a href="#" class="ft-top-link">Back to top ↑</a>
+    </div>
   </div>
 </footer>
+
+<style>
+  .ft {
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text);
+    overflow: hidden;
+  }
+  .ft-inner {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 5rem 1.5rem 2rem;
+  }
+  .ft-top {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 3rem;
+  }
+
+  .ft-line {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .ft-line em { color: var(--color-muted); }
+
+  .ft-actions {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+  }
+  .ft-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.4rem;
+    border-radius: 999px;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+  .ft-btn:hover { background: var(--color-accent-hover); }
+  .ft-btn svg {
+    width: 16px; height: 16px;
+    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .ft-btn:hover svg { transform: translate(2px, -2px); }
+  .ft-mail {
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--color-border);
+    transition: color 0.2s ease, border-color 0.2s ease;
+    overflow-wrap: anywhere;
+  }
+  .ft-mail:hover { color: var(--color-text); border-color: var(--color-text); }
+
+  .ft-h {
+    margin: 0 0 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+  .ft-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+  .ft-col a { color: var(--color-text); transition: color 0.2s ease; }
+  .ft-col a:hover { color: var(--color-muted); }
+
+  .ft-social { display: flex; align-items: center; gap: 0.75rem; }
+  .ft-social svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
+  .ft-handle { margin-left: auto; font-size: 0.875rem; color: var(--color-muted); }
+
+  /* oversized signature: bleeds to the edges, reads as the page's sign-off */
+  .ft-mark {
+    margin: 5rem 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 15.5vw, 14rem);
+    line-height: 0.8;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    text-align: center;
+    color: var(--color-surface);
+    -webkit-text-stroke: 1px var(--color-border);
+    user-select: none;
+  }
+
+  .ft-base {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+  .ft-base p { margin: 0; }
+  .ft-top-link { color: var(--color-muted); transition: color 0.2s ease; }
+  .ft-top-link:hover { color: var(--color-text); }
+
+  @media (max-width: 900px) {
+    .ft-top { grid-template-columns: 1fr 1fr; }
+    .ft-pitch { grid-column: 1 / -1; }
+  }
+  @media (max-width: 520px) {
+    .ft-inner { padding-top: 4rem; }
+    .ft-top { grid-template-columns: 1fr; gap: 2.5rem; }
+    .ft-mark { margin-top: 3.5rem; }
+  }
+</style>
