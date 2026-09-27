@@ -1,6 +1,8 @@
 ---
-// Replica of the Framer "grid-background" component (Plus + Lines): a 60px grid
-// of plus marks on hairlines; marks light up near the cursor and fade back out.
+// Framer-style "Plus + Lines" grid, registered to the hero layout: the cell is
+// the content width / 20 and the origin is the content-left edge + headline
+// top, so lines land on the layout's edges. Marks near the cursor darken and
+// fade back. Quiet (35%) behind [data-quiet] copy, faded at top and bottom.
 ---
 
 <div class="grid-bg" aria-hidden="true">
@@ -16,63 +18,138 @@
     pointer-events: none;
   }
   .grid-bg canvas { display: block; width: 100%; height: 100%; }
-
 </style>
 
 <script>
-  const CELL = 60; // grid pitch (Framer: 60px)
-  const MARK = 10; // plus size
-  const ARM = 1.7; // plus arm thickness
-  const BASE = 0.15; // resting opacity
-  const RADIUS = 150; // cursor reach
-  const COLOR = "17,17,17";
+  const MARK = 8; // plus size (6 on phones)
+  const LINE_A = 0.04;
+  const MARK_A = 0.12;
+  const GLOW = 0.28; // max extra opacity under the cursor
+  const DARK = "17,17,17";
+  const LIGHT = "244,242,237"; // on the dark panel (variant 3)
 
   const wrap = document.querySelector<HTMLElement>(".grid-bg")!;
+  const hero = wrap.parentElement!;
+  const inner = hero.querySelector<HTMLElement>(".hero-inner")!;
   const canvas = wrap.querySelector("canvas")!;
   const ctx = canvas.getContext("2d")!;
+  const mask = document.createElement("canvas");
+  const mctx = mask.getContext("2d")!;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  let w = 0, h = 0, cols = 0, rows = 0;
-  let glow = new Float32Array(0); // per-mark extra opacity, decays over time
-  let mx = -1e4, my = -1e4;
-  let running = false;
+  let w = 0, h = 0, dpr = 1, cell = 64, ox = 0, oy = 0, mark = MARK;
+  let lines = true, split = Infinity; // x where the dark panel starts
+  let xs: number[] = [], ys: number[] = [];
+  let skips: { l: number; t: number; r: number; b: number }[] = []; // no marks under/around the card and button
+  let glow = new Float32Array(0);
+  let mx = -1e4, my = -1e4, running = false;
 
-  const resize = () => {
+  const px = (v: number) => Math.round(v * dpr) / dpr; // snap to device pixel
+  // layout box relative to the hero, ignoring transforms (the reveal animation moves the copy)
+  const box = (el: HTMLElement) => {
+    let x = 0, y = 0, n: HTMLElement | null = el;
+    while (n && n !== hero) { x += n.offsetLeft; y += n.offsetTop; n = n.offsetParent as HTMLElement | null; }
+    return { l: x, t: y, r: x + el.offsetWidth, b: y + el.offsetHeight };
+  };
+
+  const layout = () => {
     const r = wrap.getBoundingClientRect();
-    const dpr = devicePixelRatio || 1;
+    dpr = devicePixelRatio || 1;
     w = r.width; h = r.height;
-    canvas.width = w * dpr; canvas.height = h * dpr;
+    for (const c of [canvas, mask]) { c.width = w * dpr; c.height = h * dpr; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    cols = Math.ceil(w / CELL) + 1; rows = Math.ceil(h / CELL) + 1;
-    glow = new Float32Array(cols * rows);
+    mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const vw = innerWidth;
+    const cs = getComputedStyle(inner);
+    const ir = inner.getBoundingClientRect();
+    const left = ir.left - r.left + parseFloat(cs.paddingLeft);
+    const content = ir.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    cell = content / (vw >= 1024 ? 20 : vw >= 768 ? 12 : 6);
+    mark = vw >= 768 ? MARK : 6;
+    lines = vw >= 768;
+    ox = left; oy = box(hero.querySelector<HTMLElement>(".headline")!).t;
+    split = hero.dataset.v === "3" && vw >= 1024 ? px(ox + 9 * cell) : Infinity;
+    hero.style.setProperty("--split", isFinite(split) ? `${split}px` : "50%");
+
+    xs = []; ys = [];
+    for (let x = ox - Math.ceil(ox / cell) * cell; x <= w; x += cell) xs.push(px(x));
+    for (let y = oy - Math.ceil(oy / cell) * cell; y <= h; y += cell) ys.push(px(y));
+    glow = new Float32Array(xs.length * ys.length);
+
+    skips = [...hero.querySelectorAll<HTMLElement>(".reel, .btn")].map((el) => {
+      const c = box(el);
+      return { l: c.l - 8, t: c.t - 8, r: c.r + 8, b: c.b + 8 };
+    });
+
+    // mask: 35% behind the copy (soft edge), fade over top 96px and bottom 160px
+    mctx.clearRect(0, 0, w, h);
+    mctx.globalCompositeOperation = "source-over";
+    mctx.fillStyle = "#000";
+    mctx.fillRect(0, 0, w, h);
+    mctx.globalCompositeOperation = "destination-out";
+    mctx.filter = "blur(32px)";
+    mctx.fillStyle = "rgba(0,0,0,.65)";
+    hero.querySelectorAll<HTMLElement>("[data-quiet]").forEach((el) => {
+      const q = box(el);
+      mctx.fillRect(q.l - 16, q.t - 16, q.r - q.l + 32, q.b - q.t + 32);
+    });
+    mctx.filter = "none";
+    mctx.globalCompositeOperation = "destination-in";
+    const g = mctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, "rgba(0,0,0,0)");
+    g.addColorStop(Math.min(0.45, 96 / h), "#000");
+    g.addColorStop(Math.max(0.55, 1 - 160 / h), "#000");
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    mctx.fillStyle = g;
+    mctx.fillRect(0, 0, w, h);
+
     draw();
   };
 
+  const tone = (x: number, a: number) =>
+    x >= split ? `rgba(${LIGHT},${a * 0.85})` : `rgba(${DARK},${a})`;
+
   const draw = () => {
+    ctx.globalCompositeOperation = "source-over";
     ctx.clearRect(0, 0, w, h);
-    {
-      ctx.strokeStyle = `rgba(${COLOR},0.07)`;
+    if (lines) {
       ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let c = 0; c < cols; c++) { const x = CELL / 2 + c * CELL + 0.5; ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-      for (let r = 0; r < rows; r++) { const y = CELL / 2 + r * CELL + 0.5; ctx.moveTo(0, y); ctx.lineTo(w, y); }
-      ctx.stroke();
-    }
-    let active = false;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const i = r * cols + c;
-        const x = CELL / 2 + c * CELL, y = CELL / 2 + r * CELL;
-        const d = Math.hypot(x - mx, y - my);
-        const target = d < RADIUS ? (1 - d / RADIUS) * 0.85 : 0;
-        // rise fast, fall slow: leaves a short trail behind the cursor
-        glow[i] += (target - glow[i]) * (target > glow[i] ? 0.35 : 0.06);
-        if (glow[i] > 0.003) active = true;
-        ctx.fillStyle = `rgba(${COLOR},${Math.min(1, BASE + glow[i])})`;
-        ctx.fillRect(x - MARK / 2, y - ARM / 2, MARK, ARM);
-        ctx.fillRect(x - ARM / 2, y - MARK / 2, ARM, MARK);
+      for (const x of xs) {
+        ctx.strokeStyle = tone(x, LINE_A);
+        ctx.beginPath(); ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, h); ctx.stroke();
+      }
+      for (const y of ys) {
+        for (const [a, b] of [[0, Math.min(split, w)], [split, w]]) {
+          if (b <= a) continue;
+          ctx.strokeStyle = tone(a, LINE_A);
+          ctx.beginPath(); ctx.moveTo(a, y + 0.5); ctx.lineTo(b, y + 0.5); ctx.stroke();
+        }
       }
     }
+    const reach = cell * 2;
+    const half = mark / 2;
+    let active = false;
+    for (let j = 0; j < ys.length; j++) {
+      const y = ys[j];
+      for (let i = 0; i < xs.length; i++) {
+        const x = xs[i];
+        if (skips.some((s) => x > s.l && x < s.r && y > s.t && y < s.b)) continue;
+        const k = j * xs.length + i;
+        const d = Math.hypot(x - mx, y - my);
+        const target = d < reach ? (1 - d / reach) * GLOW : 0;
+        glow[k] += (target - glow[k]) * (target > glow[k] ? 0.35 : 0.08);
+        if (glow[k] > 0.003) active = true;
+        ctx.fillStyle = tone(x, MARK_A + glow[k]);
+        ctx.fillRect(x - half, y, mark + 1, 1); // 1px arms on whole pixels
+        ctx.fillRect(x, y - half, 1, half);
+        ctx.fillRect(x, y + 1, 1, half);
+      }
+    }
+    ctx.globalCompositeOperation = "destination-in";
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(mask, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return active;
   };
 
@@ -82,14 +159,17 @@
   };
   const kick = () => { if (!running && !still) { running = true; requestAnimationFrame(loop); } };
 
-  new ResizeObserver(resize).observe(wrap);
+  const ro = new ResizeObserver(() => layout());
+  ro.observe(wrap);
+  ro.observe(inner);
+  hero.addEventListener("variantchange", () => requestAnimationFrame(layout));
+  document.fonts.ready.then(layout); // web font changes the headline height
   if (!still) {
     addEventListener("pointermove", (e) => {
       const r = wrap.getBoundingClientRect();
       mx = e.clientX - r.left; my = e.clientY - r.top;
-      if (my > -RADIUS && my < r.height + RADIUS) kick();
+      if (my > -cell * 2 && my < r.height + cell * 2) kick();
     }, { passive: true });
     document.addEventListener("pointerleave", () => { mx = my = -1e4; kick(); });
   }
-
 </script>
