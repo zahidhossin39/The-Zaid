@@ -1,0 +1,65 @@
+/last30days · researching: personal trainer and coach problems
+⏳ [95mProcessing[0m Removing duplicates...
+[Planner] Plan: intent=opinion, freshness=balanced_recent, cluster_mode=debate, subqueries=3, source=external
+[Planner]   sq1 label=primary search="personal trainer clients leads no shows burnout" sources=[reddit,youtube,hackernews]
+[Planner]   sq2 label=online search="online coaching business instagram DMs clients" sources=[reddit,youtube]
+[Planner]   sq3 label=software search="Trainerize TrueCoach Everfit coaching app" sources=[reddit,youtube]
+[HN] Searching for 'personal trainer clients leads no shows burnout' (raw: 'personal trainer clients leads no shows burnout', since 2026-08-28, count=30)
+[YouTube] Searching YouTube for 'personal trainer coach problems' (since 2026-08-28, count=8)
+[YouTube] YouTube search awaiting in-flight query for 'personal trainer coach problems'
+[YouTube] YouTube search awaiting in-flight query for 'personal trainer coach problems'
+[HN] Filtered 10/60 low-engagement stories
+[HN] Found 30 stories
+[HN] Prefix filter removed 12/30 false-positive hits for 'personal trainer clients leads no shows burnout'
+[YouTube] Found 8 videos (2 within date range, keeping all)
+[YouTube] YouTube search cache hit for 'personal trainer coach problems' (count=8)
+[YouTube] Fetching transcripts for up to 6 videos (target: 2): ['iU9_g-2ahqg', 'JdCEsjRcM1M', '4dYLaoI5UFM', 'PasbZK0xW8Y', '3BeCCiGD1dU', '_pUS1jfpdTA']
+[YouTube] Fetching transcripts for 6 videos
+[YouTube] YouTube search cache hit for 'personal trainer coach problems' (count=8)
+[YouTube] Fetching transcripts for up to 6 videos (target: 2): ['iU9_g-2ahqg', 'JdCEsjRcM1M', '4dYLaoI5UFM', 'PasbZK0xW8Y', '3BeCCiGD1dU', '_pUS1jfpdTA']
+[YouTube] Fetching transcripts for 6 videos
+[YouTube] YouTube search cache hit for 'personal trainer coach problems' (count=8)
+[YouTube] Fetching transcripts for up to 6 videos (target: 2): ['iU9_g-2ahqg', 'JdCEsjRcM1M', '4dYLaoI5UFM', 'PasbZK0xW8Y', '3BeCCiGD1dU', '_pUS1jfpdTA']
+[YouTube] Fetching transcripts for 6 videos
+[ArcticShift] listing search failed r/personaltraining: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/personaltraining: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/personaltraining: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/OnlineCoaching: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/OnlineCoaching: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/OnlineCoaching: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/fitnesscoaching: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/fitnesscoaching: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/fitnesscoaching: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/PersonalTrainer: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/PersonalTrainer: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/PersonalTrainer: HTTP 500: Internal Server Error
+[ArcticShift] listing search failed r/smallbusiness: HTTP 500: Internal Server Error
+[RedditKeyless] Tier 1 (RSS) 25 posts; listing discovery 155; 155 scored cards
+[ArcticShift] listing search failed r/smallbusiness: HTTP 500: Internal Server Error
+[RedditKeyless] Tier 1 (RSS) 25 posts; listing discovery 155; 155 scored cards
+[ArcticShift] listing search failed r/smallbusiness: HTTP 500: Internal Server Error
+[RedditKeyless] Tier 1 (RSS) 25 posts; listing discovery 155; 155 scored cards
+[YouTube] Got transcripts for 6/6 videos (0 failed)
+[YouTube] Enriching comments for 3 YouTube videos
+[YouTube] Got transcripts for 6/6 videos (0 failed)
+[YouTube] Enriching comments for 3 YouTube videos
+[ArcticShift] lookup failed (HTTP 500: Internal Server Error); 33 ids left unscored
+[RedditKeyless] Relevance floor dropped 125 off-topic posts
+[ArcticShift] lookup failed (HTTP 500: Internal Server Error); 33 ids left unscored
+[RedditKeyless] Relevance floor dropped 125 off-topic posts
+[ArcticShift] lookup failed (HTTP 500: Internal Server Error); 33 ids left unscored
+[RedditKeyless] Relevance floor dropped 125 off-topic posts
+[YouTube] Got transcripts for 6/6 videos (0 failed)
+[YouTube] Enriching comments for 3 YouTube videos
+[Reddit] relevance prune dropped 24 of 26 items below the relevance/engagement floor
+[Reddit] relevance prune dropped 24 of 26 items below the relevance/engagement floor
+[YouTube] Enriched 3/3 videos with comments
+[YouTube] Enriched 3/3 videos with comments
+[YouTube] Enriched 3/3 videos with comments
+[YouTube] Backfilling transcripts for 2 finalized videos (target: 2)
+[YouTube] Fetching transcripts for 2 videos
+[YouTube] Got transcripts for 2/2 videos (0 failed)
+✓ Research complete (176.3s) - Reddit: 12 threads, YouTube: 2 videos, HN: 12 stories, Polymarket: 0 markets, Github: 0 results
+[last30days] Saved output to D:\Vibe-coding\ZAID-WEBSITE\research\niche-deep\trainer\last30days\personal-trainer-and-coach-problems-raw-v3.md
+
+Optional source omitted: X/Twitter was not enabled; research continued with the available sources.
