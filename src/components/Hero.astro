@@ -232,7 +232,11 @@ const CTA = "Book a free 20-min call";
     background: #f6f4ef;
     object-fit: cover;
     border-radius: 20px;
-    box-shadow: 0 30px 60px -35px rgba(10, 10, 11, 0.35);
+    /* even black shadow on all four sides */
+    box-shadow:
+      0 0 0 1px rgba(10, 10, 11, 0.04),
+      0 0 24px rgba(10, 10, 11, 0.10),
+      0 0 64px rgba(10, 10, 11, 0.14);
   }
 
   .reel-slot { cursor: default; }
