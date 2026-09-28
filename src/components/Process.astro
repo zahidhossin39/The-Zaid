@@ -253,23 +253,22 @@ const phases = [
       items: [".head", ".slot > p", ".tags"].map((q) => el.querySelector<HTMLElement>(q)!),
       art: el.querySelector<HTMLElement>(".art")!,
     }));
-    const smooth = (a: number, b: number, x: number) => {
-      const k = Math.min(1, Math.max(0, (x - a) / (b - a)));
-      return k * k * (3 - 2 * k);
-    };
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dial = matchMedia("(max-width: 1024px)");
 
     // Wave handoff: each part changes on its own, top to bottom, as the scroll moves
     // from one phase to the next. SLOTS = [handoff point, fade width] in phase steps,
-    // tuned so at least one part is always >= 80% visible (never an empty stage) and
+    // tuned so at least one part is always >= 90% visible (never an empty stage) and
     // two phases never show in the same slot. The icon changes with the title.
-    const SLOTS = [[0.40, 0.14], [0.50, 0.14], [0.60, 0.14]];
-    const ART = [0.40, 0.14];
+    // Leaving parts ease in (accelerate away) and arriving parts ease out (decelerate
+    // in), so a slot passes through empty in an instant instead of dwelling there.
+    const SLOTS = [[0.40, 0.18], [0.50, 0.18], [0.60, 0.18]];
+    const ART = [0.40, 0.18];
     const D_PX = 18; // how far a part rises as it leaves / arrives
+    const prog = (a: number, b: number, x: number) => Math.min(1, Math.max(0, (x - a) / (b - a)));
     const vis = (u: number, i: number, c: number, w: number) => {
-      const inn = i === 0 ? 1 : smooth(c - 1, c - 1 + w, u);
-      const out = i === N - 1 ? 1 : 1 - smooth(c - w, c, u);
+      const inn = i === 0 ? 1 : 1 - Math.pow(1 - prog(c - 1, c - 1 + w, u), 3);
+      const out = i === N - 1 ? 1 : 1 - Math.pow(prog(c - w, c, u), 3);
       return { o: Math.min(inn, out), y: (out - inn) * D_PX };
     };
     const drawPhases = () => {
@@ -402,11 +401,11 @@ const phases = [
       const dest = lenis.targetScroll ?? scrollY;
       if (dest <= top + 2 || dest >= top + total - 2) return; // heading outside the pinned range
       const at = ((dest - top) / total) * (N - 1);
-      // Outside the handoff (first/last 20% of a step) the stage looks settled already,
-      // so leave it alone and never fight the user. Inside it, finish the move in
-      // the direction they were scrolling.
+      // Finish the move in the direction they were scrolling. Only a small nudge
+      // (under 20% of a step, before anything changed on screen) is left alone, so
+      // it never pulls back against the user.
       const frac = at - Math.floor(at);
-      if (frac < 0.2 || frac > 0.8) return;
+      if (dir > 0 ? frac < 0.2 : frac > 0.8) return;
       const n = dir > 0 ? Math.ceil(at) : Math.floor(at);
       lenis.scrollTo(top + (n / (N - 1)) * total, { lerp: 0.1 });
     };
