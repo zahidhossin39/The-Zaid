@@ -71,7 +71,10 @@ const socials = [
       </div>
     </div>
 
-    <p class="ft-mark" aria-hidden="true">Zaid Hossain</p>
+    <div class="ft-mark-wrap" aria-hidden="true">
+      <p class="ft-mark">Zaid Hossain</p>
+      <canvas class="ft-ascii"></canvas>
+    </div>
 
     <div class="ft-base">
       <p>© {year} Zaid Hossain. Websites and automations for small businesses.</p>
@@ -168,6 +171,12 @@ const socials = [
     user-select: none;
   }
 
+  /* hover: the name dissolves into glowing ASCII (canvas drawn over the text) */
+  .ft-mark-wrap { position: relative; margin-top: 5rem; }
+  .ft-mark-wrap .ft-mark { margin: 0; }
+  .ft-ascii { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .ft-mark-wrap.live .ft-mark { visibility: hidden; } /* canvas draws the name itself */
+
   .ft-base {
     margin-top: 2rem;
     padding-top: 1.5rem;
@@ -190,6 +199,135 @@ const socials = [
   @media (max-width: 520px) {
     .ft-inner { padding-top: 4rem; }
     .ft-top { grid-template-columns: 1fr; gap: 2.5rem; }
-    .ft-mark { margin-top: 3.5rem; }
+    .ft-mark-wrap { margin-top: 3.5rem; }
   }
 </style>
+
+<script>
+  // ASCII hover: the name is drawn on a canvas split into small cells. Entering it
+  // starts a ring that spreads from the entry point; each cell the ring reaches
+  // scrambles, then settles into a glowing digit (brightest around the cursor).
+  // Leaving pulls the ring back to where it started. Mouse only, off for reduced motion.
+  const wrap = document.querySelector<HTMLElement>(".ft-mark-wrap");
+  const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (wrap && fine && !still) {
+    const text = wrap.querySelector<HTMLElement>(".ft-mark")!;
+    const cv = wrap.querySelector("canvas")!;
+    const ctx = cv.getContext("2d")!;
+    const CHARS = "0101010123456789";
+    const FEATHER = 90; // px: width of the ring's soft edge
+    type Cell = { x: number; y: number; m: number; ch: string; t: number; show: boolean };
+    let cells: Cell[] = [], w = 0, h = 0, dpr = 1, cs = 10, maxR = 1;
+    let font = "", fill = "", stroke = "", ink = "", ls = "0px", baseY = 0;
+    let pad = 0, r = 0, over = false, ox = 0, oy = 0, mx = -1e4, my = -1e4, raf = 0;
+    const rnd = () => CHARS[(Math.random() * CHARS.length) | 0];
+
+    const drawName = (c: CanvasRenderingContext2D) => {
+      c.font = font; c.textAlign = "center"; c.textBaseline = "alphabetic";
+      (c as any).letterSpacing = ls;
+      c.fillStyle = fill; c.fillText(text.textContent!, w / 2, baseY);
+      c.lineWidth = 1; c.strokeStyle = stroke; c.strokeText(text.textContent!, w / 2, baseY);
+    };
+
+    const layout = () => {
+      const b = wrap.getBoundingClientRect();
+      if (b.width < 1 || b.height < 1) return;
+      const st = getComputedStyle(text);
+      const root = getComputedStyle(document.documentElement);
+      // line-height is 0.8, so the letters overflow the box: bleed the canvas by
+      // half the font size top and bottom so nothing is clipped
+      pad = Math.ceil(parseFloat(st.fontSize) * 0.5);
+      cv.style.top = -pad + "px"; cv.style.height = b.height + 2 * pad + "px"; cv.style.bottom = "auto";
+      dpr = devicePixelRatio || 1; w = b.width; h = b.height + 2 * pad;
+      cv.width = w * dpr; cv.height = h * dpr;
+      font = `${st.fontStyle} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`;
+      ls = st.letterSpacing === "normal" ? "0px" : st.letterSpacing;
+      fill = st.color; stroke = root.getPropertyValue("--color-border").trim() || fill;
+      ink = root.getPropertyValue("--color-text").trim() || "#F4F2ED";
+      // baseline straight from the DOM: the text's content box top + the font ascent
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.font = font;
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      const tr = range.getBoundingClientRect();
+      baseY = tr.top - (b.top - pad) + ctx.measureText(text.textContent!).fontBoundingBoxAscent;
+      cs = Math.max(7, Math.round(parseFloat(st.fontSize) / 20));
+      // sample the glyph coverage per cell
+      const off = document.createElement("canvas");
+      off.width = Math.ceil(w); off.height = Math.ceil(h);
+      const o = off.getContext("2d", { willReadFrequently: true })!;
+      const fillSave = fill; fill = "#fff"; drawName(o); fill = fillSave;
+      const data = o.getImageData(0, 0, off.width, off.height).data;
+      cells = [];
+      for (let y = 0; y + cs <= off.height; y += cs)
+        for (let x = 0; x + cs <= off.width; x += cs) {
+          let a = 0, n = 0;
+          for (let yy = y; yy < y + cs; yy += 2) for (let xx = x; xx < x + cs; xx += 2) { a += data[(yy * off.width + xx) * 4 + 3]; n++; }
+          // any touched cell gets erased (no leftover letter edges); only solid ones get a digit
+          if (a / n > 4) cells.push({ x, y, m: 0, ch: rnd(), t: 0, show: a / n > 90 });
+        }
+      maxR = Math.hypot(w, h) + FEATHER;
+      wrap.classList.add("live");
+      draw();
+    };
+
+    const draw = () => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.globalCompositeOperation = "source-over";
+      drawName(ctx);
+      // punch the name out where cells have turned, then draw their characters
+      ctx.globalCompositeOperation = "destination-out";
+      for (const c of cells) if (c.m > 0.01) { ctx.fillStyle = `rgba(0,0,0,${c.m})`; ctx.fillRect(c.x, c.y, cs, cs); }
+      ctx.globalCompositeOperation = "source-over";
+      ctx.font = `600 ${cs * 1.15}px ui-monospace, "SFMono-Regular", Menlo, monospace`;
+      (ctx as any).letterSpacing = "0px";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = ink; ctx.shadowColor = ink;
+      for (const c of cells) {
+        if (c.m <= 0.01 || !c.show) continue;
+        const near = Math.max(0, 1 - Math.hypot(c.x - mx, c.y - my) / 160);
+        ctx.globalAlpha = c.m * (0.38 + 0.62 * near);
+        ctx.shadowBlur = near > 0.2 ? 10 * near : 0;
+        ctx.fillText(c.ch, c.x + cs / 2, c.y + cs / 2 + 0.5);
+      }
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+    };
+
+    let last = 0;
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, last ? (now - last) / 1000 : 0.016); last = now;
+      // ring radius eases out toward its target: reacts instantly, lands softly
+      const target = over ? maxR : 0;
+      r += (target - r) * (1 - Math.exp(-dt * (over ? 3.2 : 4.5)));
+      let busy = Math.abs(target - r) > 1;
+      for (const c of cells) {
+        const d = Math.hypot(c.x + cs / 2 - ox, c.y + cs / 2 - oy);
+        const goal = Math.min(1, Math.max(0, (r - d) / FEATHER));
+        c.m += (goal - c.m) * Math.min(1, dt * 14);
+        if (Math.abs(goal - c.m) > 0.003) busy = true;
+        // scramble while turning, then flicker gently near the cursor
+        c.t -= dt;
+        const near = Math.hypot(c.x - mx, c.y - my) < 160;
+        if (c.t <= 0 && c.m > 0.01 && (c.m < 0.97 || near)) { c.ch = rnd(); c.t = c.m < 0.97 ? 0.05 : 0.12 + Math.random() * 0.3; }
+      }
+      draw();
+      if (busy || over) raf = requestAnimationFrame(tick);
+      else { raf = 0; last = 0; }
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+
+    const local = (e: PointerEvent) => { const b = wrap.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top + pad]; };
+    wrap.addEventListener("pointerenter", (e) => {
+      [mx, my] = local(e);
+      if (r < 1) { ox = mx; oy = my; } // start a new ring from the entry point
+      over = true; kick();
+    });
+    wrap.addEventListener("pointermove", (e) => { [mx, my] = local(e); });
+    wrap.addEventListener("pointerleave", () => { over = false; mx = my = -1e4; kick(); });
+
+    document.fonts.ready.then(layout);
+    new ResizeObserver(() => { if (cells.length || w) layout(); }).observe(wrap);
+  }
+</script>
