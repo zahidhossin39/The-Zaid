@@ -157,9 +157,14 @@ const phases = [
                  grid-template-columns: minmax(0,1fr) minmax(0,0.85fr);
                  gap: 3rem; padding: 4rem clamp(3rem,5vw,6rem) 4rem 0.5rem; }
   .proc .phase .copy { max-width: 40ch; }
-  /* each part slides inside its own clipped slot, so a moving part can never
-     reach into its neighbour (padding + negative margin = room for descenders) */
-  .proc .phase .slot { overflow: hidden; padding: 0.3em 0.6em; margin: -0.3em -0.6em; }
+  /* each part moves inside its own slot, whose edges are feathered: a moving line
+     dissolves softly as it crosses the edge (no hard slicing) and can never reach
+     into its neighbour. Padding + negative margin keep the feather off the resting text. */
+  .proc .phase .slot {
+    padding: 14px 0.6em; margin: -14px -0.6em;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+            mask-image: linear-gradient(to bottom, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+  }
   /* label + title move as one block, anchored to the bottom of their slot */
   .proc .phase .head { display: flex; flex-direction: column; justify-content: flex-end; }
   .proc .anim { will-change: transform, opacity; }
@@ -242,14 +247,10 @@ const phases = [
 
     let sp = 0, vel = 0, lastActive = 0, lastT = 0;
     const W = 10, W2 = W * W; // spring stiffness (rad/s): ~0.45s to settle
-    // parts of each phase: [elements, travel multiplier] (later parts travel a bit further = gentle depth)
+    // the moving parts of each phase: title block, paragraph, tags (top to bottom) and the icon
     const parts = phasesEls.map((el) => ({
       el,
-      items: [
-        [el.querySelector(".head"), 1],
-        [el.querySelector(".slot > p"), 1.12],
-        [el.querySelector(".tags"), 1.24],
-      ] as [HTMLElement, number][],
+      items: [".head", ".slot > p", ".tags"].map((q) => el.querySelector<HTMLElement>(q)!),
       art: el.querySelector<HTMLElement>(".art")!,
     }));
     const smooth = (a: number, b: number, x: number) => {
@@ -259,40 +260,38 @@ const phases = [
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dial = matchMedia("(max-width: 1024px)");
 
-    // PROTOTYPE: ?pt=A|B|C picks the transition while we compare them
-    const MODE = new URLSearchParams(location.search).get("pt") || "D";
-    const HOLD = 0.2, GONE = 0.47, TRAVEL = 72;
-    const setMask = (el: HTMLElement, v: string) => { el.style.maskImage = v; (el.style as any).webkitMaskImage = v; };
-    // D · wave: each slot (label, title, text, tags, icon) hands over on its own,
-    // top to bottom, so the column is never empty and two phases never share a slot.
-    // [handoff centre, window] in phase units; D_PX = how far a part travels.
-    const SLOTS = [[0.40, 0.2], [0.50, 0.2], [0.60, 0.2]];
-    const ART = [0.5, 0.14], D_PX = 30;
+    // Wave handoff: each part changes on its own, top to bottom, as the scroll moves
+    // from one phase to the next. SLOTS = [handoff point, fade width] in phase steps,
+    // tuned so at least one part is always >= 80% visible (never an empty stage) and
+    // two phases never show in the same slot. The icon changes with the title.
+    const SLOTS = [[0.40, 0.14], [0.50, 0.14], [0.60, 0.14]];
+    const ART = [0.40, 0.14];
+    const D_PX = 18; // how far a part rises as it leaves / arrives
     const vis = (u: number, i: number, c: number, w: number) => {
       const inn = i === 0 ? 1 : smooth(c - 1, c - 1 + w, u);
       const out = i === N - 1 ? 1 : 1 - smooth(c - w, c, u);
-      return { o: Math.min(inn, out), y: ((1 - inn) - (1 - out)) * D_PX };
+      return { o: Math.min(inn, out), y: (out - inn) * D_PX };
     };
-    const drawWave = (p: (typeof parts)[number], i: number) => {
-      const u = sp - i;
-      let any = false;
-      p.items.forEach(([node, _m], j) => {
-        if (!node) return;
-        const v = vis(u, i, SLOTS[j][0], SLOTS[j][1]);
-        node.style.opacity = v.o.toFixed(3);
-        node.style.transform = reduce ? "none" : `translate3d(0,${v.y.toFixed(2)}px,0)`;
-        if (v.o > 0.001) any = true;
+    const drawPhases = () => {
+      parts.forEach((p, i) => {
+        const u = sp - i;
+        let any = false;
+        p.items.forEach((node, j) => {
+          const v = vis(u, i, SLOTS[j][0], SLOTS[j][1]);
+          node.style.opacity = v.o.toFixed(3);
+          node.style.transform = reduce ? "none" : `translate3d(0,${v.y.toFixed(2)}px,0)`;
+          if (v.o > 0.001) any = true;
+        });
+        const a = vis(u, i, ART[0], ART[1]);
+        p.art.style.opacity = a.o.toFixed(3);
+        p.art.style.transform = reduce ? "none"
+          : `translate3d(0,${(a.y * 0.7).toFixed(2)}px,0) scale(${(0.97 + 0.03 * a.o).toFixed(4)})`;
+        if (a.o > 0.001) any = true;
+        p.el.style.visibility = any ? "visible" : "hidden";
+        p.el.style.pointerEvents = any ? "auto" : "none";
       });
-      const a = vis(u, i, ART[0], ART[1]);
-      p.art.style.opacity = a.o.toFixed(3);
-      p.art.style.transform = reduce ? "none"
-        : `translate3d(0,${(a.y * 0.7).toFixed(2)}px,0) scale(${(0.97 + 0.03 * a.o).toFixed(4)})`;
-      if (a.o > 0.001) any = true;
-      p.el.style.visibility = any ? "visible" : "hidden";
-      p.el.style.pointerEvents = any ? "auto" : "none";
-      setMask(p.el, "");
     };
-    // give every slot the same height in every phase, so old and new parts sit in the same place
+    // every slot gets the same height in every phase, so old and new parts sit in the same place
     const equalise = () => {
       [".head", ".slot > p"].forEach((sel) => {
         const nodes = phasesEls.map((el) => el.querySelector<HTMLElement>(sel)!);
@@ -304,43 +303,6 @@ const phases = [
     equalise();
     addEventListener("resize", equalise);
     document.fonts?.ready.then(equalise);
-
-    const drawPhases = () => {
-      const H = stage.clientHeight;
-      parts.forEach((p, i) => {
-        const t = sp - i; // < 0: upcoming (below), > 0: past (moved up)
-        let o = 1, y = 0, artY = 0, mask = "";
-        if (MODE === "D") return drawWave(p, i);
-        if (MODE === "A") {
-          o = 1 - smooth(HOLD, GONE, Math.abs(t));
-          y = -t * TRAVEL; artY = y * 0.55;
-        } else if (MODE === "B") {
-          o = 1 - smooth(0.28, 0.62, Math.abs(t));
-          y = -t * H * 0.42; artY = -t * H * 0.16;
-        } else {
-          const f = sp - Math.floor(sp);
-          const w = smooth(0.25, 0.75, f);
-          const P = 80 - w * 60;
-          const lo = Math.floor(sp), hi = lo + 1;
-          if (i === lo && w > 0) { mask = `linear-gradient(to bottom, #000 ${P - 7}%, transparent ${P + 7}%)`; y = -w * 22; }
-          else if (i === hi && w > 0) { mask = `linear-gradient(to bottom, transparent ${P - 7}%, #000 ${P + 7}%)`; y = (1 - w) * 22; }
-          else if (i !== Math.round(sp)) o = 0;
-          artY = y * 0.6;
-        }
-        p.el.style.visibility = o > 0.001 ? "visible" : "hidden";
-        p.el.style.pointerEvents = o > 0.5 ? "auto" : "none";
-        if (o <= 0.001) return;
-        setMask(p.el, mask);
-        if (reduce) { y = 0; artY = 0; }
-        for (const [node, m] of p.items) {
-          if (!node) continue;
-          node.style.opacity = o.toFixed(3);
-          node.style.transform = `translate3d(0,${(y * (MODE === "B" ? 1 : m)).toFixed(2)}px,0)`;
-        }
-        p.art.style.opacity = o.toFixed(3);
-        p.art.style.transform = `translate3d(0,${artY.toFixed(2)}px,0)`;
-      });
-    };
 
     const place = (dot: HTMLElement, x: number, y: number, size: number) => {
       dot.style.left = x + "px";
@@ -434,7 +396,7 @@ const phases = [
     // on a half-changed stage. A plain scroll-idle check covers keyboard/scrollbar.
     const settle = () => {
       const lenis = (window as any).lenis;
-      if (!lenis || (window as any).__noSettle) return; // __noSettle: PROTOTYPE test hook
+      if (!lenis) return;
       const total = scroll.offsetHeight - innerHeight;
       const top = scroll.getBoundingClientRect().top + scrollY;
       const dest = lenis.targetScroll ?? scrollY;
