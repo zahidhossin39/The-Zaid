@@ -161,9 +161,10 @@ const phases = [
      dissolves softly as it crosses the edge (no hard slicing) and can never reach
      into its neighbour. Padding + negative margin keep the feather off the resting text. */
   .proc .phase .slot {
-    padding: 14px 0.6em; margin: -14px -0.6em;
-    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14px, #000 calc(100% - 14px), transparent);
-            mask-image: linear-gradient(to bottom, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+    /* feather = travel (D_PX in the script), so a part is fully faded exactly as it reaches the edge */
+    padding: 18px 0.6em; margin: -18px -0.6em;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
+            mask-image: linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
   }
   /* label + title move as one block, anchored to the bottom of their slot */
   .proc .phase .head { display: flex; flex-direction: column; justify-content: flex-end; }
@@ -258,13 +259,14 @@ const phases = [
 
     // Wave handoff: each part changes on its own, top to bottom, as the scroll moves
     // from one phase to the next. SLOTS = [handoff point, fade width] in phase steps,
-    // tuned so at least one part is always >= 90% visible (never an empty stage) and
+    // tuned so at least one part is always >= 70% visible (never an empty stage), the new
+    // title never sits beside a still-solid old paragraph, and
     // two phases never show in the same slot. The icon changes with the title.
     // Leaving parts ease in (accelerate away) and arriving parts ease out (decelerate
     // in), so a slot passes through empty in an instant instead of dwelling there.
-    const SLOTS = [[0.40, 0.18], [0.50, 0.18], [0.60, 0.18]];
+    const SLOTS = [[0.40, 0.18], [0.46, 0.18], [0.52, 0.18]];
     const ART = [0.40, 0.18];
-    const D_PX = 18; // how far a part rises as it leaves / arrives
+    const D_PX = 18; // how far a part rises as it leaves / arrives (= .slot feather in the CSS)
     const prog = (a: number, b: number, x: number) => Math.min(1, Math.max(0, (x - a) / (b - a)));
     const vis = (u: number, i: number, c: number, w: number) => {
       const inn = i === 0 ? 1 : 1 - Math.pow(1 - prog(c - 1, c - 1 + w, u), 3);
