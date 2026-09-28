@@ -64,7 +64,7 @@ const phases = [
     tags: ["Steps", "Screens", "Design"], svg: ICON.pen,
   },
   {
-    n: "03", kick: "Phase 03", title: ["Build"],
+    n: "03", kick: "Phase 03", title: ["Build &", "Connect"],
     body: "I build it in small working pieces, so you can watch it come together. The code is yours from day one.",
     tags: ["Websites", "Automations", "AI"], svg: ICON.code,
   },
@@ -102,14 +102,12 @@ const phases = [
         {phases.map((p) => (
           <article class="phase">
             <div class="copy">
-              <div class="slot"><div class="head anim">
-                <p class="kick">{p.kick}</p>
-                <h3>{p.title[0]}{p.title[1] ? <br /> : null}{p.title[1] ?? ""}</h3>
-              </div></div>
-              <div class="slot"><p class="anim">{p.body}</p></div>
-              <div class="slot"><div class="tags anim">{p.tags.map((t) => <span>{t}</span>)}</div></div>
+              <p class="kick">{p.kick}</p>
+              <h3>{p.title[0]}{p.title[1] ? <br /> : null}{p.title[1] ?? ""}</h3>
+              <p>{p.body}</p>
+              <div class="tags">{p.tags.map((t) => <span>{t}</span>)}</div>
             </div>
-            <div class="art anim" set:html={p.svg}></div>
+            <div class="art" set:html={p.svg}></div>
           </article>
         ))}
       </div>
@@ -149,26 +147,23 @@ const phases = [
   @keyframes procping { 0% { box-shadow: 0 0 0 0 rgba(23,21,18,.35); } 100% { box-shadow: 0 0 0 18px rgba(23,21,18,0); } }
 
   .proc .content { position: absolute; top: 0; left: 460px; right: 0; bottom: 0; }
-  /* Phase text is scroll-linked: the script sets each part's opacity and
-     position from the scroll progress every frame, so the change moves exactly
-     with the scroll (and reverses with it). Base state = hidden. */
+  /* Phase change (same model as the reference site): the scroll only decides WHICH
+     phase is active; the change itself is a fixed, time-based transition, so every
+     change looks identical at any scroll speed. All phases sit in one column, --off
+     steps apart (the script sets --off = index - active); the column slides up one
+     step as a single unit while the old phase fades out fast and the new one fades in
+     just after it, so the two never show at once. */
   .proc .phase { position: absolute; inset: 0; pointer-events: none; visibility: hidden;
                  display: grid; align-items: center;
                  grid-template-columns: minmax(0,1fr) minmax(0,0.85fr);
-                 gap: 3rem; padding: 4rem clamp(3rem,5vw,6rem) 4rem 0.5rem; }
+                 gap: 3rem; padding: 4rem clamp(3rem,5vw,6rem) 4rem 0.5rem;
+                 --step: 80px; opacity: 0;
+                 transform: translate3d(0, calc(var(--off, 1) * var(--step)), 0);
+                 transition: transform .6s cubic-bezier(.22,1,.36,1), opacity .2s ease-in, visibility 0s .6s; }
+  .proc .phase.on { opacity: 1; visibility: visible; pointer-events: auto;
+                    transition: transform .6s cubic-bezier(.22,1,.36,1), opacity .38s cubic-bezier(.22,1,.36,1) .2s, visibility 0s; }
   .proc .phase .copy { max-width: 40ch; }
-  /* each part moves inside its own slot, whose edges are feathered: a moving line
-     dissolves softly as it crosses the edge (no hard slicing) and can never reach
-     into its neighbour. Padding + negative margin keep the feather off the resting text. */
-  .proc .phase .slot {
-    /* feather = travel (D_PX in the script), so a part is fully faded exactly as it reaches the edge */
-    padding: 18px 0.6em; margin: -18px -0.6em;
-    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
-            mask-image: linear-gradient(to bottom, transparent, #000 18px, #000 calc(100% - 18px), transparent);
-  }
-  /* label + title move as one block, anchored to the bottom of their slot */
-  .proc .phase .head { display: flex; flex-direction: column; justify-content: flex-end; }
-  .proc .anim { will-change: transform, opacity; }
+  @media (prefers-reduced-motion: reduce) { .proc .phase { transform: none; } }
   .proc .phase .kick { font: 600 0.85rem var(--sans); letter-spacing: 0.16em; text-transform: uppercase;
                        color: var(--eye); margin: 0 0 1.4rem; }
   .proc .phase h3 { font-family: var(--serif); font-weight: 400; letter-spacing: -0.02em;
@@ -188,8 +183,7 @@ const phases = [
   :global(html:not(.js)) .proc .rail { display: none; }
   :global(html:not(.js)) .proc .content { position: static; max-width: 64rem; margin: 0 auto; padding: 0 1.5rem 4rem; }
   :global(html:not(.js)) .proc .phase { position: relative; opacity: 1; pointer-events: auto; visibility: visible;
-                                        padding-top: 2rem; padding-bottom: 2rem; }
-  :global(html:not(.js)) .proc .anim { opacity: 1 !important; transform: none !important; }
+                                        transform: none; padding-top: 2rem; padding-bottom: 2rem; }
 
   /* phones + tablets: the vertical arc turns into a horizontal dial along the
      bottom of the screen (same dots, same ink/grey line, driven by the script) */
@@ -201,7 +195,7 @@ const phases = [
   }
   @media (max-width: 767px) {
     .proc .content { bottom: 7.5rem; }
-    .proc .phase { grid-template-columns: 1fr; padding: 4.5rem 1.5rem 0; gap: 1.25rem; }
+    .proc .phase { --step: 48px; grid-template-columns: 1fr; padding: 4.5rem 1.5rem 0; gap: 1.25rem; }
     .proc .phase .art { order: -1; justify-self: start; }
     .proc .phase .art :global(svg) { width: min(140px, 26vw, 16svh); }
     .proc .phase .kick { margin-bottom: 0.9rem; }
@@ -246,64 +240,16 @@ const phases = [
     };
     const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
 
-    let sp = 0, vel = 0, lastActive = 0, lastT = 0;
-    const W = 10, W2 = W * W; // spring stiffness (rad/s): ~0.45s to settle
-    // the moving parts of each phase: title block, paragraph, tags (top to bottom) and the icon
-    const parts = phasesEls.map((el) => ({
-      el,
-      items: [".head", ".slot > p", ".tags"].map((q) => el.querySelector<HTMLElement>(q)!),
-      art: el.querySelector<HTMLElement>(".art")!,
-    }));
+    let sp = 0, vel = 0, lastActive = -1, lastT = 0;
+    const W = 10, W2 = W * W; // spring for the dial (rad/s): glides to the new dot in ~0.5s
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dial = matchMedia("(max-width: 1024px)");
-
-    // Wave handoff: each part changes on its own, top to bottom, as the scroll moves
-    // from one phase to the next. SLOTS = [handoff point, fade width] in phase steps,
-    // tuned so at least one part is always >= 70% visible (never an empty stage), the new
-    // title never sits beside a still-solid old paragraph, and
-    // two phases never show in the same slot. The icon changes with the title.
-    // Leaving parts ease in (accelerate away) and arriving parts ease out (decelerate
-    // in), so a slot passes through empty in an instant instead of dwelling there.
-    const SLOTS = [[0.40, 0.18], [0.46, 0.18], [0.52, 0.18]];
-    const ART = [0.40, 0.18];
-    const D_PX = 18; // how far a part rises as it leaves / arrives (= .slot feather in the CSS)
-    const prog = (a: number, b: number, x: number) => Math.min(1, Math.max(0, (x - a) / (b - a)));
-    const vis = (u: number, i: number, c: number, w: number) => {
-      const inn = i === 0 ? 1 : 1 - Math.pow(1 - prog(c - 1, c - 1 + w, u), 3);
-      const out = i === N - 1 ? 1 : 1 - Math.pow(prog(c - w, c, u), 3);
-      return { o: Math.min(inn, out), y: (out - inn) * D_PX };
-    };
-    const drawPhases = () => {
-      parts.forEach((p, i) => {
-        const u = sp - i;
-        let any = false;
-        p.items.forEach((node, j) => {
-          const v = vis(u, i, SLOTS[j][0], SLOTS[j][1]);
-          node.style.opacity = v.o.toFixed(3);
-          node.style.transform = reduce ? "none" : `translate3d(0,${v.y.toFixed(2)}px,0)`;
-          if (v.o > 0.001) any = true;
-        });
-        const a = vis(u, i, ART[0], ART[1]);
-        p.art.style.opacity = a.o.toFixed(3);
-        p.art.style.transform = reduce ? "none"
-          : `translate3d(0,${(a.y * 0.7).toFixed(2)}px,0) scale(${(0.97 + 0.03 * a.o).toFixed(4)})`;
-        if (a.o > 0.001) any = true;
-        p.el.style.visibility = any ? "visible" : "hidden";
-        p.el.style.pointerEvents = any ? "auto" : "none";
+    const setActive = (n: number) => {
+      phasesEls.forEach((el, i) => {
+        el.style.setProperty("--off", String(i - n));
+        el.classList.toggle("on", i === n);
       });
     };
-    // every slot gets the same height in every phase, so old and new parts sit in the same place
-    const equalise = () => {
-      [".head", ".slot > p"].forEach((sel) => {
-        const nodes = phasesEls.map((el) => el.querySelector<HTMLElement>(sel)!);
-        nodes.forEach((n) => (n.style.minHeight = ""));
-        const h = Math.max(...nodes.map((n) => n.offsetHeight));
-        nodes.forEach((n) => (n.style.minHeight = h + "px"));
-      });
-    };
-    equalise();
-    addEventListener("resize", equalise);
-    document.fonts?.ready.then(equalise);
 
     const place = (dot: HTMLElement, x: number, y: number, size: number) => {
       dot.style.left = x + "px";
@@ -316,7 +262,13 @@ const phases = [
     const frame = (now: number) => {
       const r = scroll.getBoundingClientRect();
       const total = scroll.offsetHeight - innerHeight;
-      const target = Math.min(1, Math.max(0, -r.top / total)) * (N - 1);
+      // the scroll picks the phase (switch at the halfway point); the dial glides to it
+      const target = Math.round(Math.min(1, Math.max(0, -r.top / total)) * (N - 1));
+      if (target !== lastActive) {
+        if (lastActive >= 0) detent(dots[target]);
+        lastActive = target;
+        setActive(target);
+      }
       // Critically damped spring toward the scroll position: follows slow scrolling
       // closely, but a hard flick still plays out over a visible, eased ~0.4s instead
       // of cutting. Frame-rate independent (fixed 4ms substeps).
@@ -331,9 +283,7 @@ const phases = [
         }
         if (Math.abs(target - sp) < 0.0005 && Math.abs(vel) < 0.01) { sp = target; vel = 0; }
       }
-      drawPhases();
-
-      const active = Math.round(sp);
+      const active = target;
 
       if (dial.matches) {
         // Dial: circle centred below the screen, active dot at its top.
@@ -367,10 +317,6 @@ const phases = [
         ink.setAttribute("d", arc(CX, cy, R, (sp - active) * STEP, aBot));
       }
 
-      if (active !== lastActive) {
-        lastActive = active;
-        detent(dots[active]);
-      }
       if (running) raf = requestAnimationFrame(frame);
     };
 
@@ -382,7 +328,7 @@ const phases = [
       if (e.isIntersecting && !running) {
         running = true;
         const r = scroll.getBoundingClientRect();
-        sp = Math.min(1, Math.max(0, -r.top / (scroll.offsetHeight - innerHeight))) * (N - 1);
+        sp = Math.round(Math.min(1, Math.max(0, -r.top / (scroll.offsetHeight - innerHeight))) * (N - 1));
         lastT = 0; vel = 0;
         raf = requestAnimationFrame(frame);
       } else if (!e.isIntersecting) {
@@ -391,37 +337,5 @@ const phases = [
       }
     }, { rootMargin: "200px 0px" }).observe(root);
 
-    // Settle: never rest between two phases. The moment wheel input ends, look at
-    // where Lenis is heading (its target, momentum included); if that's mid-handoff,
-    // re-aim it at the nearest phase in the same flowing motion, so there's no pause
-    // on a half-changed stage. A plain scroll-idle check covers keyboard/scrollbar.
-    const settle = () => {
-      const lenis = (window as any).lenis;
-      if (!lenis) return;
-      const total = scroll.offsetHeight - innerHeight;
-      const top = scroll.getBoundingClientRect().top + scrollY;
-      const dest = lenis.targetScroll ?? scrollY;
-      if (dest <= top + 2 || dest >= top + total - 2) return; // heading outside the pinned range
-      const at = ((dest - top) / total) * (N - 1);
-      // Finish the move in the direction they were scrolling. Only a small nudge
-      // (under 20% of a step, before anything changed on screen) is left alone, so
-      // it never pulls back against the user.
-      const frac = at - Math.floor(at);
-      if (dir > 0 ? frac < 0.2 : frac > 0.8) return;
-      const n = dir > 0 ? Math.ceil(at) : Math.floor(at);
-      lenis.scrollTo(top + (n / (N - 1)) * total, { lerp: 0.1 });
-    };
-    let wheelIdle = 0, scrollIdle = 0, dir = 1, lastY = scrollY;
-    addEventListener("wheel", (e) => {
-      if (e.deltaY) dir = Math.sign(e.deltaY);
-      clearTimeout(wheelIdle);
-      wheelIdle = window.setTimeout(settle, 90);
-    }, { passive: true });
-    addEventListener("scroll", () => {
-      if (scrollY !== lastY && !(window as any).lenis?.isScrolling) dir = Math.sign(scrollY - lastY);
-      lastY = scrollY;
-      clearTimeout(scrollIdle);
-      scrollIdle = window.setTimeout(settle, 220);
-    }, { passive: true });
   }
 </script>
