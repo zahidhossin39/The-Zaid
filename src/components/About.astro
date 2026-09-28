@@ -1,18 +1,11 @@
 ---
-import { siAstro, siNextdotjs, siN8n, siMake, siZapier, siClaude, siGooglegemini, siGooglesheets, siFigma, siFramer, siGithub, siX } from "simple-icons";
+import { siGithub, siX } from "simple-icons";
 
-// Add a tool: import its icon from simple-icons and append it here (title shown under the logo).
+// Add a tool: drop its official color SVG in public/tools/ and append it here.
 const tools = [
-  { ...siFigma, title: "Figma" },
-  { ...siFramer, title: "Framer" },
-  { ...siAstro, title: "Astro" },
-  { ...siNextdotjs, title: "Next.js" },
-  { ...siN8n, title: "n8n" },
-  { ...siMake, title: "Make" },
-  { ...siZapier, title: "Zapier" },
-  { ...siClaude, title: "Claude" },
-  { ...siGooglegemini, title: "Gemini" },
-  { ...siGooglesheets, title: "Google Sheets" },
+  ["figma", "Figma"], ["framer", "Framer"], ["astro", "Astro"], ["nextjs", "Next.js"],
+  ["n8n", "n8n"], ["make", "Make"], ["zapier", "Zapier"], ["claude", "Claude"],
+  ["openai", "ChatGPT"], ["google-gemini", "Gemini"], ["google-sheets", "Google Sheets"],
 ];
 
 const LINKEDIN = "M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z";
@@ -95,12 +88,10 @@ const socials = [
     <p class="font-mono text-center text-[11px] uppercase tracking-[0.08em] text-muted">Tools I build with</p>
     <div class="tools mt-8" aria-label="Tools I build with">
       <ul class="track">
-        {[0, 1].map((copy) => tools.map((t) => (
+        {[0, 1].map((copy) => tools.map(([file, name]) => (
           <li class="tool" aria-hidden={copy ? "true" : undefined}>
-            <span class="tile" style={`background:#${t.hex}`}>
-              <svg viewBox="0 0 24 24" width="34" height="34" fill="#fff" aria-hidden="true"><path d={t.path} /></svg>
-            </span>
-            <span class="name">{t.title}</span>
+            <span class="tile"><img src={`/tools/${file}.svg`} alt="" width="40" height="40" loading="lazy" /></span>
+            <span class="name">{name}</span>
           </li>
         )))}
       </ul>
@@ -117,10 +108,15 @@ const socials = [
   .tools:hover .track { animation-play-state: paused; }
   @keyframes slide { to { transform: translateX(-50%); } }
   .tool { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 9.5rem; }
+  /* real full-color logos on a white app-icon tile: true brand colors pop on the dark section */
   .tile {
-    display: grid; place-items: center; width: 68px; height: 68px; border-radius: 16px;
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+    display: grid; place-items: center; width: 76px; height: 76px; border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff, #eeece7);
+    box-shadow: inset 0 1px 0 #fff, 0 10px 30px -10px rgb(0 0 0 / 0.8), 0 0 0 1px rgb(255 255 255 / 0.06);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   }
+  .tile img { width: 40px; height: 40px; object-fit: contain; }
+  .tool:hover .tile { transform: translateY(-4px) scale(1.04); }
   .name {
     border-radius: 999px; background: var(--color-surface); border: 1px solid var(--color-border);
     padding: 4px 12px; font-size: 0.875rem; color: var(--color-text);
