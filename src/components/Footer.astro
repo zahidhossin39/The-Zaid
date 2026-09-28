@@ -211,7 +211,9 @@ const socials = [
   const wrap = document.querySelector<HTMLElement>(".ft-mark-wrap");
   const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (wrap && fine && !still) {
+  // phones/tablets (no hover) and reduced motion: shown as ASCII from the start, no animation
+  const fixed = !fine || still;
+  if (wrap) {
     const text = wrap.querySelector<HTMLElement>(".ft-mark")!;
     const cv = wrap.querySelector("canvas")!;
     const ctx = cv.getContext("2d")!;
@@ -238,8 +240,10 @@ const socials = [
       // line-height is 0.8, so the letters overflow the box: bleed the canvas by
       // half the font size top and bottom so nothing is clipped
       pad = Math.ceil(parseFloat(st.fontSize) * 0.5);
-      cv.style.top = -pad + "px"; cv.style.height = b.height + 2 * pad + "px"; cv.style.bottom = "auto";
-      dpr = devicePixelRatio || 1; w = b.width; h = b.height + 2 * pad;
+      // size from the text itself, never from the canvas, so resizing can't feed back
+      const th = text.offsetHeight;
+      cv.style.top = -pad + "px"; cv.style.height = th + 2 * pad + "px"; cv.style.bottom = "auto";
+      dpr = devicePixelRatio || 1; w = b.width; h = th + 2 * pad;
       cv.width = w * dpr; cv.height = h * dpr;
       font = `${st.fontStyle} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`;
       ls = st.letterSpacing === "normal" ? "0px" : st.letterSpacing;
@@ -252,7 +256,8 @@ const socials = [
       range.selectNodeContents(text);
       const tr = range.getBoundingClientRect();
       baseY = tr.top - (b.top - pad) + ctx.measureText(text.textContent!).fontBoundingBoxAscent;
-      cs = Math.max(7, Math.round(parseFloat(st.fontSize) / 20));
+      // finer cells on touch screens, where the name is small and always ASCII
+      cs = fixed ? Math.max(4, Math.round(parseFloat(st.fontSize) / 16)) : Math.max(7, Math.round(parseFloat(st.fontSize) / 20));
       // sample the glyph coverage per cell
       const off = document.createElement("canvas");
       off.width = Math.ceil(w); off.height = Math.ceil(h);
@@ -268,6 +273,7 @@ const socials = [
           if (a / n > 4) cells.push({ x, y, m: 0, ch: rnd(), t: 0, show: a / n > 90 });
         }
       maxR = Math.hypot(w, h) + FEATHER;
+      if (fixed) cells.forEach((c) => (c.m = 1));
       wrap.classList.add("live");
       draw();
     };
@@ -288,7 +294,7 @@ const socials = [
       for (const c of cells) {
         if (c.m <= 0.01 || !c.show) continue;
         const near = Math.max(0, 1 - Math.hypot(c.x - mx, c.y - my) / 160);
-        ctx.globalAlpha = c.m * (0.38 + 0.62 * near);
+        ctx.globalAlpha = c.m * (fixed ? 0.7 : 0.38 + 0.62 * near);
         ctx.shadowBlur = near > 0.2 ? 10 * near : 0;
         ctx.fillText(c.ch, c.x + cs / 2, c.y + cs / 2 + 0.5);
       }
@@ -318,6 +324,7 @@ const socials = [
     };
     const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
 
+    if (!fixed) {
     const local = (e: PointerEvent) => { const b = wrap.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top + pad]; };
     wrap.addEventListener("pointerenter", (e) => {
       [mx, my] = local(e);
@@ -326,8 +333,13 @@ const socials = [
     });
     wrap.addEventListener("pointermove", (e) => { [mx, my] = local(e); });
     wrap.addEventListener("pointerleave", () => { over = false; mx = my = -1e4; kick(); });
+    }
 
     document.fonts.ready.then(layout);
-    new ResizeObserver(() => { if (cells.length || w) layout(); }).observe(wrap);
+    let lastW = 0;
+    new ResizeObserver(() => {
+      const nw = wrap.clientWidth;
+      if (nw !== lastW && (cells.length || w)) { lastW = nw; layout(); }
+    }).observe(wrap);
   }
 </script>
