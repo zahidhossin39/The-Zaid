@@ -1,3 +1,27 @@
+---
+import { siAstro, siNextdotjs, siN8n, siMake, siZapier, siClaude, siGooglegemini, siGooglesheets, siFigma, siFramer, siGithub, siX } from "simple-icons";
+
+// Add a tool: import its icon from simple-icons and append it here (title shown under the logo).
+const tools = [
+  { ...siFigma, title: "Figma" },
+  { ...siFramer, title: "Framer" },
+  { ...siAstro, title: "Astro" },
+  { ...siNextdotjs, title: "Next.js" },
+  { ...siN8n, title: "n8n" },
+  { ...siMake, title: "Make" },
+  { ...siZapier, title: "Zapier" },
+  { ...siClaude, title: "Claude" },
+  { ...siGooglegemini, title: "Gemini" },
+  { ...siGooglesheets, title: "Google Sheets" },
+];
+
+const LINKEDIN = "M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z";
+const socials = [
+  { label: "GitHub", href: "https://github.com/zahidhossin39", path: siGithub.path },
+  { label: "X", href: "https://x.com/ZaidHossain_", path: siX.path },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/zaid-hossain", path: LINKEDIN },
+];
+---
 <section id="about" class="mx-auto max-w-[64rem] px-6 py-20 md:px-8 md:py-32">
   <div class="grid gap-12 md:grid-cols-[4fr_8fr] md:gap-16">
     <div>
@@ -5,31 +29,18 @@
         <img src="/zaid.webp" alt="Zaid Hossain" width="640" height="800" class="h-full w-full object-cover" loading="eager" decoding="async" />
       </div>
 
-      <div class="reveal mt-5 w-full max-w-[18rem] rounded-lg border border-border bg-surface" data-delay="120">
-        <p class="flex items-center gap-3 border-b border-border px-4 py-3 text-[0.875rem] leading-5 text-text">
-          <span aria-hidden="true" class="size-1.5 shrink-0 rounded-full bg-text shadow-[0_0_0_3px_rgb(244_242_237/0.14)]"></span>
-          Taking on new projects
-        </p>
-        <dl class="divide-y divide-border border-b border-border">
-          {[
-            ["Replies", "Within 24 hours"],
-            ["Builds", "Websites · Automations"],
-            ["Works with", "Owners of small businesses"],
-          ].map(([label, value]) => (
-            <div class="px-4 py-3">
-              <dt class="font-mono text-[11px] uppercase leading-4 tracking-[0.08em] text-muted">{label}</dt>
-              <dd class="mt-1 text-[0.9375rem] leading-6 text-text">{value}</dd>
-            </div>
+      <div class="reveal mt-5 flex max-w-[18rem] items-center justify-between" data-delay="120">
+        <p class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Find me on</p>
+        <ul class="flex gap-2">
+          {socials.map((s) => (
+            <li>
+              <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
+                 class="grid size-10 place-items-center rounded-full border border-border text-muted transition hover:border-text hover:text-text">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d={s.path} /></svg>
+              </a>
+            </li>
           ))}
-        </dl>
-        <div class="px-4 pb-4 pt-3">
-          <p class="font-mono text-[11px] uppercase leading-4 tracking-[0.08em] text-muted">Tools</p>
-          <ul class="mt-2.5 flex flex-wrap gap-1.5" aria-label="Tools">
-            {["Astro", "Next.js", "n8n", "Make", "Zapier", "Claude", "GPT", "Gemini", "Google Sheets"].map((tool) => (
-              <li class="rounded-full border border-border px-2.5 py-0.5 text-[12px] leading-5 text-muted">{tool}</li>
-            ))}
-          </ul>
-        </div>
+        </ul>
       </div>
     </div>
 
@@ -55,23 +66,71 @@
         </p>
       </div>
 
-      <ul class="reveal mt-9 flex flex-wrap gap-x-7 gap-y-3" data-delay="240">
-        {[
-          ["GitHub", "https://github.com/zahidhossin39"],
-          ["X", "https://x.com/ZaidHossain_"],
-          ["LinkedIn", "https://www.linkedin.com/in/zaid-hossain"],
-        ].map(([label, href]) => (
-          <li>
-            <a href={href} target="_blank" rel="noopener noreferrer"
-               class="text-muted underline decoration-border underline-offset-4 transition hover:text-accent hover:decoration-accent">
-              {label}
-            </a>
+      <div class="reveal mt-10 rounded-lg border border-border bg-surface p-6 md:p-7" data-delay="240">
+        <p class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">What happens on the call</p>
+        <ol class="mt-5 space-y-4">
+          {[
+            "You tell me where your hours go.",
+            "I show you what I'd build and roughly what it costs.",
+            "You decide. No pitch, no follow-up spam.",
+          ].map((step, i) => (
+            <li class="flex gap-4">
+              <span class="grid size-6 shrink-0 place-items-center rounded-full border border-border font-mono text-[11px] text-muted">{i + 1}</span>
+              <span class="text-text">{step}</span>
+            </li>
+          ))}
+        </ol>
+        <div class="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <a href="https://cal.com/zaid-hossain/20min" target="_blank" rel="noopener noreferrer" data-cal-intent
+             class="inline-flex items-center rounded-full bg-text px-6 py-3 font-medium text-bg transition hover:-translate-y-0.5 hover:bg-white">
+            Book a free 20-min call
+          </a>
+          <span class="text-[0.875rem] text-muted">I reply within 24 hours.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-20 md:mt-28">
+    <p class="font-mono text-center text-[11px] uppercase tracking-[0.08em] text-muted">Tools I build with</p>
+    <div class="tools mt-8" aria-label="Tools I build with">
+      <ul class="track">
+        {[0, 1].map((copy) => tools.map((t) => (
+          <li class="tool" aria-hidden={copy ? "true" : undefined}>
+            <span class="tile" style={`background:#${t.hex}`}>
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="#fff" aria-hidden="true"><path d={t.path} /></svg>
+            </span>
+            <span class="name">{t.title}</span>
           </li>
-        ))}
+        )))}
       </ul>
     </div>
   </div>
 </section>
+
+<style>
+  .tools {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+  .track { display: flex; width: max-content; animation: slide 40s linear infinite; }
+  .tools:hover .track { animation-play-state: paused; }
+  @keyframes slide { to { transform: translateX(-50%); } }
+  .tool { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 9.5rem; }
+  .tile {
+    display: grid; place-items: center; width: 68px; height: 68px; border-radius: 16px;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  }
+  .name {
+    border-radius: 999px; background: var(--color-surface); border: 1px solid var(--color-border);
+    padding: 4px 12px; font-size: 0.875rem; color: var(--color-text);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tools { mask-image: none; }
+    .track { animation: none; width: auto; flex-wrap: wrap; justify-content: center; row-gap: 2rem; }
+    .tool[aria-hidden] { display: none; }
+  }
+</style>
 
 <script>
   import { gsap } from "gsap";

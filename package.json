@@ -22,6 +22,7 @@
     "esbuild": true
   },
   "devDependencies": {
-    "puppeteer-core": "^25.11.0"
+    "puppeteer-core": "^25.11.0",
+    "simple-icons": "^16.33.0"
   }
 }
