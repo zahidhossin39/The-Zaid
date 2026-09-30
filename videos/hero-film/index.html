@@ -51,12 +51,12 @@
       .phone::before { content: ""; position: absolute; right: -10px; top: 250px; width: 5px; height: 130px; border-radius: 3px; background: #7c7e83; }
       .phone::after { content: ""; position: absolute; left: -10px; top: 210px; width: 5px; height: 90px; border-radius: 3px; background: #7c7e83; box-shadow: 0 130px 0 #7c7e83; }
       .scr { position: relative; width: 100%; height: 100%; border-radius: 74px; overflow: hidden; background: #fff; font-family: Inter, sans-serif; letter-spacing: -0.01em; }
-      .island { position: absolute; top: 20px; left: 50%; width: 156px; height: 46px; margin-left: -78px; border-radius: 23px; background: #000; z-index: 30; }
-      .sb { position: absolute; top: 0; left: 0; right: 0; height: 86px; padding: 0 40px 0 62px; display: flex; align-items: center; justify-content: space-between; font-size: 32px; font-weight: 600; color: #000; z-index: 25; }
+      .island { position: absolute; top: 22px; left: 50%; width: 140px; height: 42px; margin-left: -70px; border-radius: 23px; background: #000; z-index: 30; }
+      .sb { position: absolute; top: 0; left: 0; right: 0; height: 86px; padding: 0 44px 0 66px; display: flex; align-items: center; justify-content: space-between; font-size: 32px; font-weight: 600; color: #000; z-index: 25; }
       .sb.lt { color: #fff; }
-      .sb .r { display: flex; align-items: center; gap: 10px; }
-      .sb .r svg { height: 24px; }
-      .bat { position: relative; width: 50px; height: 25px; border-radius: 8px; border: 2.5px solid currentColor; opacity: 0.9; padding: 2.5px; }
+      .sb .r { display: flex; align-items: center; gap: 8px; }
+      .sb .r svg { height: 21px; }
+      .bat { position: relative; width: 44px; height: 22px; border-radius: 8px; border: 2.5px solid currentColor; opacity: 0.9; padding: 2.5px; }
       .bat i { display: block; width: 78%; height: 100%; border-radius: 4px; background: currentColor; }
       .bat::after { content: ""; position: absolute; right: -7px; top: 6px; width: 3px; height: 8px; border-radius: 2px; background: currentColor; opacity: .5; }
       .home { position: absolute; bottom: 14px; left: 50%; width: 176px; height: 8px; margin-left: -88px; border-radius: 4px; background: #000; z-index: 25; }
@@ -65,8 +65,8 @@
 
       /* ---------- iOS call ---------- */
       .call { color: #fff; background: radial-gradient(90% 55% at 15% 12%, #3f6170 0%, transparent 65%), radial-gradient(80% 50% at 95% 85%, #4b3b62 0%, transparent 65%), #13171a; }
-      .call .nm { position: absolute; top: 150px; width: 100%; text-align: center; font-size: 60px; font-weight: 500; }
-      .call .sub { position: absolute; top: 232px; width: 100%; text-align: center; font-size: 36px; opacity: 0.7; }
+      .call .nm { position: absolute; top: 190px; width: 100%; text-align: center; font-size: 60px; font-weight: 500; }
+      .call .sub { position: absolute; top: 272px; width: 100%; text-align: center; font-size: 36px; opacity: 0.7; }
       .avawrap { position: absolute; left: 50%; top: 350px; width: 210px; height: 210px; margin-left: -105px; }
       .avawrap i { position: absolute; inset: 0; border-radius: 50%; border: 4px solid rgba(255,255,255,.5); opacity: 0; }
       .ava { position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(180deg, #a9aeb6, #7d828a); display: grid; place-items: end center; overflow: hidden; }
@@ -86,30 +86,29 @@
       .incall .sub { top: 184px; font-variant-numeric: tabular-nums; }
       .tag { position: absolute; top: 252px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 12px 26px 12px 20px; border-radius: 999px; background: var(--ios-green); color: #04210f; font-size: 36px; font-weight: 700; white-space: nowrap; opacity: 0; visibility: hidden; }
       .tag svg { width: 38px; height: 38px; stroke-width: 2.8; }
-      .caps { position: absolute; top: 360px; left: 34px; right: 34px; display: flex; flex-direction: column; gap: 22px; }
-      .cap { padding: 22px 28px 26px; border-radius: 36px; background: rgba(255,255,255,.1); opacity: 0; visibility: hidden; }
+      .caps { position: absolute; top: 330px; left: 44px; right: 44px; display: flex; flex-direction: column; gap: 24px; }
+      .cap { opacity: 0; visibility: hidden; }
       .cap b { display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 600; opacity: 0.65; margin-bottom: 6px; }
-      .cap p { font-size: 46px; font-weight: 600; line-height: 1.16; }
-      .cap.us { background: rgba(52,199,89,.16); }
-      .cap.us b { color: #7ee2a0; opacity: 1; }
+      .cap p { font-size: 40px; font-weight: 600; line-height: 1.18; text-wrap: balance; }
+            .cap.us b { color: #7ee2a0; opacity: 1; }
       .wv { display: inline-flex; gap: 4px; align-items: center; height: 26px; }
       .wv i { width: 5px; height: 100%; border-radius: 3px; background: currentColor; }
       .w { display: inline-block; opacity: 0; }
-      .end { position: absolute; bottom: 70px; left: 50%; width: 130px; height: 130px; margin-left: -65px; border-radius: 50%; background: var(--ios-red); display: grid; place-items: center; }
-      .end svg { width: 62px; height: 62px; }
+      .end { position: absolute; bottom: 48px; left: 50%; width: 112px; height: 112px; margin-left: -56px; border-radius: 50%; background: var(--ios-red); display: grid; place-items: center; }
+      .end svg { width: 54px; height: 54px; }
 
       /* ---------- iOS notification banner ---------- */
-      .note { position: absolute; top: 74px; left: 16px; right: 16px; z-index: 28; display: flex; align-items: center; gap: 22px; padding: 22px 24px; border-radius: 44px; background: rgba(246,246,248,.97); color: #000; box-shadow: 0 20px 50px -10px rgba(0,0,0,.45); opacity: 0; visibility: hidden; }
-      .calic { width: 84px; height: 84px; flex: none; border-radius: 20px; background: #fff; box-shadow: 0 0 0 2px #e4e4e7 inset; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
-      .calic small { font-size: 17px; font-weight: 700; color: var(--ios-red); letter-spacing: 0.04em; }
-      .calic span { font-size: 44px; font-weight: 400; letter-spacing: -0.03em; margin-top: 2px; }
+      .note { position: absolute; top: 80px; left: 20px; right: 20px; z-index: 28; display: flex; align-items: center; gap: 18px; padding: 18px 22px; border-radius: 36px; background: rgba(242,242,245,.78); -webkit-backdrop-filter: blur(28px) saturate(1.8); backdrop-filter: blur(28px) saturate(1.8); color: #000; box-shadow: 0 12px 34px -12px rgba(0,0,0,.35); opacity: 0; visibility: hidden; }
+      .calic { width: 70px; height: 70px; flex: none; border-radius: 16px; background: #fff; box-shadow: 0 0 0 2px #e4e4e7 inset; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+      .calic small { font-size: 14px; font-weight: 700; color: var(--ios-red); letter-spacing: 0.04em; }
+      .calic span { font-size: 36px; font-weight: 400; letter-spacing: -0.03em; margin-top: 2px; }
       .note .t { flex: 1; min-width: 0; }
-      .note .app { display: flex; justify-content: space-between; font-size: 26px; color: #6e6e73; font-weight: 500; }
-      .note h5 { font-size: 34px; font-weight: 700; margin-top: 4px; white-space: nowrap; }
-      .note p { font-size: 32px; color: #333; white-space: nowrap; }
+      .note .app { display: flex; justify-content: space-between; font-size: 22px; color: #6e6e73; font-weight: 500; }
+      .note h5 { font-size: 30px; font-weight: 700; margin-top: 4px; white-space: nowrap; }
+      .note p { font-size: 28px; color: #333; white-space: nowrap; }
 
       /* ---------- iOS Calendar, day view ---------- */
-      .cal { background: #fff; color: #000; visibility: hidden; }
+      .cal { background: #fff; color: #000; visibility: hidden; opacity: 0; }
       .cal .top { position: absolute; top: 96px; left: 30px; right: 34px; display: flex; justify-content: space-between; align-items: center; color: var(--ios-red); font-size: 36px; font-weight: 500; }
       .cal .top svg { width: 40px; height: 40px; }
       .cal .top .l { display: flex; align-items: center; gap: 4px; }
@@ -170,7 +169,7 @@
       .comp > svg { width: 44px; height: 44px; color: #000; stroke-width: 2; }
 
       /* ---------- poster: first and last frame ---------- */
-      #poster { position: absolute; inset: 0; background: var(--bg); z-index: 40; padding: 0 90px 40px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 40px 50px -30px rgba(11,11,12,.3); }
+      #poster { position: absolute; inset: 0; background: var(--bg); z-index: 40; padding: 0 90px 40px; display: flex; flex-direction: column; justify-content: center; }
       #poster h2 { font-size: 68px; font-weight: 700; color: var(--muted); letter-spacing: -0.02em; }
       .rows { margin-top: 60px; display: flex; flex-direction: column; gap: 40px; }
       .row { display: flex; align-items: center; gap: 34px; padding: 54px 48px; border-radius: 52px; background: #fff; box-shadow: 0 0 0 3px var(--line) inset; }
@@ -204,11 +203,6 @@
           <div class="layer call" id="ring">
             <div class="nm">(555) 014-2290</div>
             <div class="sub">mobile</div>
-            <div class="avawrap"><i></i><i></i><i></i><div class="ava"><svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="4.5"/><path d="M3 24c0-5 4-8.5 9-8.5s9 3.5 9 8.5z"/></svg></div></div>
-            <div class="minis">
-              <div class="mini"><b><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7"/><path d="M12 10v3l2 1.5M5 4 2.5 6.5M19 4l2.5 2.5"/></svg></b>Remind Me</div>
-              <div class="mini"><b><svg class="f" viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.7 2 11.3c0 2.6 1.4 4.9 3.7 6.4L5 21l3.9-2.1c1 .3 2 .4 3.1.4 5.5 0 10-3.7 10-8.3S17.5 3 12 3z"/></svg></b>Message</div>
-            </div>
             <div class="btns">
               <div class="btn no"><b><svg class="f" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></b>Decline</div>
               <div class="btn yes" id="accept"><b><svg class="f" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg></b>Accept</div>
@@ -346,23 +340,41 @@
         tl.fromTo(`${el} .typing i`, { y: 0 }, { y: -10, duration: 0.22, ease: "sine.inOut", yoyo: true, repeat: Math.round(d / 0.22), stagger: 0.1 }, t + 0.1);
         tl.set(el, { autoAlpha: 0, display: "none" }, t + d);
       };
-      // Notification drops from the island, then opens into Calendar
-      const notify = (n, cal, sb, hm, t) => {
-        tl.fromTo(n, { autoAlpha: 0, y: -140, scale: 0.9 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.4)" }, t);
-        tl.fromTo(cal, { autoAlpha: 1, clipPath: "inset(74px 16px 820px 16px round 44px)" }, { clipPath: "inset(0px 0px 0px 0px round 74px)", duration: 0.75, ease: "power3.inOut", immediateRender: false }, t + 1.3);
-        tl.to(n, { autoAlpha: 0, duration: 0.25 }, t + 1.35);
-        if (sb) { tl.set(sb, { className: "sb" }, t + 1.6); tl.set(hm, { className: "home" }, t + 1.6); }
+      // Notification drops in; a tap opens Calendar like an iOS app launch: the app is
+      // opaque at once (nothing underneath shows through), then settles to full size.
+      const notify = (n, cal, under, sb, hm, t) => {
+        tl.fromTo(n, { autoAlpha: 0, y: -110, scale: 0.96 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.55, ease: "expo.out" }, t);
+        tl.to(n, { scale: 0.97, duration: 0.12, ease: "power2.out" }, t + 1.2);
+        tl.fromTo(cal, { autoAlpha: 0, scale: 0.94, y: -40, transformOrigin: "50% 12%" }, { autoAlpha: 1, duration: 0.01, ease: "none", immediateRender: false }, t + 1.35);
+        tl.to(cal, { scale: 1, y: 0, duration: 0.6, ease: "expo.out" }, t + 1.35);
+        tl.set(n, { autoAlpha: 0 }, t + 1.35);
+        tl.set(under, { autoAlpha: 0 }, t + 1.35);
+        if (sb) { tl.set(sb, { className: "sb" }, t + 1.35); tl.set(hm, { className: "home" }, t + 1.35); }
+      };
+      // Owner becomes free: pill shrinks out, swaps, springs back (no snap)
+      const flip = (st, label, t) => {
+        tl.to(st, { autoAlpha: 0, scale: 0.9, duration: 0.2, ease: OUT, transformOrigin: "0% 50%" }, t);
+        tl.set(st, { className: "state free" }, t + 0.2);
+        tl.set(st + "t", { text: label }, t + 0.2);
+        tl.to(st, { autoAlpha: 1, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, t + 0.2);
+      };
+      // Clock rolls forward minute by minute (story clock and phone status bar)
+      const roll = (ck, sb, from, to, t) => {
+        const o = { m: from };
+        const fmt = (m) => (Math.floor(m / 60) % 12 || 12) + ":" + String(m % 60).padStart(2, "0");
+        tl.to(o, { m: to, duration: 1.0, ease: "power2.inOut", onUpdate: () => {
+          const v = fmt(Math.round(o.m));
+          document.querySelector(ck).textContent = v;
+          document.querySelector(sb).textContent = v;
+        } }, t);
       };
 
       // 0-1.5 poster; 1.5-2.1 it lifts to reveal the first afternoon
-      tl.set("#s1", { autoAlpha: 1 }, 1.5);
-      tl.to("#poster", { yPercent: -106, duration: 0.6, ease: "power3.inOut" }, 1.5);
-      tl.set("#poster", { autoAlpha: 0 }, 2.15);
+      tl.to("#poster", { autoAlpha: 0, y: -24, duration: 0.4, ease: OUT }, 1.5);
+      tl.fromTo("#s1", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", immediateRender: false }, 1.8);
 
       // Scene 1: the phone rings and buzzes (you can't pick up)
       tl.fromTo("#st1 i", { scale: 1 }, { scale: 0.5, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 25 }, 1.5);
-      document.querySelectorAll("#ring .avawrap i").forEach((r, k) =>
-        tl.fromTo(r, { scale: 0.9, opacity: 0.7 }, { scale: 1.6, opacity: 0, duration: 1.2, ease: "power1.out", repeat: 1 }, 2.0 + k * 0.4));
       [2.2, 3.0].forEach((t) => tl.to("#ph1", { keyframes: { rotation: [0, -1.2, 1.2, -1.2, 1.2, 0] }, duration: 0.45, ease: "none" }, t));
       tl.fromTo("#accept b", { scale: 1 }, { scale: 1.07, duration: 0.3, ease: "sine.inOut", yoyo: true, repeat: 3 }, 2.4);
       // answered for you
@@ -374,21 +386,19 @@
       ["0:02", "0:03", "0:04", "0:05", "0:06", "0:07", "0:08", "0:09", "0:10", "0:11", "0:12", "0:13"].forEach((v, k) => tl.set("#tm", { text: v }, 5.0 + k * 0.7));
       // the conversation, word by word, with time to read
       words("#c1", 5.0);
-      tl.to("#c1", { autoAlpha: 0, duration: 0.3 }, 7.3);
-      tl.to("#incall .caps", { y: -330, duration: 0.7, ease: "power3.inOut" }, 7.3);
       words("#c2", 7.6);
       document.querySelectorAll("#c2 .wv i").forEach((w, k) =>
         tl.fromTo(w, { scaleY: 0.3 }, { scaleY: 1, duration: 0.18 + k * 0.04, ease: "sine.inOut", yoyo: true, repeat: 7 }, 7.6 + k * 0.05));
+      tl.to("#c1", { opacity: 0.55, duration: 0.5 }, 9.6);
       words("#c3", 9.8, 0.12);
+      tl.to("#c2", { opacity: 0.55, duration: 0.5 }, 10.4);
       // booked: Calendar notification, then the real calendar with the new patient in it
-      notify("#n1", "#cal1", "#sb1", "#hm1", 10.9);
+      notify("#n1", "#cal1", "#incall", "#sb1", "#hm1", 10.9);
       tl.fromTo("#ev1", { autoAlpha: 0, scaleY: 0.2, transformOrigin: "50% 0%" }, { autoAlpha: 1, scaleY: 1, duration: 0.55, ease: "back.out(1.6)" }, 12.8);
       tl.fromTo("#ev1", { boxShadow: "0 0 0 0px rgba(31,157,85,.45)" }, { boxShadow: "0 0 0 16px rgba(31,157,85,0)", duration: 0.9, ease: "power2.out", immediateRender: false }, 13.3);
-      tl.set("#st1", { className: "state free" }, 13.6);
-      tl.set("#st1t", { text: "Patient done" }, 13.6);
-      tl.set("#ck1", { text: "2:05" }, 13.6);
-      tl.set("#sb1 span:first-child", { text: "2:05" }, 13.6);
-      tl.fromTo("#won1", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: IN }, 13.7);
+      roll("#ck1", "#sb1 span", 124, 150, 13.4);
+      flip("#st1", "Patient done", 14.2);
+      tl.fromTo("#won1", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: IN }, 14.5);
 
       // Hand-off to scene 2
       tl.to("#s1", { autoAlpha: 0, y: -40, duration: 0.4, ease: OUT }, 15.8);
@@ -404,20 +414,17 @@
       tl.to(".thread", { y: -250, duration: 0.7, ease: "power3.inOut" }, 21.0);
       typing("#t2", 21.2, 0.7, "0% 100%");
       pop("#m3", 21.9, "0% 100%");
-      notify("#n2", "#cal2", null, null, 22.8);
+      notify("#n2", "#cal2", "#s2 .dm", null, null, 22.8);
       tl.fromTo("#jess", { autoAlpha: 0, x: -16 }, { autoAlpha: 1, x: 0, duration: 0.45, ease: IN }, 24.6);
       tl.set("#cnt", { text: "12 of 12 · Full" }, 24.7);
       tl.fromTo("#ev2", { borderLeftColor: "#3478f6", boxShadow: "0 0 0 0px rgba(31,157,85,.45)" }, { borderLeftColor: "#1f9d55", boxShadow: "0 0 0 16px rgba(31,157,85,0)", duration: 0.9, ease: "power2.out", immediateRender: false }, 24.7);
-      tl.set("#st2", { className: "state free" }, 25.2);
-      tl.set("#st2t", { text: "Class done" }, 25.2);
-      tl.set("#ck2", { text: "2:46" }, 25.2);
-      tl.set("#sb2 span:first-child", { text: "2:46" }, 25.2);
-      tl.fromTo("#won2", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: IN }, 25.3);
+      roll("#ck2", "#sb2 span", 151, 180, 25.0);
+      flip("#st2", "Class done", 25.8);
+      tl.fromTo("#won2", { autoAlpha: 0, x: -20 }, { autoAlpha: 1, x: 0, duration: 0.5, ease: IN }, 26.1);
 
       // 27.2-27.8 the receipts come back down; hold to 29.7
-      tl.set("#poster", { autoAlpha: 1 }, 27.2);
-      tl.fromTo("#poster", { yPercent: -106 }, { yPercent: 0, duration: 0.6, ease: "power3.inOut", immediateRender: false }, 27.2);
-      tl.set("#s2", { autoAlpha: 0 }, 27.8);
+      tl.to("#s2", { autoAlpha: 0, y: -24, duration: 0.4, ease: OUT }, 27.3);
+      tl.fromTo("#poster", { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", immediateRender: false }, 27.6);
       tl.set({}, {}, 29.7);
 
       window.__timelines = window.__timelines || {};
