@@ -3,13 +3,18 @@ const EMAIL = "hello.zaidhossain@gmail.com";
 const CAL_URL = "https://cal.com/zaid-hossain/20min";
 const year = new Date().getFullYear();
 
+// variant="app" (the app page): no service pitch or site links, only the
+// app line, the social links and the name.
+interface Props { variant?: "site" | "app" }
+const { variant = "site" } = Astro.props;
+const app = variant === "app";
+
 // in-page anchors on the home page, links back to it from anywhere else
 const home = Astro.url.pathname === "/";
 const at = (hash: string) => (home ? hash : `/${hash}`);
 const pages = [
   ["Work", at("#proof")],
   ["How I work", at("#process")],
-  ["Silent Voice", "/silent-voice"],
   ["About", at("#about")],
   ["FAQ", at("#faq")],
   ["Book a call", at("#book")],
@@ -40,6 +45,28 @@ const socials = [
 
 <footer class="ft">
   <div class="ft-inner">
+    {app ? (
+    <div class="ft-top ft-top--app">
+      <div class="ft-pitch">
+        <p class="ft-line">Silent Voice.<br /><em>Free, and yours to keep.</em></p>
+        <p class="ft-app-note">Open source under the MIT license. Built and kept up by me, in my own time.</p>
+      </div>
+      <div class="ft-col">
+        <h2 class="ft-h">Elsewhere</h2>
+        <ul>
+          {socials.map((s) => (
+            <li>
+              <a class="ft-social" href={s.href} target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d={s.d} /></svg>
+                <span>{s.label}</span>
+                <span class="ft-handle">{s.handle}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+    ) : (
     <div class="ft-top">
       <div class="ft-pitch">
         <p class="ft-line">More customers.<br /><em>Not more hours.</em></p>
@@ -74,6 +101,7 @@ const socials = [
         </ul>
       </div>
     </div>
+    )}
 
     <div class="ft-mark-wrap" aria-hidden="true">
       <p class="ft-mark">Zaid Hossain</p>
@@ -81,7 +109,7 @@ const socials = [
     </div>
 
     <div class="ft-base">
-      <p>© {year} Zaid Hossain. Websites and automations for small businesses.</p>
+      <p>© {year} Zaid Hossain.{!app && " Websites and automations for small businesses."}</p>
       <a href="#" class="ft-top-link">Back to top ↑</a>
     </div>
   </div>
@@ -104,6 +132,9 @@ const socials = [
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.2fr);
     gap: 3rem;
   }
+
+  .ft-top--app { grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr); }
+  .ft-app-note { margin: 1.5rem 0 0; max-width: 26rem; color: var(--color-muted); }
 
   .ft-line {
     margin: 0;
@@ -199,6 +230,7 @@ const socials = [
   @media (max-width: 900px) {
     .ft-top { grid-template-columns: 1fr 1fr; }
     .ft-pitch { grid-column: 1 / -1; }
+    .ft-top--app { grid-template-columns: 1fr; }
   }
   @media (max-width: 520px) {
     .ft-inner { padding-top: 4rem; }
