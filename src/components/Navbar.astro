@@ -1,14 +1,27 @@
 ---
+// Section links are in-page anchors on the home page and point back to it
+// from any other page. variant="app" is the app page: no service links,
+// no Book a call, just the name and a jump to the download.
+interface Props { variant?: "site" | "app" }
+const { variant = "site" } = Astro.props;
+const home = Astro.url.pathname === "/";
+const at = (hash: string) => (home ? hash : `/${hash}`);
 ---
 
 <header class="navbar">
   <div class="navbar-inner">
-    <a href="#" class="logo">Zaid Hossain</a>
-    <nav class="nav-links">
-      <a href="#proof" class="nav-link">Work</a>
-      <a href="#about" class="nav-link nav-about">About</a>
-      <a href="#book" class="nav-link nav-cta" data-cal-intent>Book a call</a>
-    </nav>
+    <a href={home ? "#" : "/"} class="logo">Zaid Hossain</a>
+    {variant === "app" ? (
+      <nav class="nav-links">
+        <a href="#download" class="nav-link">Download</a>
+      </nav>
+    ) : (
+      <nav class="nav-links">
+        <a href={at("#proof")} class="nav-link">Work</a>
+        <a href={at("#about")} class="nav-link nav-about">About</a>
+        <a href={at("#book")} class="nav-link nav-cta" data-cal-intent>Book a call</a>
+      </nav>
+    )}
   </div>
 </header>
 

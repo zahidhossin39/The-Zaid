@@ -1,0 +1,74 @@
+---
+// Orange band of everything Silent Voice doesn't ask for. Drifts on its own;
+// scrolling speeds it up and flips its direction with the scroll.
+const items = ["No subscription", "No word limit", "No account", "Works offline", "Open source", "Runs on your PC"];
+---
+
+<div class="svm" aria-label={items.join(", ")} role="img">
+  <div class="svm-track" aria-hidden="true">
+    {[0, 1, 2].map(() => (
+      <div class="svm-set">
+        {items.map((t) => (
+          <span class="svm-item">{t}<svg viewBox="0 0 24 24"><path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12C6.4 11.4 11.4 6.4 12 0Z" /></svg></span>
+        ))}
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .svm {
+    position: relative;
+    z-index: 2;
+    margin: clamp(1rem, 3vw, 2rem) -2rem;
+    padding: clamp(0.9rem, 2vw, 1.4rem) 0;
+    background: var(--sv-orange);
+    color: #140a02;
+    transform: rotate(-2deg);
+    overflow: hidden;
+    box-shadow: 0 30px 80px -30px rgba(249, 115, 22, 0.7);
+  }
+  .svm-track { display: flex; width: max-content; will-change: transform; }
+  .svm-set { display: flex; flex: none; }
+  .svm-item {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(1.2rem, 3vw, 2.4rem);
+    padding-right: clamp(1.2rem, 3vw, 2.4rem);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(2rem, 6vw, 4.6rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+  .svm-item svg { width: 0.5em; height: 0.5em; fill: currentColor; }
+</style>
+
+<script>
+  const band = document.querySelector<HTMLElement>(".svm")!;
+  const track = band.querySelector<HTMLElement>(".svm-track")!;
+  const set = band.querySelector<HTMLElement>(".svm-set")!;
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!still) {
+    let x = 0, dir = -1, boost = 0, lastY = scrollY, raf = 0, vis = false, last = 0;
+    const loop = (t: number) => {
+      const dt = Math.min(48, t - (last || t)); last = t;
+      const y = scrollY;
+      const dy = y - lastY; lastY = y;
+      if (Math.abs(dy) > 0.5) dir = dy > 0 ? -1 : 1;
+      boost += (Math.min(18, Math.abs(dy)) - boost) * 0.12;
+      x += dir * (0.06 + boost * 0.05) * dt;
+      const w = set.offsetWidth;
+      if (x <= -w) x += w;
+      if (x > 0) x -= w;
+      track.style.transform = `translate3d(${x}px,0,0)`;
+      raf = vis ? requestAnimationFrame(loop) : 0;
+    };
+    new IntersectionObserver(([e]) => {
+      vis = e.isIntersecting;
+      if (vis && !raf) { last = 0; lastY = scrollY; raf = requestAnimationFrame(loop); }
+    }).observe(band);
+  }
+</script>

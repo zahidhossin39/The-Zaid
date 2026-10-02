@@ -1,0 +1,162 @@
+---
+// The Download button + "other platforms" links. Ships pointing at the GitHub
+// releases page; src/scripts/sv-release.ts swaps in the right installer.
+import { siApple, siLinux } from "simple-icons";
+import { RELEASES_URL } from "../../scripts/sv-release";
+
+interface Props { size?: "xl" | "md"; others?: boolean }
+const { size = "xl", others = true } = Astro.props;
+const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.3L3 18.8v-6.2Zm8.3 0H21v8.8l-9.7-1.4v-7.4Z";
+---
+
+<div class={`svdl svdl--${size}`}>
+  <a class="svdl-btn" href={RELEASES_URL} data-sv-main data-magnetic>
+    <span class="svdl-glow" aria-hidden="true"></span>
+    <span class="svdl-icon" aria-hidden="true">
+      <svg class="os os-windows" viewBox="0 0 24 24"><path d={WIN} /></svg>
+      <svg class="os os-mac" viewBox="0 0 24 24"><path d={siApple.path} /></svg>
+      <svg class="os os-linux" viewBox="0 0 24 24"><path d={siLinux.path} /></svg>
+      <svg class="os os-any" viewBox="0 0 24 24"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" /></svg>
+    </span>
+    <span class="svdl-text">
+      <span class="svdl-label" data-sv-os-label>Download Silent Voice</span>
+      <span class="svdl-meta" data-sv-meta>Free · Windows, macOS and Linux</span>
+    </span>
+    <span class="svdl-arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 4v14m0 0-6-6m6 6 6-6" /></svg>
+    </span>
+  </a>
+  {others && (
+    <div class="svdl-others">
+      <p class="svdl-mobile">Silent Voice is a desktop app. Open this page on your computer, or pick a file:</p>
+      <span class="svdl-others-label">Also for</span>
+      <ul data-sv-others>
+        <li><a href={RELEASES_URL}>Windows, macOS and Linux on GitHub</a></li>
+      </ul>
+    </div>
+  )}
+</div>
+
+<style>
+  .svdl { display: flex; flex-direction: column; align-items: center; gap: 1.1rem; }
+
+  .svdl-btn {
+    --mx: 50%;
+    --my: 50%;
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.1rem 0.85rem 0.9rem;
+    border-radius: 999px;
+    background: var(--sv-orange);
+    color: #140a02;
+    text-decoration: none;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+      0 10px 40px -8px rgba(249, 115, 22, 0.65),
+      0 0 120px -20px rgba(249, 115, 22, 0.55);
+    transition: box-shadow 0.4s ease, background 0.3s ease;
+    will-change: transform;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .svdl--xl .svdl-btn { padding: 1rem 1.4rem 1rem 1rem; gap: 1.15rem; }
+  .svdl-btn:hover {
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+      0 14px 50px -6px rgba(249, 115, 22, 0.85),
+      0 0 180px -10px rgba(249, 115, 22, 0.7);
+  }
+  .svdl-btn:active { background: var(--sv-orange-deep-ish); }
+  .svdl-btn:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 5px; }
+
+  /* light that follows the pointer inside the button */
+  .svdl-glow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(160px circle at var(--mx) var(--my), rgba(255, 236, 214, 0.75), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .svdl-btn:hover .svdl-glow { opacity: 1; }
+
+  .svdl-icon {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: #140a02;
+    color: var(--sv-orange);
+    flex: none;
+  }
+  .svdl--xl .svdl-icon { width: 3.1rem; height: 3.1rem; }
+  .svdl-icon svg { width: 46%; height: 46%; fill: currentColor; }
+  .svdl-icon .os-any { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .svdl-icon .os { display: none; }
+  :global(html[data-sv-os="windows"]) .svdl-icon .os-windows,
+  :global(html[data-sv-os="mac"]) .svdl-icon .os-mac,
+  :global(html[data-sv-os="linux"]) .svdl-icon .os-linux { display: block; }
+  :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"])) .svdl-icon .os-any { display: block; }
+
+  .svdl-text { display: flex; flex-direction: column; text-align: left; line-height: 1.15; }
+  .svdl-label { font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
+  .svdl--xl .svdl-label { font-size: clamp(1.1rem, 2.4vw, 1.3rem); }
+  .svdl-meta { margin-top: 0.3rem; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.02em; opacity: 0.72; }
+
+  .svdl-arrow {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    margin-left: 0.2rem;
+    border-radius: 50%;
+    border: 1.5px solid rgba(20, 10, 2, 0.35);
+    overflow: hidden;
+    flex: none;
+  }
+  .svdl-arrow svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  @media (hover: hover) {
+    .svdl-btn:hover .svdl-arrow svg { animation: svdl-drop 0.9s cubic-bezier(.7, 0, .2, 1) infinite; }
+  }
+  @keyframes svdl-drop {
+    0% { transform: translateY(0); }
+    45% { transform: translateY(150%); }
+    46% { transform: translateY(-150%); }
+    100% { transform: translateY(0); }
+  }
+
+  .svdl-others {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+  .svdl-mobile { display: none; flex-basis: 100%; margin: 0 0 0.2rem; text-align: center; font-size: 0.85rem; }
+  :global(html[data-sv-os="mobile"]) .svdl-mobile { display: block; }
+  :global(html[data-sv-os="mobile"]) .svdl-others-label { display: none; }
+  .svdl-others-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
+  .svdl-others ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.15rem 0.9rem; list-style: none; margin: 0; padding: 0; }
+  .svdl-others :global(a) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: rgba(244, 242, 237, 0.3);
+    text-underline-offset: 4px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  }
+  .svdl-others :global(a:hover) { color: var(--sv-orange); text-decoration-color: currentColor; }
+
+  @media (max-width: 420px) {
+    .svdl--xl .svdl-btn { padding: 0.85rem 1rem 0.85rem 0.85rem; gap: 0.85rem; }
+    .svdl--xl .svdl-icon { width: 2.6rem; height: 2.6rem; }
+  }
+</style>
