@@ -1,13 +1,19 @@
 ---
+// Section links are in-page anchors on the home page and point back to it
+// from any other page.
+const home = Astro.url.pathname === "/";
+const at = (hash: string) => (home ? hash : `/${hash}`);
+const onApp = Astro.url.pathname.replace(/\/$/, "") === "/silent-voice";
 ---
 
 <header class="navbar">
   <div class="navbar-inner">
-    <a href="#" class="logo">Zaid Hossain</a>
+    <a href={home ? "#" : "/"} class="logo">Zaid Hossain</a>
     <nav class="nav-links">
-      <a href="#proof" class="nav-link">Work</a>
-      <a href="#about" class="nav-link nav-about">About</a>
-      <a href="#book" class="nav-link nav-cta" data-cal-intent>Book a call</a>
+      <a href={at("#proof")} class:list={["nav-link nav-work", { "nav-drop": home }]}>Work</a>
+      <a href="/silent-voice" class:list={["nav-link nav-app", { "nav-drop": onApp }]} aria-current={onApp ? "page" : undefined}>Silent Voice</a>
+      <a href={at("#about")} class="nav-link nav-about">About</a>
+      <a href={at("#book")} class="nav-link nav-cta" data-cal-intent>Book a call</a>
     </nav>
   </div>
 </header>
@@ -74,6 +80,12 @@
     opacity: 0.7;
   }
 
+  .nav-app[aria-current="page"] {
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 1px;
+  }
+
   /* "Book a call" keeps its pill padding at all times, so showing the outline
      never moves anything. The negative margin cancels the padding, so the
      text sits exactly where a plain link would and the outline hangs into the
@@ -120,13 +132,36 @@
     }
   }
 
-  @media (max-width: 399px) {
+  @media (max-width: 559px) {
     .nav-about {
       display: none;
     }
 
     .nav-links {
       gap: 1.25rem;
+    }
+  }
+
+  /* four links don't fit: drop Work on the home page (the hero links to the
+     examples) or the current-page link on the Silent Voice page */
+  @media (max-width: 429px) {
+    .nav-drop {
+      display: none;
+    }
+
+    .nav-links {
+      gap: 1rem;
+    }
+  }
+
+  /* smallest phones: back to the original three (Silent Voice stays in the footer) */
+  @media (max-width: 359px) {
+    .nav-app {
+      display: none;
+    }
+
+    .nav-links .nav-work {
+      display: inline-flex;
     }
   }
 

@@ -1,0 +1,130 @@
+---
+import Base from "../layouts/Base.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+import SvHero from "../components/sv/SvHero.astro";
+import SvDemo from "../components/sv/SvDemo.astro";
+import SvPrivate from "../components/sv/SvPrivate.astro";
+import SvMarquee from "../components/sv/SvMarquee.astro";
+import SvFeatures from "../components/sv/SvFeatures.astro";
+import SvSteps from "../components/sv/SvSteps.astro";
+import SvFinal from "../components/sv/SvFinal.astro";
+---
+<Base
+  title="Silent Voice | Free voice-to-text that runs on your computer"
+  description="Hold a key, speak, let go. Silent Voice types your words wherever your cursor is. Free, open source, unlimited, and private: it all runs on your own computer."
+>
+  <a href="#main" class="skip-link">Skip to content</a>
+  <div class="sv-progress" aria-hidden="true"><i></i></div>
+  <Navbar />
+  <main id="main" tabindex="-1" class="sv">
+    <SvHero />
+    <SvDemo />
+    <SvPrivate />
+    <SvMarquee />
+    <SvFeatures />
+    <SvSteps />
+    <SvFinal />
+  </main>
+  <Footer />
+</Base>
+
+<style is:global>
+  /* page-wide tokens for the Silent Voice page (the app's own orange) */
+  :root {
+    --sv-orange: #f97316;
+    --sv-orange-deep-ish: #ea580c;
+    --sv-line: rgba(244, 242, 237, 0.09);
+  }
+  .sv { overflow-x: clip; }
+  .sv ::selection { background: var(--sv-orange); color: #140a02; }
+  .sv :focus-visible { outline-color: var(--sv-orange); }
+  .sv-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sv-orange);
+  }
+  .sv-eyebrow::before { content: ""; width: 1.4rem; height: 1px; background: currentColor; }
+</style>
+
+<style>
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 100;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transform: translateY(-200%);
+  }
+  .skip-link:focus { transform: none; }
+  main:focus { outline: none; }
+
+  .sv-progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; pointer-events: none; }
+  .sv-progress i { display: block; height: 100%; background: linear-gradient(90deg, #c2410c, var(--sv-orange), #fdba74); transform-origin: left; transform: scaleX(var(--p, 0)); box-shadow: 0 0 12px rgba(249, 115, 22, 0.8); }
+</style>
+
+<script>
+  import { initRelease } from "../scripts/sv-release";
+  import { gsap } from "gsap";
+
+  initRelease();
+
+  document.querySelector(".skip-link")?.addEventListener("click", () => {
+    document.getElementById("main")?.focus({ preventScroll: true });
+  });
+
+  // reading progress along the top edge
+  const bar = document.querySelector<HTMLElement>(".sv-progress i")!;
+  let ticking = false;
+  const progress = () => {
+    ticking = false;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.setProperty("--p", String(max > 0 ? Math.min(1, scrollY / max) : 0));
+  };
+  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(progress); } }, { passive: true });
+  progress();
+
+  // Download buttons: lean toward the pointer, light up where it is.
+  const fine = matchMedia("(hover: hover)").matches;
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.querySelectorAll<HTMLElement>("[data-magnetic]").forEach((el) => {
+    const xTo = gsap.quickTo(el, "x", { duration: 0.6, ease: "elastic.out(1, 0.5)" });
+    const yTo = gsap.quickTo(el, "y", { duration: 0.6, ease: "elastic.out(1, 0.5)" });
+    el.addEventListener("pointermove", (e) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      el.style.setProperty("--my", `${e.clientY - r.top}px`);
+      if (fine && !still) {
+        xTo((e.clientX - (r.left + r.width / 2)) * 0.18);
+        yTo((e.clientY - (r.top + r.height / 2)) * 0.3);
+      }
+    });
+    el.addEventListener("pointerleave", () => { xTo(0); yTo(0); });
+    // a burst of rings on click, like a voice going out
+    el.addEventListener("click", (e) => {
+      if (still) return;
+      const r = el.getBoundingClientRect();
+      for (let i = 0; i < 3; i++) {
+        const ring = document.createElement("span");
+        Object.assign(ring.style, {
+          position: "fixed", left: `${e.clientX || r.left + r.width / 2}px`, top: `${e.clientY || r.top + r.height / 2}px`,
+          width: "20px", height: "20px", margin: "-10px 0 0 -10px", borderRadius: "50%",
+          border: "2px solid #f97316", pointerEvents: "none", zIndex: "70",
+        });
+        document.body.appendChild(ring);
+        gsap.to(ring, { scale: 9 + i * 4, opacity: 0, duration: 1 + i * 0.25, delay: i * 0.08, ease: "expo.out", onComplete: () => ring.remove() });
+      }
+    });
+  });
+</script>

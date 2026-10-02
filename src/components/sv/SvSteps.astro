@@ -1,0 +1,124 @@
+---
+const steps = [
+  {
+    n: "01",
+    t: "Download and install",
+    d: "One installer for your system. On Windows, new versions show up in the app and install when you click.",
+  },
+  {
+    n: "02",
+    t: "Let it pick a model",
+    d: "It suggests a speech model that suits your computer and downloads it while you set up your microphone.",
+  },
+  {
+    n: "03",
+    t: "Hold the hotkey and talk",
+    d: "Ctrl + Shift + Space to start. You can change it to any keys you like.",
+  },
+];
+---
+
+<section class="svs" aria-labelledby="svs-title">
+  <div class="svs-head">
+    <p class="sv-eyebrow">Getting started</p>
+    <h2 class="h2" id="svs-title">Ready in three steps.</h2>
+  </div>
+  <ol class="svs-list">
+    <span class="svs-rail" aria-hidden="true"><i></i></span>
+    {steps.map((s) => (
+      <li class="svs-step">
+        <span class="svs-n" aria-hidden="true">{s.n}</span>
+        <h3>{s.t}</h3>
+        <p>{s.d}</p>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<style>
+  .svs { padding: clamp(6rem, 12vw, 10rem) 1.25rem; max-width: 76rem; margin: 0 auto; }
+  .svs-head { margin-bottom: clamp(3rem, 6vw, 5rem); }
+  .svs-head .h2 { margin-top: 0.9rem; font-size: clamp(2.4rem, 5.5vw, 4.2rem); line-height: 1.02; }
+
+  .svs-list {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.5rem, 4vw, 3rem);
+  }
+  .svs-rail { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--sv-line); }
+  .svs-rail i { position: absolute; inset: 0; background: linear-gradient(90deg, var(--sv-orange), #fdba74); transform-origin: left; }
+
+  .svs-step { position: relative; padding-top: 2rem; }
+  .svs-step::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 0;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--color-bg);
+    border: 1.5px solid var(--sv-orange);
+    box-shadow: 0 0 16px rgba(249, 115, 22, 0.6);
+  }
+  .svs-n {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(4.5rem, 9vw, 7.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(249, 115, 22, 0.7);
+    background: linear-gradient(180deg, var(--sv-orange), #c2410c) no-repeat;
+    background-size: 100% var(--fill, 100%);
+    background-position: bottom;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .svs-step h3 { margin: 1.2rem 0 0.5rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
+  .svs-step p { margin: 0; color: var(--color-muted); max-width: 22rem; }
+
+  @media (max-width: 800px) {
+    .svs-list { grid-template-columns: minmax(0, 1fr); gap: 2.5rem; padding-left: 1.75rem; }
+    .svs-rail { left: 0; top: 0; bottom: 0; right: auto; width: 1px; height: auto; }
+    .svs-rail i { transform-origin: top; }
+    .svs-step { padding-top: 0; }
+    .svs-step::before { top: 0.6rem; left: calc(-1.75rem - 5px); }
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  gsap.registerPlugin(ScrollTrigger);
+
+  const root = document.querySelector<HTMLElement>(".svs")!;
+  const rail = root.querySelector<HTMLElement>(".svs-rail i")!;
+  const nums = [...root.querySelectorAll<HTMLElement>(".svs-n")];
+  const steps = [...root.querySelectorAll<HTMLElement>(".svs-step")];
+
+  // Base CSS is the finished state (rail drawn, numbers filled). With motion,
+  // the rail draws with the scroll and each number fills as the rail reaches it.
+  gsap.matchMedia().add(
+    { wide: "(min-width: 801px) and (prefers-reduced-motion: no-preference)", narrow: "(max-width: 800px) and (prefers-reduced-motion: no-preference)" },
+    (c) => {
+      const wide = c.conditions!.wide;
+      gsap.set(rail, wide ? { scaleX: 0 } : { scaleY: 0 });
+      nums.forEach((n) => n.style.setProperty("--fill", "0%"));
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: root.querySelector(".svs-list"), start: "top 75%", end: wide ? "top 30%" : "bottom 60%", scrub: 0.6 },
+      });
+      tl.to(rail, wide ? { scaleX: 1, ease: "none", duration: 1 } : { scaleY: 1, ease: "none", duration: 1 }, 0);
+      nums.forEach((n, i) => tl.to(n, { "--fill": "100%", ease: "power1.out", duration: 0.3 }, i * 0.33));
+      const fade = gsap.from(steps, {
+        y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.12,
+        scrollTrigger: { trigger: root.querySelector(".svs-list"), start: "top 85%", once: true },
+      });
+      return () => { tl.kill(); fade.revert(); gsap.set(rail, { clearProps: "all" }); nums.forEach((n) => n.style.removeProperty("--fill")); };
+    },
+  );
+</script>

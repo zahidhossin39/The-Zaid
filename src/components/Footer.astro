@@ -3,12 +3,16 @@ const EMAIL = "hello.zaidhossain@gmail.com";
 const CAL_URL = "https://cal.com/zaid-hossain/20min";
 const year = new Date().getFullYear();
 
+// in-page anchors on the home page, links back to it from anywhere else
+const home = Astro.url.pathname === "/";
+const at = (hash: string) => (home ? hash : `/${hash}`);
 const pages = [
-  ["Work", "#proof"],
-  ["How I work", "#process"],
-  ["About", "#about"],
-  ["FAQ", "#faq"],
-  ["Book a call", "#book"],
+  ["Work", at("#proof")],
+  ["How I work", at("#process")],
+  ["Silent Voice", "/silent-voice"],
+  ["About", at("#about")],
+  ["FAQ", at("#faq")],
+  ["Book a call", at("#book")],
 ];
 
 // Icons: 24px grid, drawn as fills so they sit at one visual weight.

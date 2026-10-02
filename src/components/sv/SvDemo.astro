@@ -1,0 +1,437 @@
+---
+// "Try it" section: a mock app window plus a holdable Ctrl + Shift + Space.
+// Hold → the recording overlay appears, release → a sample line lands at the
+// caret. Works with the pointer, the focused button (Space / Enter), and the
+// real Ctrl + Shift + Space shortcut while the section is on screen.
+---
+
+<section class="svd" id="try" aria-labelledby="svd-title">
+  <div class="svd-inner">
+    <div class="svd-copy">
+      <p class="sv-eyebrow">Try it here</p>
+      <h2 class="h2" id="svd-title">Hold. Speak. <em>Let go.</em></h2>
+      <p class="svd-lead">
+        In the app you hold <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Space</kbd>, say what you want to write,
+        and let go. The text appears where your cursor is, in any app.
+      </p>
+      <p class="svd-lead svd-lead--muted">
+        This page can't hear you, so it fills in a sample line instead. Press and hold the keys to see how it feels.
+      </p>
+      <ol class="svd-steps" aria-hidden="true">
+        <li data-step="hold"><span>01</span> Hold the keys</li>
+        <li data-step="speak"><span>02</span> Speak</li>
+        <li data-step="let"><span>03</span> Let go, the text is typed</li>
+      </ol>
+    </div>
+
+    <div class="svd-stage">
+      <div class="svd-window" aria-hidden="true">
+        <div class="svd-titlebar">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="svd-wintitle">Notes</span>
+          <span class="svd-offline"><span class="ok"></span> Offline</span>
+        </div>
+        <div class="svd-doc">
+          <p class="svd-doc-h">Friday</p>
+          <div class="svd-text"><span class="svd-typed"></span><span class="svd-caret"></span></div>
+        </div>
+
+        <div class="svd-overlay" data-state="idle">
+          <span class="svd-rec"></span>
+          <span class="svd-bars">{Array.from({ length: 18 }, () => <i></i>)}</span>
+          <span class="svd-time">0:00</span>
+          <span class="svd-busy">Typing<i>.</i><i>.</i><i>.</i></span>
+        </div>
+      </div>
+
+      <button class="svd-hold" type="button" aria-describedby="svd-hint">
+        <span class="key">Ctrl</span>
+        <span class="plus" aria-hidden="true">+</span>
+        <span class="key">Shift</span>
+        <span class="plus" aria-hidden="true">+</span>
+        <span class="key key--space">Space</span>
+        <span class="svd-ring" aria-hidden="true"></span>
+      </button>
+      <p class="svd-hint" id="svd-hint" aria-live="polite">Press and hold</p>
+      <p class="sr-only" aria-live="polite" data-svd-announce></p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .svd { position: relative; padding: clamp(6rem, 12vw, 10rem) 1.25rem; }
+  .svd-inner {
+    max-width: 76rem;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: center;
+  }
+  .svd-copy .h2 { margin: 0.9rem 0 1.4rem; font-size: clamp(2.6rem, 6vw, 4.5rem); line-height: 1; }
+  .svd-copy em { color: var(--sv-orange); }
+  .svd-lead { color: var(--color-text); max-width: 30rem; margin: 0 0 1rem; }
+  .svd-lead--muted { color: var(--color-muted); font-size: 0.95rem; }
+  kbd {
+    display: inline-block;
+    padding: 0.05rem 0.45rem;
+    border: 1px solid rgba(244, 242, 237, 0.2);
+    border-bottom-width: 2px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    background: rgba(244, 242, 237, 0.05);
+  }
+
+  .svd-steps { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: 0.5rem; }
+  .svd-steps li {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--sv-line);
+    color: var(--color-muted);
+    font-size: 0.95rem;
+    transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
+  }
+  .svd-steps li span { font-family: var(--font-mono); font-size: 0.72rem; color: rgba(244, 242, 237, 0.4); transition: color 0.3s ease; }
+  .svd-steps li.on { color: var(--color-text); border-color: rgba(249, 115, 22, 0.5); background: rgba(249, 115, 22, 0.07); transform: translateX(6px); }
+  .svd-steps li.on span { color: var(--sv-orange); }
+
+  /* ---- stage ---- */
+  .svd-stage { display: flex; flex-direction: column; align-items: center; gap: 1.4rem; }
+
+  .svd-window {
+    position: relative;
+    width: 100%;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #17171b, #111114);
+    border: 1px solid rgba(244, 242, 237, 0.1);
+    box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 120px -40px rgba(249, 115, 22, 0.35);
+    overflow: hidden;
+    transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform 0.6s cubic-bezier(.22, 1, .36, 1), box-shadow 0.5s ease;
+  }
+  .svd.is-rec .svd-window { box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(249, 115, 22, 0.45), 0 0 160px -30px rgba(249, 115, 22, 0.6); }
+
+  .svd-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(244, 242, 237, 0.07);
+    font-size: 0.8rem;
+    color: var(--color-muted);
+  }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 11px; height: 11px; border-radius: 50%; background: #2a2a30; }
+  .svd-wintitle { flex: 1; text-align: center; font-weight: 500; }
+  .svd-offline { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; }
+  .svd-offline .ok { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+
+  .svd-doc { padding: 1.6rem clamp(1.2rem, 3vw, 2.2rem) 6.5rem; min-height: 21rem; }
+  .svd-doc-h { margin: 0 0 0.8rem; font-family: var(--font-display); font-size: 1.9rem; line-height: 1.1; }
+  .svd-text { font-size: clamp(1rem, 1.6vw, 1.12rem); line-height: 1.7; color: var(--color-text); }
+  .svd-typed :global(p) { margin: 0 0 0.8rem; }
+  .svd-typed :global(.w) { display: inline-block; white-space: pre; }
+  .svd-typed :global(.w.new) { animation: svd-word 0.5s cubic-bezier(.22, 1, .36, 1) both; }
+  .svd-typed :global(.flash) { border-radius: 4px; animation: svd-flash 1.6s ease-out both; }
+  @keyframes svd-word { from { opacity: 0; filter: blur(6px); transform: translateY(6px); } }
+  @keyframes svd-flash { from { background: rgba(249, 115, 22, 0.28); } to { background: transparent; } }
+  .svd-caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.2em;
+    margin-left: 1px;
+    vertical-align: -0.2em;
+    background: var(--sv-orange);
+    animation: svd-blink 1.05s steps(1) infinite;
+  }
+  @keyframes svd-blink { 50% { opacity: 0; } }
+  .svd-typed:empty + .svd-caret::before {
+    content: "Your words land here.";
+    position: absolute;
+    margin-left: 8px;
+    color: rgba(244, 242, 237, 0.28);
+    white-space: nowrap;
+  }
+
+  /* recording pill, modelled on the app's own overlay */
+  .svd-overlay {
+    position: absolute;
+    left: 50%;
+    bottom: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 1rem 0.55rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(10, 10, 11, 0.92);
+    border: 1px solid rgba(249, 115, 22, 0.4);
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(249, 115, 22, 0.5);
+    backdrop-filter: blur(10px);
+    transform: translate(-50%, 140%) scale(0.9);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(.22, 1.3, .36, 1), opacity 0.3s ease;
+  }
+  .svd-overlay[data-state="rec"],
+  .svd-overlay[data-state="busy"] { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  .svd-rec { width: 10px; height: 10px; border-radius: 50%; background: var(--sv-orange); box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); animation: svd-pulse 1.2s ease-out infinite; }
+  @keyframes svd-pulse { to { box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); } }
+  .svd-bars { display: flex; align-items: center; gap: 3px; height: 26px; }
+  .svd-bars i { width: 3px; height: 4px; border-radius: 2px; background: var(--sv-orange); transition: height 0.08s linear; }
+  .svd-bars i:nth-child(9), .svd-bars i:nth-child(10) { background: #fff; }
+  .svd-time { font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-text); min-width: 2.4rem; }
+  .svd-busy { display: none; font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-text); }
+  .svd-busy i { font-style: normal; animation: svd-dot 1s infinite; }
+  .svd-busy i:nth-child(2) { animation-delay: 0.15s; }
+  .svd-busy i:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes svd-dot { 50% { opacity: 0.2; } }
+  .svd-overlay[data-state="busy"] :is(.svd-bars, .svd-time, .svd-rec) { display: none; }
+  .svd-overlay[data-state="busy"] .svd-busy { display: inline; }
+
+  /* ---- the holdable keys ---- */
+  .svd-hold {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem;
+    border: 0;
+    border-radius: 22px;
+    background: rgba(244, 242, 237, 0.03);
+    box-shadow: inset 0 0 0 1px var(--sv-line);
+    color: var(--color-text);
+    cursor: pointer;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    font: inherit;
+  }
+  .svd-hold:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 4px; }
+  .key {
+    display: grid;
+    place-items: center;
+    min-width: 4.2rem;
+    height: 3.6rem;
+    padding: 0 1rem;
+    border-radius: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    background: linear-gradient(180deg, #2a2a30, #1b1b20);
+    box-shadow: 0 6px 0 #0c0c0e, 0 8px 20px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .key--space { min-width: 11rem; }
+  .plus { color: var(--color-muted); font-family: var(--font-mono); }
+  .svd.is-rec .key {
+    transform: translateY(5px);
+    background: linear-gradient(180deg, #fb923c, var(--sv-orange));
+    color: #140a02;
+    box-shadow: 0 1px 0 #7c2d12, 0 0 30px rgba(249, 115, 22, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+  @media (hover: hover) {
+    .svd:not(.is-rec) .svd-hold:hover .key { transform: translateY(1px); }
+  }
+  .svd-ring {
+    position: absolute;
+    inset: -2px;
+    border-radius: 24px;
+    pointer-events: none;
+    border: 1.5px solid var(--sv-orange);
+    opacity: 0;
+  }
+  .svd:not(.is-rec):not(.was-used) .svd-ring { animation: svd-ring 2.4s ease-out infinite; }
+  @keyframes svd-ring {
+    0% { opacity: 0.7; transform: scale(1); }
+    70%, 100% { opacity: 0; transform: scale(1.12); }
+  }
+  .svd-hint { margin: 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-muted); min-height: 1.2em; }
+  .svd-hint.warn { color: var(--sv-orange); animation: svd-shake 0.4s ease; }
+  @keyframes svd-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  @media (max-width: 900px) {
+    .svd-inner { grid-template-columns: minmax(0, 1fr); }
+    .svd-steps { display: none; }
+  }
+  @media (max-width: 520px) {
+    .svd-doc { min-height: 18rem; padding-bottom: 5.5rem; }
+    .svd-hold { gap: 0.35rem; padding: 0.6rem; }
+    .key { min-width: 0; height: 3.1rem; padding: 0 0.7rem; font-size: 0.75rem; }
+    .key--space { min-width: 6.5rem; }
+    .svd-offline { display: none; }
+  }
+</style>
+
+<script>
+  const section = document.querySelector<HTMLElement>(".svd")!;
+  const btn = section.querySelector<HTMLButtonElement>(".svd-hold")!;
+  const overlay = section.querySelector<HTMLElement>(".svd-overlay")!;
+  const bars = [...section.querySelectorAll<HTMLElement>(".svd-bars i")];
+  const timeEl = section.querySelector<HTMLElement>(".svd-time")!;
+  const typed = section.querySelector<HTMLElement>(".svd-typed")!;
+  const hint = section.querySelector<HTMLElement>(".svd-hint")!;
+  const announce = section.querySelector<HTMLElement>("[data-svd-announce]")!;
+  const steps = [...section.querySelectorAll<HTMLElement>(".svd-steps li")];
+  const win = section.querySelector<HTMLElement>(".svd-window")!;
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const LINES = [
+    "Hi Maya, thanks for the photos. Friday at ten works for me, and I'll bring the signed copy.",
+    "Remind me to call the supplier about the late order before lunch tomorrow.",
+    "Notes for Monday: order more paper bags, fix the opening hours on the website, reply to the two new reviews.",
+    "The booking page is ready to test. Can you try it on your phone tonight and tell me what feels slow?",
+  ];
+  let next = 0;
+  let state: "idle" | "rec" | "busy" = "idle";
+  let started = 0, raf = 0, used = false, autoplayed = false;
+
+  const setStep = (k: string | null) => steps.forEach((s) => s.classList.toggle("on", s.dataset.step === k));
+
+  const animateBars = () => {
+    const t = performance.now() / 1000;
+    const secs = Math.floor((performance.now() - started) / 1000);
+    timeEl.textContent = `0:${String(secs).padStart(2, "0")}`;
+    bars.forEach((b, i) => {
+      const mid = 1 - Math.abs(i - (bars.length - 1) / 2) / (bars.length / 2);
+      const v = (0.3 + 0.7 * Math.abs(Math.sin(t * 7 + i * 0.9) * Math.sin(t * 2.3 + i * 0.37))) * (0.35 + mid * 0.65);
+      b.style.height = `${4 + v * 22}px`;
+    });
+    if (state === "rec") raf = requestAnimationFrame(animateBars);
+  };
+
+  const start = (byUser = true) => {
+    if (state !== "idle") return;
+    if (byUser) { used = true; section.classList.add("was-used"); }
+    state = "rec";
+    started = performance.now();
+    section.classList.add("is-rec");
+    overlay.dataset.state = "rec";
+    hint.classList.remove("warn");
+    hint.textContent = "Listening. Let go when you're done";
+    setStep("speak");
+    raf = requestAnimationFrame(animateBars);
+  };
+
+  const stop = () => {
+    if (state !== "rec") return;
+    cancelAnimationFrame(raf);
+    section.classList.remove("is-rec");
+    const held = performance.now() - started;
+    if (held < 350) {
+      state = "idle";
+      overlay.dataset.state = "idle";
+      hint.textContent = "Hold it a little longer";
+      hint.classList.remove("warn"); void hint.offsetWidth; hint.classList.add("warn");
+      setStep(null);
+      return;
+    }
+    state = "busy";
+    overlay.dataset.state = "busy";
+    hint.textContent = "Turning speech into text";
+    setStep("let");
+    setTimeout(type, still ? 50 : 650);
+  };
+
+  const type = () => {
+    overlay.dataset.state = "idle";
+    // keep the note short: after three lines, start a fresh one
+    if (typed.children.length >= 3) typed.innerHTML = "";
+    const line = LINES[next++ % LINES.length];
+    const p = document.createElement("p");
+    typed.appendChild(p);
+    const words = line.split(/(\s+)/);
+    let i = 0;
+    const step = () => {
+      const chunk = words.slice(i, i + 2).join("");
+      i += 2;
+      const s = document.createElement("span");
+      s.className = still ? "w" : "w new";
+      s.textContent = chunk;
+      p.appendChild(s);
+      if (i < words.length) setTimeout(step, still ? 0 : 38);
+      else done(p, line);
+    };
+    step();
+  };
+
+  const done = (p: HTMLElement, line: string) => {
+    p.classList.add("flash");
+    announce.textContent = `Typed: ${line}`;
+    state = "idle";
+    hint.textContent = used ? "Hold again for another line" : "Press and hold";
+    setTimeout(() => setStep(null), 1400);
+  };
+
+  // pointer: hold anywhere on the keys
+  btn.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    btn.setPointerCapture(e.pointerId);
+    start();
+  });
+  btn.addEventListener("pointerup", stop);
+  btn.addEventListener("pointercancel", stop);
+  btn.addEventListener("lostpointercapture", stop);
+  btn.addEventListener("contextmenu", (e) => e.preventDefault()); // long-press menu on touch
+
+  // keyboard on the focused button
+  btn.addEventListener("keydown", (e) => {
+    if (e.key !== " " && e.key !== "Enter") return;
+    e.preventDefault();
+    if (!e.repeat) start();
+  });
+  btn.addEventListener("keyup", (e) => {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); stop(); }
+  });
+  btn.addEventListener("click", (e) => e.preventDefault());
+
+  // the real shortcut, while the demo is on screen
+  let inView = false;
+  new IntersectionObserver(([e]) => (inView = e.isIntersecting), { threshold: 0.3 }).observe(section);
+  addEventListener("keydown", (e) => {
+    if (!inView || e.repeat || document.activeElement === btn) return;
+    if (e.code === "Space" && e.ctrlKey && e.shiftKey) { e.preventDefault(); start(); }
+  });
+  addEventListener("keyup", (e) => {
+    if (state === "rec" && document.activeElement !== btn && ["Space", "ControlLeft", "ControlRight", "ShiftLeft", "ShiftRight"].includes(e.code)) stop();
+  });
+  addEventListener("blur", stop);
+
+  // one ghost run the first time the demo comes into view, so it's clear what happens
+  if (!still) {
+    new IntersectionObserver(([e], io) => {
+      if (!e.isIntersecting || autoplayed) return;
+      autoplayed = true;
+      io.disconnect();
+      setTimeout(() => {
+        if (used || state !== "idle") return;
+        setStep("hold");
+        setTimeout(() => {
+          if (used || state !== "idle") return;
+          start(false);
+          setTimeout(() => { if (!used) stop(); }, 1700);
+        }, 500);
+      }, 700);
+    }, { threshold: 0.55 }).observe(win);
+  }
+
+  // gentle 3D tilt toward the pointer
+  if (matchMedia("(hover: hover)").matches && !still) {
+    section.addEventListener("pointermove", (e) => {
+      const r = win.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      win.style.setProperty("--ry", `${(x * 6).toFixed(2)}deg`);
+      win.style.setProperty("--rx", `${(-y * 5).toFixed(2)}deg`);
+    });
+    section.addEventListener("pointerleave", () => {
+      win.style.setProperty("--ry", "0deg");
+      win.style.setProperty("--rx", "0deg");
+    });
+  }
+</script>
