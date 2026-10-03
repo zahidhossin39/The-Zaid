@@ -24,7 +24,10 @@ const deferModuleScripts = () => ({
         if (!srcs.length) continue;
         const loader =
           `<script>(()=>{const s=${JSON.stringify(srcs)};` +
-          `const go=()=>setTimeout(()=>s.forEach(u=>import(u)),300);` +
+          // one import per idle slot: firing all at once evaluates them in one long task
+          `const q=self.requestIdleCallback||setTimeout;let i=0;` +
+          `const n=()=>{if(i<s.length)import(s[i++]).finally(()=>q(n))};` +
+          `const go=()=>setTimeout(n,300);` +
           `document.readyState==="complete"?go():addEventListener("load",go,{once:true})})()</script>`;
         html = html.replace('</body>', `${loader}</body>`);
         fs.writeFileSync(file, html);
