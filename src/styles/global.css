@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Hero font, self-hosted and subset to the characters the site uses (ASCII plus
+   typographic quotes, dashes, arrows): ~10 KB per weight instead of ~22 KB.
+   Rebuild with pyftsubset if new symbols appear (see public/fonts/README.md). */
+@font-face { font-family: "Inter Tight"; font-style: normal; font-weight: 400; font-display: swap; src: url(/fonts/inter-tight-400.woff2) format("woff2"); }
+@font-face { font-family: "Inter Tight"; font-style: normal; font-weight: 500; font-display: swap; src: url(/fonts/inter-tight-500.woff2) format("woff2"); }
+@font-face { font-family: "Inter Tight"; font-style: normal; font-weight: 700; font-display: swap; src: url(/fonts/inter-tight-700.woff2) format("woff2"); }
+
+
 @theme {
   --color-bg: #0A0A0B;
   --color-surface: #141417;

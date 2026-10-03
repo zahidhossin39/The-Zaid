@@ -10,14 +10,14 @@ import About from "../components/About.astro";
 import FAQ from "../components/FAQ.astro";
 import BookACall from "../components/BookACall.astro";
 import Footer from "../components/Footer.astro";
-import { POSTER } from "../data/film";
+import { POSTER, POSTER_SRCSET, POSTER_SIZES } from "../data/film";
 ---
 <Base
   title="Zaid Hossain | Websites and automations for small businesses"
   description="I build websites that bring customers in and automations that handle the work they create, so more customers don't mean more hours. Fixed price, agreed upfront."
 >
   <!-- the video poster is the LCP element on phones: fetch it with the HTML -->
-  <link slot="head" rel="preload" as="image" href={POSTER} fetchpriority="high" />
+  <link slot="head" rel="preload" as="image" href={POSTER} imagesrcset={POSTER_SRCSET} imagesizes={POSTER_SIZES} fetchpriority="high" />
   <a href="#main" class="skip-link">Skip to content</a>
   <Navbar />
   <main id="main" tabindex="-1">

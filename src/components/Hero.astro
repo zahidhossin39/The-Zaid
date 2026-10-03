@@ -6,7 +6,7 @@ import GridBackground from "./GridBackground.astro";
 const hasReel = fs.existsSync("public/hero.mp4");
 // TEMP: show an empty grey slot until the video exists. Set to false before launch.
 const SHOW_EMPTY_SLOT = true;
-import { FILM_V, POSTER } from "../data/film";
+import { FILM_V, POSTER, POSTER_SRCSET, POSTER_SIZES } from "../data/film";
 
 const HEAD = "More customers shouldn't mean more hours.";
 const SUB =
@@ -50,7 +50,6 @@ const CTA = "Book a free 20-min call";
         <div class="reel">
         {hasReel ? <video
           src={`/hero.mp4?v=${FILM_V}`}
-          poster={POSTER}
           width="460"
           height="345"
           muted
@@ -60,6 +59,7 @@ const CTA = "Book a free 20-min call";
           aria-hidden="true"
           tabindex="-1"
         ></video> : <div class="reel-slot" aria-hidden="true"></div>}
+        {hasReel && <img class="poster" src={POSTER} srcset={POSTER_SRCSET} sizes={POSTER_SIZES} alt="" width="460" height="345" fetchpriority="high" decoding="async" />}
         <p class="sr-only">Example: while the owner was busy, a call to a dental practice was answered and a new patient booked into the calendar for 4:30 PM, and an Instagram DM to a gym was answered and the client booked into tomorrow's 6 AM class.</p>
         <button class="pp" type="button" aria-label="Pause video" hidden>
           <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
@@ -196,6 +196,14 @@ const CTA = "Book a free 20-min call";
   }
 
   .reel { position: relative; }
+  /* first frame of the film as a responsive image over the video; it fades out
+     once the video is actually playing (phones get a 720px file) */
+  .poster {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; border-radius: 20px; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .reel.playing .poster { opacity: 0; }
 
   .media-link {
     display: table;
@@ -323,6 +331,7 @@ const CTA = "Book a free 20-min call";
       pp.setAttribute("aria-label", video.paused ? "Play video" : "Pause video");
     };
     video.addEventListener("play", sync);
+    video.addEventListener("playing", () => media.querySelector(".reel")?.classList.add("playing"), { once: true });
     video.addEventListener("pause", sync);
     pp?.addEventListener("click", () => (video.paused ? play() : video.pause()));
     sync();

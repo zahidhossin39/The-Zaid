@@ -21,6 +21,7 @@
 </style>
 
 <script>
+  const MQ = 4; // mask resolution divisor
   const MARK = 8; // plus size (6 on phones)
   const LINE_A = 0.055;
   const MARK_A = 0.15;
@@ -56,9 +57,12 @@
     const r = wrap.getBoundingClientRect();
     dpr = devicePixelRatio || 1;
     w = r.width; h = r.height;
-    for (const c of [canvas, mask]) { c.width = w * dpr; c.height = h * dpr; }
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    // the mask is soft by design, so build it at quarter resolution (16x less
+    // blur work) and let the scaled drawImage smooth it
+    mask.width = Math.ceil((w * dpr) / MQ); mask.height = Math.ceil((h * dpr) / MQ);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    mctx.setTransform(dpr / MQ, 0, 0, dpr / MQ, 0, 0);
 
     const vw = innerWidth;
     const cs = getComputedStyle(inner);
@@ -156,7 +160,7 @@
     }
     ctx.globalCompositeOperation = "destination-in";
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.drawImage(mask, 0, 0);
+    ctx.drawImage(mask, 0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return active;
   };
@@ -169,11 +173,14 @@
 
   // Start after the first paint: the grid is decoration, so it must not delay
   // the headline appearing (PageSpeed FCP/LCP on phones).
+  // coalesce: the observers and font load can ask for a layout in the same frame
+  let queued = 0;
+  const relayout = () => { if (!queued) queued = requestAnimationFrame(() => { queued = 0; layout(); }); };
   const start = () => {
-    const ro = new ResizeObserver(() => layout());
+    const ro = new ResizeObserver(relayout);
     ro.observe(wrap);
     ro.observe(inner);
-    document.fonts.ready.then(layout); // web font changes the headline height
+    document.fonts.ready.then(relayout); // web font changes the headline height
   };
   requestAnimationFrame(() => setTimeout(start, 0));
   hero.addEventListener("variantchange", () => requestAnimationFrame(layout));

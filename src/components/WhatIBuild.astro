@@ -23,7 +23,7 @@ const items = [
             <h3 class="rtitle">{it.label}</h3>
             <p class="sub">{it.sub}</p>
           </span>
-          <span class="media"><span class="card"><img src={it.img} srcset={`${it.img.replace(".webp", "-640.webp")} 640w, ${it.img} 960w`} sizes="(max-width: 767px) 90vw, 440px" alt={it.label} width="960" height="528" loading="lazy" decoding="async" /></span></span>
+          <span class="media"><span class="card"><img data-src={it.img} data-srcset={`${it.img.replace(".webp", "-640.webp")} 640w, ${it.img} 960w`} sizes="(max-width: 767px) 90vw, 440px" alt={it.label} width="960" height="528" decoding="async" /><noscript><img src={it.img} alt={it.label} width="960" height="528" loading="lazy" /></noscript></span></span>
           <span class="arrow-wrap">
             <span class="arrow">
               <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -69,6 +69,7 @@ const items = [
           overflow: hidden; background: #f2efe8; border: 3px solid #e6e6e6;
           box-shadow: 0 20px 42px rgba(30,25,15,.11); }
   .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card img[data-src]:not([src]) { display: none; } /* until the script sets src; no-JS shows the <noscript> copy */
 
   .arrow-wrap { display: flex; justify-content: flex-end; }
   .arrow { width: 3rem; height: 3rem; border-radius: 999px; background: #111111;
@@ -119,6 +120,16 @@ const items = [
 </style>
 
 <script>
+  import { whenNear } from "../scripts/near";
+  // Card images load when their row gets near (after the first screen), so they
+  // never compete with the hero on page load.
+  document.querySelectorAll<HTMLImageElement>(".band img[data-src]").forEach((img) =>
+    whenNear(img.closest(".row"), () => {
+      img.srcset = img.dataset.srcset!;
+      img.src = img.dataset.src!;
+    })
+  );
+
   // Touch/phone mode: open each row's card once it's well into view.
   const mq = matchMedia("(hover: none), (max-width: 720px)");
   const io = new IntersectionObserver(
