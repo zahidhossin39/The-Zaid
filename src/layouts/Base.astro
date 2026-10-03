@@ -46,6 +46,7 @@ const { title, description, theme } = Astro.props;
 
     <link rel="ai-catalog" href="/.well-known/ai-catalog.json" type="application/json" />
     <link rel="preload" href={heroFont} as="font" type="font/woff2" crossorigin />
+    <slot name="head" />
   </head>
   <body>
     <slot />

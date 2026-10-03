@@ -6,8 +6,7 @@ import GridBackground from "./GridBackground.astro";
 const hasReel = fs.existsSync("public/hero.mp4");
 // TEMP: show an empty grey slot until the video exists. Set to false before launch.
 const SHOW_EMPTY_SLOT = true;
-// Bump when hero.mp4 / hero-poster.webp change, so browsers fetch the new files instead of a cached copy.
-const FILM_V = "9";
+import { FILM_V, POSTER } from "../data/film";
 
 const HEAD = "More customers shouldn't mean more hours.";
 const SUB =
@@ -47,11 +46,11 @@ const CTA = "Book a free 20-min call";
     </div>
 
     {(hasReel || SHOW_EMPTY_SLOT) && (
-      <div class="hero-media intro" style="--d:260ms">
+      <div class="hero-media intro-move" style="--d:260ms">
         <div class="reel">
         {hasReel ? <video
           src={`/hero.mp4?v=${FILM_V}`}
-          poster={`/hero-poster.webp?v=${FILM_V}`}
+          poster={POSTER}
           width="460"
           height="345"
           muted
@@ -85,7 +84,11 @@ const CTA = "Book a free 20-min call";
      JavaScript, so the hero is complete sooner (PageSpeed Speed Index). */
   @keyframes intro { from { opacity: 0; transform: translateY(16px); } }
   .intro { animation: intro 600ms cubic-bezier(.22,1,.36,1) var(--d, 0ms) both; }
-  @media (prefers-reduced-motion: reduce) { .intro { animation: none; } }
+  /* the video card is the LCP element on phones: slide only, never transparent,
+     so it counts as painted on the first frame */
+  @keyframes intro-move { from { transform: translateY(16px); } }
+  .intro-move { animation: intro-move 600ms cubic-bezier(.22,1,.36,1) var(--d, 0ms) both; }
+  @media (prefers-reduced-motion: reduce) { .intro, .intro-move { animation: none; } }
 
   .hero-inner {
     position: relative;
