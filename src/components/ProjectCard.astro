@@ -150,7 +150,9 @@ const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
 <script>
   // Demos: each mock plays once when it crosses the viewport centre, then holds its final frame.
   // It replays on re-entry only after it has fully left the viewport, or from its Replay button.
-  import { gsap } from "gsap";
+  import type { gsap as G } from "gsap";
+  import { whenNear, loadGsap } from "../scripts/near";
+  let gsap: typeof G; // loaded when the first demo gets near
 
   const mocks = [...document.querySelectorAll<HTMLElement>(".mock")];
 
@@ -197,7 +199,9 @@ const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
       .fromTo(rows.slice(1), { y: () => -rows[0].offsetHeight }, { y: 0, duration: 0.35, ease: "power3.out" }, 1.5);
   }
 
-  if (mocks.length) gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+  if (mocks.length) whenNear(mocks[0], async () => {
+  gsap = await loadGsap();
+  gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
     const tls = mocks.map((m) => (m.dataset.mock === "site" ? siteTl(m) : autoTl(m)));
     const armed = mocks.map(() => true);
     const ac = new AbortController();
@@ -258,5 +262,6 @@ const { title, stuck, now, tags, kind, demo, youtubeId, liveUrl } = Astro.props;
       view.disconnect();
       mocks.forEach((m) => (m.querySelector<HTMLButtonElement>(".replay")!.hidden = true));
     };
+  });
   });
 </script>

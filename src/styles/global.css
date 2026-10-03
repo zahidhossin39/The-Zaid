@@ -89,3 +89,13 @@
     transition-duration: .01ms !important;
   }
 }
+
+/* Skip style/layout/paint for sections until they're near the viewport (big
+   first-load win on phones; section scripts wait for whenNear, so nothing forces
+   them early). The pinned Process section is excluded: its sticky stage needs
+   real layout. `auto` remembers each section's real size once it has been seen. */
+main > section:not(.hero):not(.proc),
+body > footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}

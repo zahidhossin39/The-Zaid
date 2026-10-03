@@ -240,6 +240,7 @@ const socials = [
 </style>
 
 <script>
+  import { whenNear } from "../scripts/near";
   // ASCII hover: the name is drawn on a canvas split into small cells. Entering it
   // starts a ring that spreads from the entry point; each cell the ring reaches
   // scrambles, then settles into a glowing digit (brightest around the cursor).
@@ -249,7 +250,7 @@ const socials = [
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   // phones/tablets (no hover) and reduced motion: shown as ASCII from the start, no animation
   const fixed = !fine || still;
-  if (wrap) {
+  if (wrap) whenNear(wrap, () => {
     const text = wrap.querySelector<HTMLElement>(".ft-mark")!;
     const cv = wrap.querySelector("canvas")!;
     const ctx = cv.getContext("2d")!;
@@ -377,5 +378,5 @@ const socials = [
       const nw = wrap.clientWidth;
       if (nw !== lastW && (cells.length || w)) { lastW = nw; layout(); }
     }).observe(wrap);
-  }
+  });
 </script>

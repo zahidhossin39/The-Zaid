@@ -101,7 +101,9 @@ const extras = [0, 1, 2];
 </style>
 
 <script>
-  import { gsap } from "gsap";
+  import type { gsap as G } from "gsap";
+  import { whenNear, loadGsap } from "../scripts/near";
+  let gsap: typeof G; // loaded when the first bar gets near
 
   const inReadingZone = (el: Element, fn: () => void) => {
     const io = new IntersectionObserver(
@@ -147,11 +149,14 @@ const extras = [0, 1, 2];
     mo.observe(embed, { childList: true });
   }
 
+  whenNear(document.querySelector("[data-bar]"), async () => {
+  gsap = await loadGsap();
   gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
     const ios: IntersectionObserver[] = [];
     let timer = 0;
 
-    document.querySelectorAll<HTMLElement>('[data-bar="problem"]').forEach((bar) => {
+    // each bar builds its timeline only when it gets near (the book bar measures layout)
+    document.querySelectorAll<HTMLElement>('[data-bar="problem"]').forEach((bar) => whenNear(bar, () => {
       const drop = { y: -10, autoAlpha: 0 };
       const tl = gsap
         .timeline({ paused: true })
@@ -162,9 +167,9 @@ const extras = [0, 1, 2];
         // "+3 waiting" lands with the last overflow dot (2 x 0.14 in)
         .fromTo(bar.querySelector(".hb-wait"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, "<+0.28");
       ios.push(inReadingZone(bar, () => tl.play()));
-    });
+    }));
 
-    document.querySelectorAll<HTMLElement>('[data-bar="book"]').forEach((bar) => {
+    document.querySelectorAll<HTMLElement>('[data-bar="book"]').forEach((bar) => whenNear(bar, () => {
       const track = bar.querySelector(".hb-track")!;
       const done = bar.querySelector(".hb-done")!;
       // start: dim, up in the overflow spot past the end of the day line
@@ -190,7 +195,7 @@ const extras = [0, 1, 2];
           timer = window.setTimeout(() => start(true), 1200);
         })
       );
-    });
+    }));
 
     return () => {
       ios.forEach((io) => io.disconnect());
@@ -198,5 +203,6 @@ const extras = [0, 1, 2];
       skips = [];
       onCalMounted = () => {};
     };
+  });
   });
 </script>

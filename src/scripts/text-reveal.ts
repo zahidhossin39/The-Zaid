@@ -1,37 +1,27 @@
 // Section-heading line reveal. Each line slides up out of its own clip mask
 // once, when the heading's top crosses 85% of the viewport.
 // The hero H1 is left alone on purpose: it's the LCP element.
-import { gsap } from "gsap";
-import { SplitText } from "gsap/SplitText";
-
-gsap.registerPlugin(SplitText);
+// Each heading is split only when it gets near (whenNear), and GSAP + SplitText
+// load then too, so page load never measures or splits text below the fold.
+import { whenNear } from "./near";
 
 // Keep in sync with the matching rule in global.css.
 export const HEADINGS = "main .h2, .band h2, .proc-head h2";
 
-// Split only after webfonts land, so line breaks are measured once, correctly.
-document.fonts.ready.then(() => {
-  gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
-    const play = new Map<Element, () => void>();
-    const done = new Map<Element, () => void>();
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          // skipped past it (fast fling, anchor jump): show it finished, never leave it hidden
-          const passed = !e.isIntersecting && e.boundingClientRect.bottom < 0;
-          if (!e.isIntersecting && !passed) continue;
-          if (passed) done.get(e.target)?.(); else play.get(e.target)?.();
-          done.delete(e.target); play.delete(e.target);
-          io.unobserve(e.target);
-        }
-      },
-      { rootMargin: "0px 0px -15% 0px" }
-    );
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const libs = () =>
+    Promise.all([import("gsap"), import("gsap/SplitText"), document.fonts.ready]).then(([g, s]) => {
+      g.gsap.registerPlugin(s.SplitText);
+      return { gsap: g.gsap, SplitText: s.SplitText };
+    });
 
-    const splits = [...document.querySelectorAll<HTMLElement>(HEADINGS)].map((el) => {
+  document.querySelectorAll<HTMLElement>(HEADINGS).forEach((el) =>
+    whenNear(el, async () => {
+      // Split only after webfonts land, so line breaks are measured once, correctly.
+      const { gsap, SplitText } = await libs();
       let shown = false;
       let tween: gsap.core.Tween;
-      const split = SplitText.create(el, {
+      SplitText.create(el, {
         type: "lines",
         linesClass: "tr-line", // masks get "tr-line-mask"
         mask: "lines",
@@ -48,29 +38,38 @@ document.fonts.ready.then(() => {
             paused: !shown,
           })),
       });
-      play.set(el, () => { shown = true; tween.play(); });
-      done.set(el, () => { shown = true; tween.progress(1); });
+      const play = () => { shown = true; tween.play(); };
+      const done = () => { shown = true; tween.progress(1); };
 
-      // Already on screen at load: reveal now (the -15% dead zone must not hold it back).
-      const r = el.getBoundingClientRect();
-      if (r.top < window.innerHeight && r.bottom > 0) { play.get(el)!(); play.delete(el); done.delete(el); }
-      else io.observe(el);
-      return split;
-    });
+      const io = new IntersectionObserver(
+        ([e]) => {
+          // skipped past it (fast fling, anchor jump): show it finished, never leave it hidden
+          const passed = !e.isIntersecting && e.boundingClientRect.bottom < 0;
+          // on screen at split time: reveal now (the -15% dead zone must not hold it back)
+          const onScreen = e.boundingClientRect.top < innerHeight && e.boundingClientRect.bottom > 0;
+          if (!e.isIntersecting && !passed && !(first && onScreen)) { first = false; return; }
+          first = false;
+          passed ? done() : play();
+          io.disconnect();
+          removeEventListener("scroll", onScroll);
+        },
+        { rootMargin: "0px 0px -15% 0px" }
+      );
+      let first = true;
+      io.observe(el);
 
-    // A jump from below the viewport to above it in one scroll step never fires
-    // the observer (not intersecting both times), so sweep skipped headings here.
-    let ticking = false;
-    const sweep = () => {
-      ticking = false;
-      for (const el of done.keys()) {
-        if (el.getBoundingClientRect().bottom < 0) { done.get(el)!(); io.unobserve(el); done.delete(el); play.delete(el); }
-      }
-      if (!done.size) removeEventListener("scroll", onScroll);
-    };
-    const onScroll = () => { if (!ticking) { ticking = true; requestAnimationFrame(sweep); } };
-    addEventListener("scroll", onScroll, { passive: true });
-
-    return () => { io.disconnect(); removeEventListener("scroll", onScroll); splits.forEach((s) => s.revert()); };
-  });
-});
+      // A jump from below the viewport to above it in one scroll step never fires
+      // the observer (not intersecting both times), so catch it on scroll.
+      let ticking = false;
+      const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          if (el.getBoundingClientRect().bottom < 0) { done(); io.disconnect(); removeEventListener("scroll", onScroll); }
+        });
+      };
+      addEventListener("scroll", onScroll, { passive: true });
+    })
+  );
+}

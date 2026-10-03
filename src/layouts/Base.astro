@@ -70,23 +70,24 @@ const { title, description, theme } = Astro.props;
         const delay = Number(el.getAttribute("data-delay") ?? 0);
         setTimeout(() => el.classList.add("in-view"), delay);
       };
+      // One observer, no layout reads at load. Its first callback also reports
+      // elements already on screen (even inside the -12% dead zone), so
+      // above-the-fold content reveals immediately; the rest waits for scroll.
+      const seen = new WeakSet<Element>();
       const io = new IntersectionObserver(
         (entries) => {
           for (const e of entries) {
-            if (!e.isIntersecting) continue;
+            const first = !seen.has(e.target);
+            seen.add(e.target);
+            const r = e.boundingClientRect;
+            if (!e.isIntersecting && !(first && r.top < innerHeight && r.bottom > 0)) continue;
             revealEl(e.target);
             io.unobserve(e.target);
           }
         },
-        { rootMargin: "0px 0px -12% 0px", threshold: 0.1 }
+        { rootMargin: "0px 0px -12% 0px", threshold: 0 }
       );
-      // Anything already on screen at load reveals immediately (the -12% dead
-      // zone must not hide above-the-fold content); the rest waits for scroll.
-      els.forEach((el) => {
-        const r = el.getBoundingClientRect();
-        if (r.top < window.innerHeight && r.bottom > 0) revealEl(el);
-        else io.observe(el);
-      });
+      els.forEach((el) => io.observe(el));
     </script>
 
     <script>

@@ -19,7 +19,7 @@ const socials = [
   <div class="grid gap-12 md:grid-cols-[4fr_8fr] md:gap-16">
     <div>
       <div data-about-photo class="aspect-[4/5] w-full max-w-[18rem] overflow-hidden rounded-lg border border-border bg-surface">
-        <img src="/zaid.webp" alt="Zaid Hossain" width="640" height="800" class="h-full w-full object-cover" loading="eager" decoding="async" />
+        <img src="/zaid.webp" alt="Zaid Hossain" width="640" height="800" class="h-full w-full object-cover" loading="lazy" decoding="async" />
       </div>
 
       <div class="reveal mt-5 flex max-w-[18rem] items-center justify-between" data-delay="120">
@@ -129,11 +129,12 @@ const socials = [
 </style>
 
 <script>
-  import { gsap } from "gsap";
+  import { whenNear, loadGsap } from "../scripts/near";
 
   const photo = document.querySelector<HTMLElement>("[data-about-photo]");
   const img = photo?.querySelector("img");
-  if (photo && img) {
+  if (photo && img) whenNear(photo, async () => {
+    const gsap = await loadGsap();
     gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
       // Start state is JS-only, so the photo is visible without JS.
       gsap.set(photo, { clipPath: "inset(100% 0 0 0)" });
@@ -151,5 +152,5 @@ const socials = [
       );
       return () => { io?.disconnect(); gsap.set(photo, { clearProps: "clipPath" }); };
     });
-  }
+  });
 </script>

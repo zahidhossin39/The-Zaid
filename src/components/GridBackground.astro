@@ -167,11 +167,16 @@
   };
   const kick = () => { if (!running && !still) { running = true; requestAnimationFrame(loop); } };
 
-  const ro = new ResizeObserver(() => layout());
-  ro.observe(wrap);
-  ro.observe(inner);
+  // Start after the first paint: the grid is decoration, so it must not delay
+  // the headline appearing (PageSpeed FCP/LCP on phones).
+  const start = () => {
+    const ro = new ResizeObserver(() => layout());
+    ro.observe(wrap);
+    ro.observe(inner);
+    document.fonts.ready.then(layout); // web font changes the headline height
+  };
+  requestAnimationFrame(() => setTimeout(start, 0));
   hero.addEventListener("variantchange", () => requestAnimationFrame(layout));
-  document.fonts.ready.then(layout); // web font changes the headline height
   if (!still) {
     addEventListener("pointermove", (e) => {
       const r = wrap.getBoundingClientRect();

@@ -20,8 +20,8 @@ const CTA = "Book a free 20-min call";
   <div class="hero-inner">
     <div class="hero-copy">
       <h1 class="headline" data-quiet>{HEAD}</h1>
-      <p class="sub reveal" data-delay="220" data-quiet>{SUB}</p>
-      <div class="cta reveal" data-delay="320">
+      <p class="sub intro" style="--d:220ms" data-quiet>{SUB}</p>
+      <div class="cta intro" style="--d:320ms">
         <a href="https://cal.com/zaid-hossain/20min" target="_blank" rel="noopener noreferrer" class="btn" data-cal-intent
           ><span class="btn-label"
             ><svg
@@ -47,7 +47,7 @@ const CTA = "Book a free 20-min call";
     </div>
 
     {(hasReel || SHOW_EMPTY_SLOT) && (
-      <div class="hero-media reveal" data-delay="260">
+      <div class="hero-media intro" style="--d:260ms">
         <div class="reel">
         {hasReel ? <video
           src={`/hero.mp4?v=${FILM_V}`}
@@ -57,7 +57,7 @@ const CTA = "Book a free 20-min call";
           muted
           loop
           playsinline
-          preload="metadata"
+          preload="none"
           aria-hidden="true"
           tabindex="-1"
         ></video> : <div class="reel-slot" aria-hidden="true"></div>}
@@ -80,6 +80,12 @@ const CTA = "Book a free 20-min call";
     color: #111111;
     font-family: "Inter Tight", system-ui, sans-serif;
   }
+
+  /* Intro fade-up in pure CSS: starts at first paint instead of waiting for
+     JavaScript, so the hero is complete sooner (PageSpeed Speed Index). */
+  @keyframes intro { from { opacity: 0; transform: translateY(16px); } }
+  .intro { animation: intro 600ms cubic-bezier(.22,1,.36,1) var(--d, 0ms) both; }
+  @media (prefers-reduced-motion: reduce) { .intro { animation: none; } }
 
   .hero-inner {
     position: relative;
@@ -320,15 +326,21 @@ const CTA = "Book a free 20-min call";
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
       if (matchMedia("(max-width: 767px)").matches) {
         // phones: the reel sits below the copy, so wait until it's half in view
+        // and the visitor has scrolled or touched (a moving video on an untouched
+        // page also keeps PageSpeed's Speed Index from settling)
+        let seen = false, touched = false;
+        const go = () => { if (seen && touched) play(); };
         const io = new IntersectionObserver(
           ([e]) => {
             if (!e.isIntersecting) return;
             io.disconnect();
-            play();
+            seen = true; go();
           },
           { threshold: 0.5 },
         );
         io.observe(video);
+        const wake = () => { touched = true; go(); };
+        ["scroll", "touchstart", "pointerdown", "keydown"].forEach((t) => addEventListener(t, wake, { once: true, passive: true }));
       } else {
         const start = () => setTimeout(play, 1000); // ~1s after the reveal
         if (document.readyState === "complete") start();

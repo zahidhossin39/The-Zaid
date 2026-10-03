@@ -216,8 +216,9 @@ const phases = [
 </style>
 
 <script>
+  import { whenNear } from "../scripts/near";
   const root = document.getElementById("process");
-  if (root) {
+  if (root) whenNear(root, () => {
     const N = 5, R = 456, STEP = 0.335, CX = -169;
     const scroll = root.querySelector<HTMLElement>("[data-proc-scroll]")!;
     const stage = root.querySelector<HTMLElement>(".stage")!;
@@ -337,5 +338,5 @@ const phases = [
       }
     }, { rootMargin: "200px 0px" }).observe(root);
 
-  }
+  });
 </script>
