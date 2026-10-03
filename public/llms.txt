@@ -1,0 +1,24 @@
+# Zaid Hossain
+
+> Websites and automations for small businesses. I build websites that bring customers in, and systems that answer your calls, reply to messages and refill cancelled spots, so more customers don't mean more hours.
+
+## What I build
+
+- Websites: a site with one clear job, getting customers to call, book or buy.
+- Automations: the replies, follow-ups and record-keeping each new customer creates, running on their own.
+
+## How it works
+
+1. Discovery & Scope: a call about where your time goes and where customers slip away.
+2. Plan & Design: you see the plan before anything is built.
+3. Build & Connect: built in small working pieces. The code is yours from day one.
+4. Test & Ship: tested and put live.
+5. Handover & Support.
+
+## Links
+
+- [Website](https://zaidhossain.com/)
+- [Book a free 20-min call](https://cal.com/zaid-hossain/20min)
+- [GitHub](https://github.com/zahidhossin39)
+- [LinkedIn](https://www.linkedin.com/in/zaid-hossain)
+- [X](https://x.com/ZaidHossain_)

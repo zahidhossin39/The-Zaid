@@ -6,7 +6,7 @@ import GridBackground from "./GridBackground.astro";
 const hasReel = fs.existsSync("public/hero.mp4");
 // TEMP: show an empty grey slot until the video exists. Set to false before launch.
 const SHOW_EMPTY_SLOT = true;
-// Bump when hero.mp4 / hero-poster.jpg change, so browsers fetch the new files instead of a cached copy.
+// Bump when hero.mp4 / hero-poster.webp change, so browsers fetch the new files instead of a cached copy.
 const FILM_V = "9";
 
 const HEAD = "More customers shouldn't mean more hours.";
@@ -51,7 +51,7 @@ const CTA = "Book a free 20-min call";
         <div class="reel">
         {hasReel ? <video
           src={`/hero.mp4?v=${FILM_V}`}
-          poster={`/hero-poster.jpg?v=${FILM_V}`}
+          poster={`/hero-poster.webp?v=${FILM_V}`}
           width="460"
           height="345"
           muted
