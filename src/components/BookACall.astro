@@ -28,11 +28,11 @@ import HoursBar from "./HoursBar.astro";
       <div id="cal-embed" class="relative min-h-[34rem] w-full" data-cal-link={CAL_LINK}>
         <!-- Sits behind the embed; removed once Cal says the calendar is ready. -->
         <p class="cal-ph absolute inset-x-0 top-0 z-0 p-10 text-muted">
-          Loading the calendar… or email <a class="text-accent underline underline-offset-4" href={`mailto:${EMAIL}`}>{EMAIL_USER}@<wbr />{EMAIL_DOMAIN}</a>
+          Loading the calendar… or email <Fragment set:html="<!--email_off-->" /><a class="text-accent underline underline-offset-4" href={`mailto:${EMAIL}`}>{EMAIL_USER}@<wbr />{EMAIL_DOMAIN}</a><Fragment set:html="<!--/email_off-->" />
         </p>
         <noscript>
           <p class="p-10 text-muted">
-            Booking needs JavaScript. Email <a class="text-accent" href={`mailto:${EMAIL}`}>{EMAIL_USER}@<wbr />{EMAIL_DOMAIN}</a> instead.
+            Booking needs JavaScript. Email <Fragment set:html="<!--email_off-->" /><a class="text-accent" href={`mailto:${EMAIL}`}>{EMAIL_USER}@<wbr />{EMAIL_DOMAIN}</a><Fragment set:html="<!--/email_off-->" /> instead.
           </p>
         </noscript>
       </div>
