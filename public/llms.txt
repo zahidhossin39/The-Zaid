@@ -22,3 +22,8 @@
 - [GitHub](https://github.com/zahidhossin39)
 - [LinkedIn](https://www.linkedin.com/in/zaid-hossain)
 - [X](https://x.com/ZaidHossain_)
+
+## For AI agents
+
+- [Agent skill: hire Zaid and book a call](https://zaidhossain.com/skills/hire-zaid.md)
+- [AI catalog](https://zaidhossain.com/.well-known/ai-catalog.json)

@@ -1,0 +1,28 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "Zaid Hossain",
+    "identifier": "did:web:zaidhossain.com",
+    "documentationUrl": "https://zaidhossain.com/llms.txt",
+    "logoUrl": "https://zaidhossain.com/apple-touch-icon.png"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:zaidhossain.com:services:hire-zaid",
+      "displayName": "Hire Zaid Hossain: websites and automations for small businesses",
+      "type": "text/markdown; profile=\"urn:air:agent-skills\"",
+      "url": "https://zaidhossain.com/skills/hire-zaid.md",
+      "description": "How an AI agent can help a small-business owner decide if Zaid is a fit and book a free 20-minute call with him. Covers websites that bring customers in and automations that answer calls, reply to messages and refill cancelled spots.",
+      "representativeQueries": [
+        "Find someone to build a website for my small business",
+        "Automate missed calls and message replies for my clinic or gym",
+        "Book a call with a freelance web and automation developer",
+        "Who can set up booking automation so I stop losing customers"
+      ],
+      "tags": ["web development", "automation", "small business", "booking", "freelancer"],
+      "capabilities": ["BookDiscoveryCall", "DescribeServices"],
+      "version": "1.0.0",
+      "updatedAt": "2026-10-04T00:00:00Z"
+    }
+  ]
+}
