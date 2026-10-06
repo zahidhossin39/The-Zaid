@@ -1,11 +1,6 @@
 ---
-import fs from "node:fs";
 import GridBackground from "./GridBackground.astro";
 
-// Showreel column only renders once public/hero.mp4 exists (checked at build).
-const hasReel = fs.existsSync("public/hero.mp4");
-// TEMP: show an empty grey slot until the video exists. Set to false before launch.
-const SHOW_EMPTY_SLOT = true;
 import { FILM_V, POSTER, POSTER_SRCSET, POSTER_SIZES } from "../data/film";
 
 const HEAD = "More customers shouldn't mean more hours.";
@@ -45,10 +40,9 @@ const CTA = "Book a free 20-min call";
       </div>
     </div>
 
-    {(hasReel || SHOW_EMPTY_SLOT) && (
       <div class="hero-media intro-move" style="--d:260ms">
         <div class="reel">
-        {hasReel ? <video
+        <video
           src={`/hero.mp4?v=${FILM_V}`}
           width="460"
           height="345"
@@ -58,8 +52,8 @@ const CTA = "Book a free 20-min call";
           preload="none"
           aria-hidden="true"
           tabindex="-1"
-        ></video> : <div class="reel-slot" aria-hidden="true"></div>}
-        {hasReel && <img class="poster" src={POSTER} srcset={POSTER_SRCSET} sizes={POSTER_SIZES} alt="" width="460" height="345" fetchpriority="high" decoding="async" />}
+        ></video>
+        <img class="poster" src={POSTER} srcset={POSTER_SRCSET} sizes={POSTER_SIZES} alt="" width="460" height="345" fetchpriority="high" decoding="async" />
         <p class="sr-only">Example: while the owner was busy, a call to a dental practice was answered and a new patient booked into the calendar for 4:30 PM, and an Instagram DM to a gym was answered and the client booked into tomorrow's 6 AM class.</p>
         <button class="pp" type="button" aria-label="Pause video" hidden>
           <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>
@@ -68,7 +62,6 @@ const CTA = "Book a free 20-min call";
         </div>
         <a href="#proof" class="link media-link">See examples ↓</a>
       </div>
-    )}
   </div>
 </section>
 
@@ -241,8 +234,7 @@ const CTA = "Book a free 20-min call";
     white-space: nowrap;
   }
 
-  .hero-media video,
-  .reel-slot {
+  .hero-media video {
     display: block;
     width: 460px;
     max-width: 100%;
@@ -258,7 +250,6 @@ const CTA = "Book a free 20-min call";
       0 0 64px rgba(10, 10, 11, 0.14);
   }
 
-  .reel-slot { cursor: default; }
 
 
   @media (min-width: 768px) and (max-width: 1023px) {

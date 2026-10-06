@@ -84,6 +84,16 @@ const { title, description, theme } = Astro.props;
 
     <script>
       import "../scripts/late-fonts";
+      import { afterFirstScreen, idle } from "../scripts/near";
+      // Cloudflare Web Analytics, loaded after the page is done. Keep Cloudflare's
+      // auto-inject OFF: it puts a second-domain request before the first paint.
+      if (location.hostname === "zaidhossain.com") afterFirstScreen.then(() => idle(() => {
+        const s = document.createElement("script");
+        s.defer = true;
+        s.src = "https://static.cloudflareinsights.com/beacon.min.js";
+        s.dataset.cfBeacon = '{"token":"8bc6e9f3d5714c54ad71f211ff4d2a42"}';
+        document.body.append(s);
+      }));
     </script>
 
     <script>
