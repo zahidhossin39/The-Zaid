@@ -258,9 +258,11 @@ const socials = [
   .ft-mark {
     margin: 5rem 0 0;
     font-family: var(--font-display);
-    font-size: clamp(4rem, 15.5vw, 14rem);
+    font-size: clamp(3.5rem, 13vw, 12rem);
     line-height: 0.8;
-    letter-spacing: -0.03em;
+    /* open tracking: each letter keeps at least one empty ASCII cell around it */
+    letter-spacing: 0.08em;
+    word-spacing: 0.1em;
     white-space: nowrap;
     text-align: center;
     color: var(--color-surface);
@@ -328,13 +330,13 @@ const socials = [
     const FEATHER = 90; // px: width of the ring's soft edge
     type Cell = { x: number; y: number; m: number; ch: string; t: number; show: boolean };
     let cells: Cell[] = [], w = 0, h = 0, dpr = 1, cs = 10, maxR = 1;
-    let font = "", fill = "", stroke = "", ink = "", ls = "0px", baseY = 0;
+    let font = "", fill = "", stroke = "", ink = "", ls = "0px", ws = "0px", baseY = 0;
     let pad = 0, r = 0, over = false, ox = 0, oy = 0, mx = -1e4, my = -1e4, raf = 0;
     const rnd = () => CHARS[(Math.random() * CHARS.length) | 0];
 
     const drawName = (c: CanvasRenderingContext2D) => {
       c.font = font; c.textAlign = "center"; c.textBaseline = "alphabetic";
-      (c as any).letterSpacing = ls;
+      (c as any).letterSpacing = ls; (c as any).wordSpacing = ws;
       c.fillStyle = fill; c.fillText(text.textContent!, w / 2, baseY);
       c.lineWidth = 1; c.strokeStyle = stroke; c.strokeText(text.textContent!, w / 2, baseY);
     };
@@ -354,6 +356,7 @@ const socials = [
       cv.width = w * dpr; cv.height = h * dpr;
       font = `${st.fontStyle} ${st.fontWeight} ${st.fontSize} ${st.fontFamily}`;
       ls = st.letterSpacing === "normal" ? "0px" : st.letterSpacing;
+      ws = st.wordSpacing === "normal" ? "0px" : st.wordSpacing;
       fill = st.color; stroke = root.getPropertyValue("--color-border").trim() || fill;
       ink = root.getPropertyValue("--color-text").trim() || "#F4F2ED";
       // baseline straight from the DOM: the text's content box top + the font ascent
@@ -388,6 +391,8 @@ const socials = [
       if (fixed) cells.forEach((c) => (c.m = 1));
       wrap.classList.add("live");
       draw();
+      // rebuilt mid-hover (font landed, resize): let the new cells catch up to the ring
+      if (!fixed && (over || r > 1)) kick();
     };
 
     const draw = () => {
@@ -400,7 +405,7 @@ const socials = [
       for (const c of cells) if (c.m > 0.01) { ctx.fillStyle = `rgba(0,0,0,${c.m})`; ctx.fillRect(c.x, c.y, cs, cs); }
       ctx.globalCompositeOperation = "source-over";
       ctx.font = `600 ${cs * 0.9}px ui-monospace, "SFMono-Regular", Menlo, monospace`;
-      (ctx as any).letterSpacing = "0px";
+      (ctx as any).letterSpacing = "0px"; (ctx as any).wordSpacing = "0px";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillStyle = ink; ctx.shadowColor = ink;
       for (const c of cells) {
