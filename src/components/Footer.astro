@@ -71,7 +71,15 @@ const socials = [
             Book a free 20-min call
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8" /></svg>
           </a>
-          <Fragment set:html="<!--email_off-->" /><a class="ft-mail" href={`mailto:${EMAIL}`}>{EMAIL}</a><Fragment set:html="<!--/email_off-->" />
+          <Fragment set:html="<!--email_off-->" />
+          <div class="ft-mail">
+            <a class="ft-mail-link" href={`mailto:${EMAIL}`}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="m4 7 8 6 8-6" /></svg>
+              <span>{EMAIL}</span>
+            </a>
+            <button class="ft-copy" type="button" data-email={EMAIL}>Copy</button>
+          </div>
+          <Fragment set:html="<!--/email_off-->" />
         </div>
       </div>
 
@@ -93,6 +101,18 @@ const socials = [
               </a>
             </li>
           ))}
+        </ul>
+      </div>
+
+      <div class="ft-col">
+        <h2 class="ft-h">Apps I've built</h2>
+        <ul>
+          <li>
+            <a class="ft-app" href="/silent-voice">
+              <span class="ft-app-name">Silent Voice</span>
+              <small>Free voice-to-text for your computer</small>
+            </a>
+          </li>
         </ul>
       </div>
     </div>
@@ -124,7 +144,7 @@ const socials = [
   }
   .ft-top {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.2fr);
+    grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 1fr));
     gap: 3rem;
   }
 
@@ -165,13 +185,47 @@ const socials = [
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .ft-btn:hover svg { transform: translate(2px, -2px); }
+  /* email as a quiet second button: mail icon + address, and a one-click copy */
   .ft-mail {
-    color: var(--color-muted);
-    border-bottom: 1px solid var(--color-border);
-    transition: color 0.2s ease, border-color 0.2s ease;
-    overflow-wrap: anywhere;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.3rem 0.3rem 1.1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    max-width: 100%;
+    transition: border-color 0.2s ease;
   }
-  .ft-mail:hover { color: var(--color-text); border-color: var(--color-text); }
+  .ft-mail:hover { border-color: var(--color-muted); }
+  .ft-mail-link {
+    display: inline-flex; align-items: center; gap: 0.6rem; min-width: 0;
+    color: var(--color-text);
+  }
+  .ft-mail-link span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ft-mail-link svg {
+    width: 18px; height: 18px; flex-shrink: 0;
+    fill: none; stroke: var(--color-muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .ft-copy {
+    margin-left: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .ft-copy:hover { background: var(--color-border); }
+  .ft-copy.done { color: var(--color-bg); background: var(--color-text); }
+
+  .ft-app { display: grid; gap: 0.2rem; }
+  .ft-app small { font-size: 0.8125rem; color: var(--color-muted); }
+  .ft-app .ft-app-name { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .ft-app .ft-app-name::after { content: "→"; transition: transform 0.2s ease; }
+  .ft-app:hover .ft-app-name::after { transform: translateX(3px); }
 
   .ft-h {
     margin: 0 0 1.25rem;
@@ -222,7 +276,7 @@ const socials = [
   .ft-top-link:hover { color: var(--color-text); }
 
   @media (max-width: 900px) {
-    .ft-top { grid-template-columns: 1fr 1fr; }
+    .ft-top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .ft-pitch { grid-column: 1 / -1; }
     .ft-top--app { grid-template-columns: 1fr; }
   }
@@ -235,6 +289,14 @@ const socials = [
 
 <script>
   import { whenNear } from "../scripts/near";
+  document.querySelectorAll<HTMLButtonElement>(".ft-copy").forEach((b) =>
+    b.addEventListener("click", () => {
+      navigator.clipboard?.writeText(b.dataset.email!).then(() => {
+        b.textContent = "Copied"; b.classList.add("done");
+        setTimeout(() => { b.textContent = "Copy"; b.classList.remove("done"); }, 1600);
+      });
+    })
+  );
   // ASCII hover: the name is drawn on a canvas split into small cells. Entering it
   // starts a ring that spreads from the entry point; each cell the ring reaches
   // scrambles, then settles into a glowing digit (brightest around the cursor).
@@ -366,7 +428,10 @@ const socials = [
     wrap.addEventListener("pointerleave", () => { over = false; mx = my = -1e4; kick(); });
     }
 
+    // the display font loads late (scripts/late-fonts.ts): rebuild when it lands,
+    // or the cells stay sampled from the fallback font and miss the drawn name
     document.fonts.ready.then(layout);
+    document.fonts.addEventListener("loadingdone", layout);
     let lastW = 0;
     new ResizeObserver(() => {
       const nw = wrap.clientWidth;
