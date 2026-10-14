@@ -368,7 +368,7 @@ const socials = [
       baseY = tr.top - (b.top - pad) + ctx.measureText(text.textContent!).fontBoundingBoxAscent;
       // finer cells on touch screens, where the name is small and always ASCII
       // finer cells on touch screens, where the name is small and always ASCII
-      cs = fixed ? Math.max(4, Math.round(parseFloat(st.fontSize) / 16)) : Math.max(7, Math.round(parseFloat(st.fontSize) / 20));
+      cs = fixed ? Math.max(4, Math.round(parseFloat(st.fontSize) / 16)) : Math.max(6, Math.round(parseFloat(st.fontSize) / 24));
       // sample the glyph coverage per cell
       const off = document.createElement("canvas");
       off.width = Math.ceil(w); off.height = Math.ceil(h);
