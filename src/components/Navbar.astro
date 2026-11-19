@@ -13,7 +13,9 @@ const at = (hash: string) => (home ? hash : `/${hash}`);
     <a href={home ? "#" : "/"} class="logo">Zaid Hossain</a>
     {variant === "app" ? (
       <nav class="nav-links">
-        <a href="#download" class="nav-link">Download</a>
+        <a href="#notetaker" class="nav-link nav-extra">Notetaker</a>
+        <a href="#android" class="nav-link nav-extra">Android</a>
+        <a href="#download" class="nav-link nav-cta">Download</a>
       </nav>
     ) : (
       <nav class="nav-links">
@@ -130,6 +132,12 @@ const at = (hash: string) => (home ? hash : `/${hash}`);
 
     .navbar-inner {
       padding: 0 1.5rem;
+    }
+  }
+
+  @media (max-width: 599px) {
+    .nav-extra {
+      display: none;
     }
   }
 

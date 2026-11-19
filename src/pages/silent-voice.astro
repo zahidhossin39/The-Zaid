@@ -9,11 +9,29 @@ import SvMarquee from "../components/sv/SvMarquee.astro";
 import SvFeatures from "../components/sv/SvFeatures.astro";
 import SvSteps from "../components/sv/SvSteps.astro";
 import SvFinal from "../components/sv/SvFinal.astro";
+
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Silent Voice",
+  description:
+    "Free, open-source voice-to-text. Hold a key, speak, and the text is typed at your cursor. Records and transcribes meetings on your computer.",
+  applicationCategory: "ProductivityApplication",
+  operatingSystem: "Windows, macOS, Linux, Android",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  license: "https://opensource.org/licenses/MIT",
+  url: "https://zaidhossain.com/silent-voice",
+  downloadUrl: "https://github.com/zahidhossin39/Silent-Voice/releases",
+  author: { "@type": "Person", name: "Zaid Hossain", url: "https://zaidhossain.com" },
+};
 ---
 <Base
-  title="Silent Voice | Free voice-to-text that runs on your computer"
-  description="Hold a key, speak, let go. Silent Voice types your words wherever your cursor is. Free, open source, unlimited, and private: it all runs on your own computer."
+  title="Silent Voice | Free voice-to-text and meeting notes that run on your computer"
+  description="Hold a key, speak, let go: Silent Voice types your words wherever your cursor is, and its Notetaker writes down your calls. Free, open source and unlimited, for Windows, macOS, Linux and Android."
+  ogImage="/og-silent-voice.png"
+  ogImageAlt="Silent Voice: hold a key, speak, let go. Free voice-to-text that runs on your computer."
 >
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(ld)} />
   <a href="#main" class="skip-link">Skip to content</a>
   <div class="sv-progress" aria-hidden="true"><i></i></div>
   <Navbar variant="app" />

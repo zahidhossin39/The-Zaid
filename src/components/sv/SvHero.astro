@@ -11,12 +11,10 @@ const word = (w: string) => [...w];
   <div class="svh-grain" aria-hidden="true"></div>
 
   <div class="svh-inner">
-    <a class="svh-chip" href="#whats-new" data-hero-in>
+    <a class="svh-chip" href="#notetaker" data-hero-in>
       <span class="svh-chip-dot" aria-hidden="true"></span>
-      <span class="svh-chip-new">Latest</span>
-      <span data-sv-version>release</span>
-      <span class="svh-chip-sep" aria-hidden="true">·</span>
-      <time data-sv-date>on GitHub</time>
+      <span class="svh-chip-new">New</span>
+      <span>Notetaker writes down your calls</span>
       <span aria-hidden="true">→</span>
     </a>
 
@@ -37,8 +35,9 @@ const word = (w: string) => [...w];
     </h1>
 
     <p class="svh-lead" data-hero-in>
-      Hold a key, speak, let go. Your words are typed wherever your cursor is.
-      <span class="svh-lead-2">Free, unlimited, and it all runs on your own computer.</span>
+      Hold a key, speak, let go. Your words are typed wherever your cursor is,
+      and your meetings get written down too.
+      <span class="svh-lead-2">Free, unlimited, and it runs on your own computer. Now on Android as well.</span>
     </p>
 
     <div class="svh-cta" data-hero-in>
@@ -139,8 +138,6 @@ const word = (w: string) => [...w];
     font-size: 0.65rem;
   }
   .svh-chip-dot { display: none; }
-  .svh-chip-sep { opacity: 0.5; }
-  :global(html[data-sv-release="failed"]) .svh-chip-sep { display: none; }
 
   .svh-logo {
     width: clamp(64px, 8vw, 88px);
