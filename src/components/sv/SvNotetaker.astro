@@ -1,0 +1,1466 @@
+---
+// Notetaker, the v0.2.0 headline feature. The centrepiece is a working copy of
+// the real Notetaker window that plays one scripted call: Start recording, the
+// lines arrive live as "You" / "Others", Stop, the Others side is split into
+// Speaker 1 / Speaker 2, then Summarize writes the Overview. The base HTML is
+// the finished meeting (JS off, reduced motion). Around it: echo removal,
+// mixed languages, local or cloud, after-the-call tools, platform notes and a
+// compact "Transcribe a file" card. Facts: facts-app.md "Notetaker", facts-ui.md §3.
+
+type Who = "you" | "a" | "b";
+const LINES: { t: number; who: Who; text: string }[] = [
+  { t: 4, who: "you", text: "Quick note, I'm recording this so I don't have to take notes. Where are we with the launch?" },
+  { t: 19, who: "a", text: "The landing page is done. I'm only missing the final screenshots from the app." },
+  { t: 41, who: "you", text: "I can send those tomorrow morning. Are we still aiming for the 14th?" },
+  { t: 62, who: "b", text: "The 14th works for me, as long as the email goes out the day before." },
+  { t: 86, who: "a", text: "Then let's keep the 14th and send the email on the 13th." },
+  { t: 111, who: "you", text: "Good. I'll write the email and share a draft with you both on Friday." },
+  { t: 134, who: "b", text: "I'll schedule the launch day posts and check the price page one more time." },
+];
+const DURATION = 151;
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const finalName = (w: Who) => (w === "you" ? "You" : w === "a" ? "Speaker 1" : "Speaker 2");
+
+const NAV = [
+  { k: "Home", d: "M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" },
+  { k: "Progress", d: "M5 20v-6M12 20V8M19 20V4" },
+  { k: "Transcribe", d: "M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8zM14 3v5h5M9 13h6M9 17h4" },
+  { k: "Notetaker", d: "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" },
+  { k: "Model Store", d: "M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8" },
+  { k: "Writing styles", d: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4" },
+  { k: "Theme", d: "M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.5 0-1-.8-1.3-.8-2.3 0-.8.7-1.2 1.5-1.2H17a4 4 0 0 0 4-4c0-5-4-9-9-9z" },
+  { k: "Settings", d: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" },
+  { k: "History", d: "M12 7v5l3 2M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9z" },
+];
+
+// Echo picture: the mic hears your voice (orange) plus the call from your
+// speakers (slate). Where only the speakers are heard, the gate mutes it;
+// where you talk over them, the speakers' sound is subtracted (about 8 dB).
+const BARS = 72;
+const hash = (i: number, s: number) => Math.abs((Math.sin(i * 12.9898 + s * 78.233) * 43758.5453) % 1);
+const inSeg = (i: number, segs: [number, number][]) => segs.some(([a, b]) => i >= a && i <= b);
+const voiceSegs: [number, number][] = [[7, 21], [33, 47], [57, 66]];
+const echoSegs: [number, number][] = [[0, 9], [18, 35], [44, 59], [64, 71]];
+const echoBars = Array.from({ length: BARS }, (_, i) => {
+  const voice = inSeg(i, voiceSegs) ? 0.32 + 0.68 * hash(i, 1) : 0;
+  const echo = inSeg(i, echoSegs) ? 0.22 + 0.42 * hash(i, 2) : 0.03 + 0.04 * hash(i, 3);
+  return { x: i * 10 + 2, voice, echo, gate: voice === 0 };
+});
+---
+
+<section class="svn" id="notetaker" aria-labelledby="svn-title">
+  <div class="svn-inner">
+    <header class="svn-head">
+      <div>
+        <p class="sv-eyebrow">New in 0.2.0 · Notetaker</p>
+        <h2 class="h2" id="svn-title">Your meetings, <em>written down.</em></h2>
+      </div>
+      <p class="svn-lead">
+        Notetaker records your side and the other side of any call. The words show up while people talk,
+        it tells the voices apart, and when you stop, it writes the summary. All on your computer,
+        unless you choose a cloud provider.
+      </p>
+    </header>
+
+    <!-- story chapters: each one plays the demo from that point -->
+    <div class="svn-controls">
+      <ol class="svn-chapters" aria-label="What the demo shows">
+        <li>
+          <button type="button" class="svn-ch" data-ch="1">
+            <span class="svn-ch-n" aria-hidden="true">01</span>
+            <span class="svn-ch-t">Both sides, live</span>
+            <span class="svn-ch-d">Your mic is "You", the computer's sound is "Others". Lines appear as people talk.</span>
+            <i class="svn-ch-bar" aria-hidden="true"></i>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="svn-ch" data-ch="2">
+            <span class="svn-ch-n" aria-hidden="true">02</span>
+            <span class="svn-ch-t">Voices told apart</span>
+            <span class="svn-ch-d">After you stop, "Others" becomes Speaker 1, Speaker 2. About 15 s per minute of meeting.</span>
+            <i class="svn-ch-bar" aria-hidden="true"></i>
+          </button>
+        </li>
+        <li>
+          <button type="button" class="svn-ch" data-ch="3">
+            <span class="svn-ch-n" aria-hidden="true">03</span>
+            <span class="svn-ch-t">The summary, written</span>
+            <span class="svn-ch-d">Key points, decisions and action items, from a model on your computer or your own cloud key.</span>
+            <i class="svn-ch-bar" aria-hidden="true"></i>
+          </button>
+        </li>
+      </ol>
+    </div>
+
+    <!-- ===================== the Notetaker window ===================== -->
+    <div class="svn-stage">
+      <div class="nt" data-phase="post" data-split="1" role="group" aria-label="Notetaker demo with a sample call" tabindex="-1">
+        <div class="nt-title" aria-hidden="true">
+          <span class="nt-lights"><i></i><i></i><i></i></span>
+          <span class="nt-wtitle">Silent Voice</span>
+          <span class="nt-winctl">
+            <svg viewBox="0 0 10 10"><path d="M1 5h8" /></svg>
+            <svg viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" rx="1" /></svg>
+            <svg viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" /></svg>
+          </span>
+        </div>
+
+        <div class="nt-body">
+          <nav class="nt-side" aria-hidden="true">
+            <div class="nt-brand">
+              <svg viewBox="0 0 1024 1024" class="nt-logo">
+                <rect width="1024" height="1024" rx="224" fill="#0d0f14" />
+                <rect x="232" y="432" width="80" height="160" rx="40" fill="#f97316" />
+                <rect x="360" y="352" width="80" height="320" rx="40" fill="#f97316" />
+                <rect x="488" y="252" width="80" height="520" rx="40" fill="#ffffff" />
+                <rect x="616" y="352" width="80" height="320" rx="40" fill="#f97316" />
+                <rect x="744" y="432" width="80" height="160" rx="40" fill="#f97316" />
+              </svg>
+              <span class="nt-brand-t"><b>Silent Voice</b><small>local-first dictation</small></span>
+            </div>
+            <ul class="nt-nav">
+              {NAV.map((n) => (
+                <li class:list={["nt-nav-i", { "is-on": n.k === "Notetaker" }]}>
+                  <svg viewBox="0 0 24 24"><path d={n.d} /></svg>
+                  <span class="nt-nav-t">{n.k}</span>
+                  {n.k === "Notetaker" && <span class="nt-nav-dot"></span>}
+                </li>
+              ))}
+            </ul>
+            <div class="nt-side-foot"><span class="nt-theme"><i></i><i class="on"></i><i></i></span><span>v0.2.0</span></div>
+          </nav>
+
+          <div class="nt-main">
+            <div class="nt-head">
+              <div class="nt-head-t">
+                <p class="nt-h1">Notetaker</p>
+                <p class="nt-sub">Record a call and get a live transcript of who said what. Audio and text stay on this PC.</p>
+              </div>
+              <div class="nt-actions">
+                <span class="nt-gear" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>
+                </span>
+                <button type="button" class="nt-start">
+                  <span class="nt-start-ic" aria-hidden="true"></span>Start recording
+                </button>
+                <span class="nt-recpill">
+                  <span class="nt-ping" aria-hidden="true"></span>
+                  <span class="nt-rec-t">Recording <span class="nt-rec-time">{clock(DURATION)}</span></span>
+                  <button type="button" class="nt-stop"><span class="nt-stop-l">■ Stop</span><span class="nt-stop-f">Finishing up…</span></button>
+                </span>
+              </div>
+            </div>
+
+            <div class="nt-cols">
+              <!-- left: setup card + meeting list -->
+              <div class="nt-list" aria-hidden="true">
+                <div class="nt-setup">
+                  <dl>
+                    <div><dt>You</dt><dd>Default microphone</dd></div>
+                    <div><dt>Others</dt><dd>What plays on your speakers</dd></div>
+                  </dl>
+                  <p class="nt-setup-hint">Best with headphones. On speakers your mic also hears the others; Silent Voice drops those repeats, but headphones keep "You" cleanest.</p>
+                  <p class="nt-consent">Let people know you're recording. In many places everyone on a call has to agree to it. <b>Got it</b></p>
+                </div>
+                <div class="nt-search">
+                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
+                  Search meetings
+                </div>
+                <p class="nt-day">Today</p>
+                <div class="nt-row nt-row--now">
+                  <span class="nt-tile"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" /></svg><i></i></span>
+                  <span class="nt-row-t"><b>Meeting at 3:05 PM</b><small class="nt-row-done">3:05 PM · {clock(DURATION)}</small><small class="nt-row-live">Recording now</small></span>
+                </div>
+                <div class="nt-row">
+                  <span class="nt-tile"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" /></svg></span>
+                  <span class="nt-row-t"><b>Design review</b><small>11:30 AM · 38:04</small></span>
+                </div>
+                <p class="nt-day">Yesterday</p>
+                <div class="nt-row">
+                  <span class="nt-tile"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" /></svg></span>
+                  <span class="nt-row-t"><b>Weekly sync</b><small>10:02 AM · 42:17</small></span>
+                </div>
+                <div class="nt-row">
+                  <span class="nt-tile"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" /></svg></span>
+                  <span class="nt-row-t"><b>Call with the printer</b><small>4:15 PM · 12:50</small></span>
+                </div>
+              </div>
+
+              <!-- right: the open meeting -->
+              <div class="nt-panel">
+                <p class="nt-empty">Start recording when a call begins, and stop when it ends.</p>
+
+                <div class="nt-ph">
+                  <div class="nt-ph-t">
+                    <p class="nt-mtitle">Meeting at 3:05 PM</p>
+                    <p class="nt-details nt-details--live">Today · 3:05 PM · Recording now</p>
+                    <p class="nt-details nt-details--post">
+                      <span>Today · 3:05 PM · {clock(DURATION)}</span>
+                      <span class="nt-sep" aria-hidden="true">·</span>
+                      <label class="nt-people-l">People besides you
+                        <select class="nt-people" title="How many voices to tell apart on the Others side. Auto lets the model guess.">
+                          <option value="auto" selected>Auto</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                        </select>
+                      </label>
+                      <span class="nt-voices" hidden> · telling voices apart…</span>
+                      <span class="nt-sep" aria-hidden="true">·</span>
+                      <span class="nt-again">Transcribe again</span>
+                    </p>
+                  </div>
+                  <div class="nt-tools" aria-hidden="true">
+                    <span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" /></svg><em>Copy</em></span>
+                    <span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg><em>Save…</em></span>
+                    <span><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg><em>Delete</em></span>
+                  </div>
+                </div>
+
+                <div class="nt-scroll" data-lenis-prevent>
+                  <div class="nt-ov" data-state="done">
+                    <p class="nt-ov-label">Overview</p>
+                    <div class="nt-ov-card">
+                      <div class="nt-ov-empty">
+                        <p class="ov-h" data-for="live">The transcript fills in as people talk.</p>
+                        <p class="ov-s" data-for="live">Summarize it when the meeting ends.</p>
+                        <p class="ov-h" data-for="ready">Get the main points, decisions and action items.</p>
+                        <p class="ov-s" data-for="ready">Written with the summary model from Notetaker settings.</p>
+                        <p class="ov-h" data-for="busy">Writing the summary…</p>
+                        <p class="ov-s" data-for="busy">A long meeting can take a few minutes, longer with a model on this PC.</p>
+                      </div>
+                      <div class="nt-ov-notes">
+                        <div class="ov-sec">
+                          <p class="ov-sh">Summary</p>
+                          <p>A short check on the launch. The date stays on the 14th, with the launch email going out the day before.</p>
+                        </div>
+                        <div class="ov-sec">
+                          <p class="ov-sh">Key points</p>
+                          <ul><li>The landing page is done, it only needs the final app screenshots.</li><li>The launch email goes out one day before launch.</li></ul>
+                        </div>
+                        <div class="ov-sec">
+                          <p class="ov-sh">Decisions</p>
+                          <ul><li>Launch on the 14th, email on the 13th.</li></ul>
+                        </div>
+                        <div class="ov-sec">
+                          <p class="ov-sh">Action items</p>
+                          <ul class="ov-tasks">
+                            <li><span class="ov-tag ov-tag--you">You</span>Send the app screenshots tomorrow morning.</li>
+                            <li><span class="ov-tag ov-tag--you">You</span>Share the email draft on Friday.</li>
+                            <li><span class="ov-tag">Others</span>Schedule the launch day posts and check the price page.</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <div class="nt-ov-ctrl">
+                        <button type="button" class="nt-sum">
+                          <span class="nt-sum-ic" aria-hidden="true">
+                            <svg class="i-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z" /></svg>
+                            <svg class="i-redo" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6" /></svg>
+                            <span class="i-spin"></span>
+                          </span>
+                          <span class="nt-sum-l" data-for="ready">Summarize</span>
+                          <span class="nt-sum-l" data-for="busy">Writing</span>
+                          <span class="nt-sum-l" data-for="done">Redo</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <ol class="nt-lines" aria-label="Transcript">
+                    {LINES.map((l, i) => (
+                      <li class="ln" data-i={i} data-who={l.who} data-t={l.t}>
+                        <button type="button" class="ln-time" aria-label={`Play from ${clock(l.t)}`} title="Play from here">
+                          <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" /></svg>{clock(l.t)}
+                        </button>
+                        <div class="ln-body">
+                          <div class="ln-who"><span class="ln-name"><span class="nm">{finalName(l.who)}</span></span></div>
+                          <p class="ln-text">{l.text}</p>
+                        </div>
+                      </li>
+                    ))}
+                    <li class="nt-listen">
+                      <span></span>
+                      <span class="nt-listen-b"><span class="nt-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="nt-listen-t">Listening</span></span>
+                    </li>
+                  </ol>
+                </div>
+
+                <div class="nt-player">
+                  <button type="button" class="nt-play" aria-label="Play">
+                    <svg class="i-play" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 2v8l6.5-4z" /></svg>
+                    <svg class="i-pause" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 2h2.2v8H3zM6.8 2H9v8H6.8z" /></svg>
+                  </button>
+                  <span class="nt-pos">0:00</span>
+                  <input class="nt-range" type="range" min="0" max={DURATION} step="1" value="0" aria-label="Seek" />
+                  <span class="nt-dur">{clock(DURATION)}</span>
+                  <select class="nt-rate" aria-label="Playback speed">
+                    <option value="1" selected>1×</option>
+                    <option value="1.25">1.25×</option>
+                    <option value="1.5">1.5×</option>
+                    <option value="2">2×</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="svn-under">
+        <p class="svn-hint">Try it: set <b>People besides you</b> to 1, or click a time to play from there.</p>
+        <button type="button" class="svn-replay">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7M4 5v5h5" /></svg>
+          Replay
+        </button>
+      </div>
+      <p class="sr-only" aria-live="polite" data-svn-live></p>
+    </div>
+
+    <!-- ===================== around the mock ===================== -->
+    <div class="svn-grid">
+      <article class="svn-card svn-card--echo">
+        <div class="svn-card-copy">
+          <h3>No headphones? The echo comes out.</h3>
+          <p>
+            On laptop speakers your mic also hears the call. Where it only hears the speakers, that part is muted.
+            Where you talk over them, their sound is taken out of your side. On a real call that meant
+            about 8 dB less echo, with your voice kept.
+          </p>
+        </div>
+        <div class="svn-echo" data-echo="on">
+          <div class="svn-echo-top">
+            <p class="svn-echo-k"><i class="v"></i>Your voice <i class="e"></i>Echo from your speakers</p>
+            <button type="button" class="svn-echo-tg" aria-pressed="true">
+              <span class="svn-sw" aria-hidden="true"><i></i></span>Echo removal
+            </button>
+          </div>
+          <svg class="svn-wave" viewBox="0 0 720 120" preserveAspectRatio="none" aria-hidden="true">
+            <line x1="0" y1="60" x2="720" y2="60" />
+            {echoBars.map((b) => (
+              <rect class="eg" x={b.x} y={60 - b.echo * 50} width="6" height={Math.max(2, b.echo * 100)} rx="3" />
+            ))}
+            {echoBars.map((b, i) => (
+              <rect class:list={["eb", b.gate ? "eb--gate" : "eb--sub"]} x={b.x} y={60 - b.echo * 50} width="6" height={Math.max(2, b.echo * 100)} rx="3" style={`--i:${i}`} />
+            ))}
+            {echoBars.filter((b) => b.voice > 0).map((b) => (
+              <rect class="vb" x={b.x} y={60 - b.voice * 50} width="6" height={b.voice * 100} rx="3" />
+            ))}
+          </svg>
+          <div class="svn-echo-read">
+            <span><b class="svn-db">about 8 dB less</b> echo</span>
+            <span><b>voice kept</b> on a real call</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="svn-card svn-card--lang">
+        <div class="svn-card-copy">
+          <h3>Two languages, one meeting.</h3>
+          <p>Tell it every language people speak, for example Bangla and English. A piece that comes back in the wrong script is done again in the right language.</p>
+        </div>
+        <div class="svn-lang" aria-hidden="true">
+          <div class="svn-lang-set">
+            <span class="svn-lang-k">Language spoken</span>
+            <span class="svn-lang-sel">Bangla <svg viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3" /></svg></span>
+            <span class="svn-lang-k">Also spoken:</span>
+            <span class="svn-chip">English ×</span>
+            <span class="svn-chip svn-chip--add">+ Add</span>
+          </div>
+          <div class="svn-mini">
+            <div class="svn-mini-ln"><span class="t">12:40</span><div><b>Speaker 1</b><p lang="bn">ঠিক আছে, তাহলে লঞ্চ ১৪ তারিখেই হবে।</p></div></div>
+            <div class="svn-mini-ln"><span class="t">12:46</span><div><b class="you">You</b><p>Perfect. I'll send the email draft on Friday.</p></div></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="svn-card svn-card--where">
+        <div class="svn-card-copy">
+          <h3>On your computer by default.</h3>
+          <p>Notetaker transcribes on your computer and works offline. If you add your own cloud provider you can use it instead, and then the audio is sent to that provider.</p>
+        </div>
+        <div class="svn-where">
+          <div class="svn-where-opts" role="group" aria-label="Where the meeting is transcribed">
+            <button type="button" class="svn-opt" aria-pressed="true" data-where="local">
+              <b>On this PC · offline</b><small>Your voice model. Nothing leaves this PC.</small>
+            </button>
+            <button type="button" class="svn-opt" aria-pressed="false" data-where="cloud">
+              <b>Cloud</b><small>Your own provider and key.</small>
+            </button>
+          </div>
+          <p class="svn-where-k">The Notetaker page then says:</p>
+          <p class="svn-where-out" aria-live="polite">
+            <span data-where-text="local">Audio and text stay on this PC.</span>
+            <span data-where-text="cloud" hidden>Audio is sent to your provider to transcribe; recordings and text stay on this PC.</span>
+          </p>
+        </div>
+      </article>
+
+      <article class="svn-card svn-card--tools">
+        <div class="svn-card-copy">
+          <h3>Find it, play it back, keep it.</h3>
+          <p>Every meeting is saved with its audio, so you can come back to it later.</p>
+        </div>
+        <ul class="svn-tools">
+          <li>
+            <span class="svn-tool-ui svn-search" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>price page</span>
+            <b>Search</b><span>Across meeting names, Overviews and every word said.</span>
+          </li>
+          <li>
+            <span class="svn-tool-ui svn-speeds" aria-hidden="true"><i>1×</i><i>1.25×</i><i class="on">1.5×</i><i>2×</i></span>
+            <b>Play back at 1× to 2×</b><span>Click any line's time to play from there.</span>
+          </li>
+          <li>
+            <span class="svn-tool-ui svn-files" aria-hidden="true"><i>.txt</i><i>.md</i><i>.srt</i></span>
+            <b>Save or copy</b><span>As plain text, Markdown with times, or subtitles.</span>
+          </li>
+          <li>
+            <span class="svn-tool-ui svn-again" aria-hidden="true">Transcribe again</span>
+            <b>Transcribe again</b><span>Redo a meeting from its saved audio with a newer model. Cancel puts the old text back.</span>
+          </li>
+        </ul>
+      </article>
+
+      <aside class="svn-card svn-card--os" aria-labelledby="svn-os-title">
+        <h3 id="svn-os-title" class="svn-os-h">Where it records the other side</h3>
+        <ul class="svn-os">
+          <li><b>Windows</b><span>Records both sides.</span></li>
+          <li><b>macOS 13 or later</b><span>Records both sides once you allow Screen &amp; System Audio Recording. On macOS 12 it records your side only.</span></li>
+          <li><b>Linux</b><span>Records both sides with PulseAudio or PipeWire.</span></li>
+        </ul>
+        <p class="svn-os-note">If it can't record the computer's sound, it tells you before you start and keeps your side.</p>
+        <p class="svn-consent">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.5" /></svg>
+          <span><b>Let people know you're recording.</b> In many places everyone on a call has to agree to it. The app reminds you the first time.</span>
+        </p>
+      </aside>
+    </div>
+
+    <!-- companion: Transcribe a file -->
+    <article class="svn-file">
+      <div class="svn-file-copy">
+        <p class="svn-file-k">Also new: Transcribe</p>
+        <h3>Got a recording already? Drop it in.</h3>
+        <p>
+          Lectures, calls, voice memos, videos. Drop an audio or video file and get a transcript with times,
+          ready to save as .txt, .md or .srt. Files are always transcribed on your computer.
+        </p>
+        <p class="svn-file-fmt">mp3 · m4a · aac · mp4 · mov · wav · flac · ogg · mkv</p>
+      </div>
+      <div class="svn-file-ui" aria-hidden="true">
+        <div class="svn-file-row">
+          <span class="svn-file-ic"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></svg></span>
+          <span class="svn-file-n"><b>interview.m4a</b><small>24:16 · on this PC</small></span>
+          <span class="svn-file-done">Done</span>
+        </div>
+        <span class="svn-file-bar"><i></i></span>
+        <div class="svn-file-lines">
+          <p><span>0:00</span>Thanks for making the time. Let's start with how the shop began.</p>
+          <p><span>0:07</span>It started as a stall at the Friday market, about six years ago.</p>
+          <p><span>0:15</span>And when did you decide to open a real shop?</p>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<style>
+  .svn { position: relative; padding: clamp(6rem, 12vw, 10rem) 1.25rem; }
+  .svn::before {
+    content: "";
+    position: absolute;
+    inset: 12% 0 auto;
+    height: 50rem;
+    background: radial-gradient(50% 40% at 50% 30%, rgba(249, 115, 22, 0.1), transparent 70%);
+    pointer-events: none;
+  }
+  .svn-inner { position: relative; max-width: 78rem; margin: 0 auto; }
+
+  /* ---------- head ---------- */
+  .svn-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(1.5rem, 5vw, 5rem);
+    align-items: end;
+    margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  }
+  .svn-head .h2 { margin: 0.9rem 0 0; font-size: clamp(2.7rem, 6.4vw, 5rem); line-height: 0.98; letter-spacing: -0.03em; }
+  .svn-head em { color: var(--sv-orange); }
+  .svn-lead { margin: 0; max-width: 31rem; color: var(--color-muted); font-size: 1.08rem; }
+
+  /* ---------- chapters ---------- */
+  .svn-controls { display: none; margin-bottom: 1.25rem; }
+  .svn.is-ready .svn-controls { display: block; }
+  .svn-chapters { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+  .svn-ch {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.75rem;
+    align-items: baseline;
+    width: 100%;
+    height: 100%;
+    padding: 1rem 1.1rem 1.15rem;
+    border: 1px solid var(--sv-line);
+    border-radius: 16px;
+    background: rgba(17, 17, 20, 0.6);
+    color: var(--color-muted);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+  }
+  .svn-ch:hover { border-color: rgba(244, 242, 237, 0.2); color: var(--color-text); }
+  .svn-ch:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 3px; }
+  .svn-ch[aria-current="step"] { border-color: rgba(249, 115, 22, 0.45); background: rgba(249, 115, 22, 0.06); color: var(--color-text); }
+  .svn-ch-n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--sv-orange); }
+  .svn-ch-t { font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: 1.02rem; letter-spacing: -0.01em; color: var(--color-text); }
+  .svn-ch-d { grid-column: 2; margin-top: 0.3rem; font-size: 0.86rem; line-height: 1.45; }
+  .svn-ch-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: linear-gradient(90deg, var(--sv-orange), #fdba74); transform-origin: left; transform: scaleX(var(--p, 0)); transition: transform var(--dur, 0.25s) linear; }
+
+  /* ================= the window (real app palette) ================= */
+  .svn-stage { position: relative; }
+  .nt {
+    --a-bg: #0b0e14;
+    --a-s1: #131722;
+    --a-s2: #1b2030;
+    --a-bd: #262c3d;
+    --a-tx: #e6e9f0;
+    --a-mu: #8b93a7;
+    --a-ac: #f97316;
+    --a-on: #1a1200;
+    --a-bad: #ef4444;
+    position: relative;
+    border-radius: 16px;
+    background: var(--a-bg);
+    border: 1px solid var(--a-bd);
+    box-shadow: 0 50px 120px -40px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 140px -50px rgba(249, 115, 22, 0.4);
+    overflow: hidden;
+    color: var(--a-tx);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    transition: box-shadow 0.6s ease;
+  }
+  .nt:focus { outline: none; }
+  .nt[data-phase="rec"] { box-shadow: 0 50px 120px -40px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(239, 68, 68, 0.35), 0 0 140px -40px rgba(239, 68, 68, 0.35); }
+  .nt :focus-visible { outline: 2px solid var(--a-ac); outline-offset: 2px; }
+  .nt p { margin: 0; }
+  .nt button, .nt select, .nt input { font: inherit; color: inherit; }
+
+  .nt-title { position: relative; display: flex; align-items: center; height: 40px; background: var(--a-s1); border-bottom: 1px solid var(--a-bd); padding: 0 0 0 14px; }
+  .nt-lights { display: none; gap: 8px; }
+  .nt-lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+  .nt-lights i:nth-child(2) { background: #febc2e; }
+  .nt-lights i:nth-child(3) { background: #28c840; }
+  .nt-wtitle { font-size: 12px; color: var(--a-mu); }
+  .nt-winctl { margin-left: auto; display: flex; height: 100%; }
+  .nt-winctl svg { width: 48px; height: 100%; padding: 15px 19px; fill: none; stroke: var(--a-mu); stroke-width: 1; }
+  :global(html[data-sv-os="mac"]) .nt-lights { display: flex; }
+  :global(html[data-sv-os="mac"]) .nt-winctl { display: none; }
+  :global(html[data-sv-os="mac"]) .nt-wtitle { position: absolute; left: 50%; transform: translateX(-50%); }
+  :global(html[data-sv-os="mac"]) .nt-title { height: 34px; }
+
+  .nt-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); }
+
+  /* sidebar */
+  .nt-side { display: flex; flex-direction: column; background: var(--a-s1); border-right: 1px solid var(--a-bd); }
+  .nt-brand { display: flex; align-items: center; gap: 10px; padding: 18px 18px 16px; }
+  .nt-logo { width: 32px; height: 32px; border-radius: 8px; flex: none; }
+  .nt-brand-t { display: flex; flex-direction: column; line-height: 1.2; }
+  .nt-brand-t b { font-size: 14px; font-weight: 600; }
+  .nt-brand-t small { font-size: 11px; color: var(--a-mu); }
+  .nt-nav { list-style: none; margin: 0; padding: 0 10px; display: grid; align-content: start; gap: 2px; flex: 1; }
+  .nt-nav-i { display: flex; align-items: center; gap: 12px; padding: 7px 12px; border-radius: 8px; color: var(--a-mu); font-size: 13.5px; white-space: nowrap; }
+  .nt-nav-i svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nt-nav-i.is-on { background: var(--a-ac); color: var(--a-on); font-weight: 500; }
+  .nt-nav-dot { display: none; margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--a-bad); box-shadow: 0 0 0 2px rgba(26, 18, 0, 0.35); animation: nt-pulse 1.4s ease-in-out infinite; }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-nav-dot { display: block; }
+  .nt-side-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding: 12px 16px; border-top: 1px solid var(--a-bd); font-size: 11px; color: var(--a-mu); }
+  .nt-theme { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--a-s2); }
+  .nt-theme i { width: 18px; height: 14px; border-radius: 999px; }
+  .nt-theme i.on { background: var(--a-bd); }
+
+  /* main */
+  .nt-main { min-width: 0; padding: 24px 26px 26px; }
+  .nt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  .nt-h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+  .nt-sub { margin-top: 4px !important; font-size: 14px; color: var(--a-mu); max-width: 36rem; }
+  .nt-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+  .nt-gear { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--a-bd); border-radius: 12px; color: var(--a-mu); }
+  .nt-gear svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nt-start {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 40px; padding: 0 16px;
+    border: 0; border-radius: 12px;
+    background: var(--a-ac); color: var(--a-on) !important;
+    font-size: 14px !important; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.3s ease;
+  }
+  .nt-start:hover { background: #ea580c; }
+  .nt-start-ic { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; display: grid; place-items: center; }
+  .nt-start-ic::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .nt-recpill {
+    display: none; align-items: center; gap: 10px;
+    height: 40px; padding: 0 4px 0 12px;
+    border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 12px;
+    background: rgba(239, 68, 68, 0.1);
+  }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-start { display: none; }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-recpill { display: inline-flex; }
+  .nt-ping { position: relative; width: 10px; height: 10px; border-radius: 50%; background: var(--a-bad); }
+  .nt-ping::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--a-bad); animation: nt-ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+  .nt-rec-t { color: #f87171; font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .nt-rec-time { display: inline-block; min-width: 2.6em; }
+  .nt-stop { height: 30px; padding: 0 12px; border: 0; border-radius: 9px; background: var(--a-bad); color: #fff !important; font-size: 13px !important; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .nt-stop-f { display: none; }
+  .nt[data-phase="finishing"] .nt-stop { background: rgba(239, 68, 68, 0.25); cursor: default; }
+  .nt[data-phase="finishing"] .nt-stop-l { display: none; }
+  .nt[data-phase="finishing"] .nt-stop-f { display: inline; }
+  .nt[data-phase="finishing"] .nt-ping::after { animation: none; }
+  :is(.nt-start, .nt-sum, .nt-play).is-press { transform: scale(0.94); box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.25); }
+  .nt-stop.is-press { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.3); }
+
+  .nt-cols { display: grid; grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.35fr); gap: 16px; }
+
+  /* left column */
+  .nt-list { min-width: 0; }
+  .nt-setup { margin-bottom: 12px; padding: 14px 18px; border: 1px solid var(--a-bd); border-radius: 16px; background: var(--a-s1); }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-setup { display: none; }
+  .nt-setup dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; }
+  .nt-setup dt { font-size: 10px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--a-mu); }
+  .nt-setup dd { margin: 2px 0 0; font-size: 13px; }
+  .nt-setup-hint { margin-top: 10px !important; font-size: 12px; color: var(--a-mu); }
+  .nt-consent { display: none; margin-top: 10px !important; padding: 8px 10px; border-radius: 10px; background: rgba(249, 115, 22, 0.08); font-size: 12px; color: var(--a-tx); }
+  .nt-consent b { color: var(--a-ac); margin-left: 4px; }
+  .nt[data-phase="idle"] .nt-consent { display: block; }
+  .nt-search { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid var(--a-bd); border-radius: 10px; color: var(--a-mu); font-size: 13px; }
+  .nt-search svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .nt-day { margin: 14px 0 6px 4px !important; font-size: 10px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--a-mu); }
+  .nt-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; }
+  .nt-row--now { background: var(--a-s2); }
+  .nt[data-phase="idle"] .nt-row--now { display: none; }
+  .nt-tile { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--a-s2); color: var(--a-mu); flex: none; }
+  .nt-row--now .nt-tile { background: var(--a-bd); color: var(--a-tx); }
+  .nt-tile svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .nt-tile i { display: none; width: 8px; height: 8px; border-radius: 50%; background: var(--a-bad); animation: nt-pulse 1.4s ease-in-out infinite; }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row--now .nt-tile { background: rgba(239, 68, 68, 0.14); }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row--now .nt-tile svg { display: none; }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row--now .nt-tile i { display: block; }
+  .nt-row-t { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+  .nt-row-t b { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nt-row-t small { font-size: 11.5px; color: var(--a-mu); }
+  .nt-row-live { display: none; color: #f87171 !important; }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row-live { display: inline; }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row-done { display: none; }
+
+  /* right column: meeting panel */
+  .nt-panel { position: relative; display: flex; flex-direction: column; min-width: 0; height: 33rem; border: 1px solid var(--a-bd); border-radius: 16px; background: var(--a-s1); overflow: hidden; }
+  .nt-empty { display: none; margin: auto !important; max-width: 18rem; text-align: center; font-size: 13px; color: var(--a-mu); }
+  .nt[data-phase="idle"] .nt-empty { display: block; }
+  .nt[data-phase="idle"] :is(.nt-ph, .nt-scroll, .nt-player) { display: none; }
+
+  .nt-ph { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 22px; border-bottom: 1px solid var(--a-bd); }
+  .nt-ph-t { min-width: 0; }
+  .nt-mtitle { font-size: 17px; font-weight: 600; letter-spacing: -0.005em; }
+  .nt-details { margin-top: 3px !important; font-size: 12px; color: var(--a-mu); }
+  .nt-details--post { display: none; flex-wrap: wrap; align-items: center; column-gap: 6px; row-gap: 2px; }
+  .nt[data-phase="post"] .nt-details--live { display: none; }
+  .nt[data-phase="post"] .nt-details--post { display: flex; }
+  .nt-people-l { display: inline-flex; align-items: center; gap: 6px; }
+  .nt-people {
+    height: 24px; padding: 0 22px 0 8px;
+    border: 1px solid var(--a-bd); border-radius: 6px;
+    background: var(--a-s2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%238b93a7' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 6px center / 10px;
+    color: var(--a-tx) !important; font-size: 12px !important;
+    appearance: none; -webkit-appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.3s ease;
+  }
+  .nt-people:hover:not(:disabled) { border-color: var(--a-ac); }
+  .nt-people:disabled { opacity: 0.6; cursor: default; }
+  .nt-people option { background: var(--a-s1); }
+  .nt-voices { color: var(--a-ac); }
+  .nt-again { color: var(--a-ac); }
+  .nt-tools { display: flex; gap: 6px; flex: none; }
+  .nt-tools span { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 9px; border: 1px solid var(--a-bd); border-radius: 8px; font-size: 12px; color: var(--a-mu); }
+  .nt-tools svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nt-tools em { display: none; }
+  .nt-tools span { width: 30px; justify-content: center; padding: 0; }
+  .nt[data-phase="rec"] .nt-tools, .nt[data-phase="finishing"] .nt-tools { visibility: hidden; }
+
+  .nt-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 22px 20px; scrollbar-width: thin; scrollbar-color: var(--a-bd) transparent; overscroll-behavior: contain; }
+
+  /* overview */
+  .nt-ov { margin-bottom: 22px; }
+  .nt-ov-label { font-size: 12px; font-weight: 600; color: var(--a-mu); }
+  .nt-ov-card { margin-top: 8px; padding: 14px 16px; border: 1px solid var(--a-bd); border-radius: 12px; background: rgba(27, 32, 48, 0.4); }
+  .nt-ov[data-state="done"] .nt-ov-card { padding: 0; border-color: transparent; background: none; }
+  .ov-h { font-size: 14px; }
+  .ov-s { margin-top: 3px !important; font-size: 12px; color: var(--a-mu); }
+  [data-for] { display: none; }
+  .nt-ov[data-state="live"] [data-for="live"],
+  .nt-ov[data-state="ready"] [data-for="ready"],
+  .nt-ov[data-state="busy"] [data-for="busy"],
+  .nt-ov[data-state="done"] [data-for="done"] { display: block; }
+  .nt-ov[data-state="done"] .nt-ov-empty { display: none; }
+  .nt-ov-notes { display: none; max-width: 72ch; }
+  .nt-ov[data-state="done"] .nt-ov-notes { display: grid; gap: 12px; }
+  .ov-sh { font-size: 13.5px; font-weight: 600; margin-bottom: 3px !important; }
+  .ov-sec p:not(.ov-sh), .ov-sec li { font-size: 14px; line-height: 1.55; color: var(--a-tx); }
+  .ov-sec ul { margin: 0; padding-left: 18px; list-style: disc; }
+  .ov-sec li::marker { color: var(--a-mu); }
+  .ov-sec .ov-tasks { list-style: none; padding-left: 0 !important; display: grid; gap: 4px; }
+  .ov-tag { display: inline-block; margin-right: 8px; padding: 0 6px; border-radius: 4px; background: var(--a-s2); color: var(--a-mu); font-size: 11px; font-weight: 600; line-height: 18px; vertical-align: 1px; }
+  .ov-tag--you { background: rgba(249, 115, 22, 0.14); color: var(--a-ac); }
+  .nt-ov.is-reveal .ov-sec { animation: nt-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .nt-ov.is-reveal .ov-sec:nth-child(2) { animation-delay: 0.18s; }
+  .nt-ov.is-reveal .ov-sec:nth-child(3) { animation-delay: 0.36s; }
+  .nt-ov.is-reveal .ov-sec:nth-child(4) { animation-delay: 0.54s; }
+  .nt-ov-ctrl { display: none; margin-top: 12px; }
+  .nt-ov:is([data-state="ready"], [data-state="busy"], [data-state="done"]) .nt-ov-ctrl { display: block; }
+  .nt-ov[data-state="done"] .nt-ov-ctrl { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--a-bd); }
+  .nt-sum {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 40px; padding: 0 16px;
+    border: 0; border-radius: 10px;
+    background: var(--a-ac); color: var(--a-on) !important;
+    font-size: 14px !important; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.3s ease;
+  }
+  .nt-sum:hover { background: #ea580c; }
+  .nt-ov[data-state="busy"] .nt-sum { cursor: progress; opacity: 0.85; }
+  .nt-ov[data-state="done"] .nt-sum { height: 32px; padding: 0 12px; border: 1px solid var(--a-bd); background: none; color: var(--a-tx) !important; font-size: 13px !important; font-weight: 500; }
+  .nt-ov[data-state="done"] .nt-sum:hover { border-color: var(--a-ac); }
+  .nt-sum-ic { display: grid; width: 16px; height: 16px; }
+  .nt-sum-ic > * { grid-area: 1 / 1; display: none; }
+  .nt-sum-ic svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .nt-sum-ic .i-bolt { fill: currentColor; stroke: none; }
+  .i-spin { width: 14px !important; height: 14px; margin: 1px; border-radius: 50%; border: 2px solid currentColor; border-top-color: transparent; animation: nt-spin 0.8s linear infinite; }
+  .nt-ov[data-state="ready"] .i-bolt, .nt-ov[data-state="busy"] .i-spin, .nt-ov[data-state="done"] .i-redo { display: block; }
+  .nt-ov[data-state="busy"] .nt-ov-empty .ov-h { background: linear-gradient(90deg, var(--a-tx) 35%, var(--a-ac) 50%, var(--a-tx) 65%) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: nt-scan 1.6s linear infinite; }
+
+  /* transcript */
+  .nt-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+  .ln { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 12px; }
+  .ln-time {
+    position: relative;
+    display: flex; align-items: center; justify-content: flex-end; gap: 4px;
+    height: fit-content;
+    padding: 2px 0 0; border: 0; border-radius: 4px;
+    background: none;
+    color: var(--a-mu) !important; font-size: 11px !important; font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .ln-time svg { width: 10px; height: 10px; fill: currentColor; flex: none; }
+  .ln-time:hover { color: var(--a-ac) !important; }
+  .ln-time:disabled { cursor: default; }
+  .ln-time:disabled:hover { color: var(--a-mu) !important; }
+  .ln-time:disabled svg { display: none; }
+  .ln-body { max-width: 72ch; margin: 0 -8px; padding: 2px 8px 4px; border-radius: 8px; transition: background 0.35s ease, box-shadow 0.35s ease; }
+  .ln.is-now .ln-time { color: var(--a-ac) !important; }
+  .ln.is-now .ln-body { background: rgba(249, 115, 22, 0.1); }
+  .ln-who { font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--a-tx); }
+  .ln[data-who="you"] .ln-who { color: var(--a-ac); }
+  .ln-name { display: inline-grid; overflow: hidden; vertical-align: top; }
+  .ln-name :global(.nm) { grid-area: 1 / 1; white-space: nowrap; }
+  .ln-name :global(.nm-in) { animation: nt-nm-in 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) both, nt-nm-glow 1.4s ease-out; }
+  .ln-name :global(.nm-out) { animation: nt-nm-out 0.4s cubic-bezier(0.5, 0, 0.75, 0) both; }
+  .nt.is-scanning .ln:not([data-who="you"]) .ln-name :global(.nm) {
+    background: linear-gradient(90deg, var(--a-tx) 30%, var(--a-ac) 50%, var(--a-tx) 70%) 0 0 / 300% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: nt-scan 1.1s linear infinite;
+  }
+  .nt.is-scanning .ln:not([data-who="you"]) .ln-body { box-shadow: inset 2px 0 0 rgba(249, 115, 22, 0.55); }
+  .ln-text { margin-top: 1px !important; font-size: 15px; line-height: 1.62; color: var(--a-tx); }
+  .ln.is-new { animation: nt-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .ln-text :global(.w) { animation: nt-word 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--d, 0s); }
+
+  .nt-listen { display: none; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 12px; }
+  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-listen { display: grid; }
+  .nt-listen-b { display: flex; align-items: center; gap: 7px; padding-top: 2px; font-size: 12px; color: var(--a-mu); }
+  .nt-dots { display: flex; gap: 3px; }
+  .nt-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--a-mu); animation: nt-pulse 1.2s ease-in-out infinite; }
+  .nt-dots i:nth-child(2) { animation-delay: 0.15s; }
+  .nt-dots i:nth-child(3) { animation-delay: 0.3s; }
+
+  /* player */
+  .nt-player { display: none; align-items: center; gap: 10px; padding: 9px 22px; border-top: 1px solid var(--a-bd); background: var(--a-s1); }
+  .nt[data-phase="post"] .nt-player { display: flex; }
+  .nt-play { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border: 0; border-radius: 50%; background: var(--a-ac); color: var(--a-on) !important; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.3s ease; }
+  .nt-play svg { width: 12px; height: 12px; fill: currentColor; }
+  .nt-play .i-pause, .nt-player.is-playing .nt-play .i-play { display: none; }
+  .nt-player.is-playing .nt-play .i-pause { display: block; }
+  .nt-pos, .nt-dur { font-size: 11px; color: var(--a-mu); font-variant-numeric: tabular-nums; min-width: 2.2em; }
+  .nt-range { flex: 1; min-width: 0; accent-color: var(--a-ac); height: 4px; cursor: pointer; }
+  .nt-rate { height: 26px; padding: 0 6px; border: 1px solid var(--a-bd); border-radius: 6px; background: var(--a-s2); color: var(--a-tx) !important; font-size: 12px !important; cursor: pointer; }
+
+  @keyframes nt-ping { 75%, 100% { transform: scale(2.2); opacity: 0; } }
+  @keyframes nt-pulse { 50% { opacity: 0.35; } }
+  @keyframes nt-spin { to { transform: rotate(360deg); } }
+  @keyframes nt-scan { from { background-position: 100% 0; } to { background-position: 0 0; } }
+  @keyframes nt-rise { from { opacity: 0; transform: translateY(10px); } }
+  @keyframes nt-word { from { opacity: 0; filter: blur(5px); transform: translateY(4px); } }
+  @keyframes nt-nm-in { from { transform: translateY(110%); opacity: 0; filter: blur(3px); } }
+  @keyframes nt-nm-out { to { transform: translateY(-110%); opacity: 0; filter: blur(3px); } }
+  @keyframes nt-nm-glow { 0%, 40% { text-shadow: 0 0 12px rgba(249, 115, 22, 0.9); color: #fdba74; } }
+
+  /* under the window */
+  .svn-under { display: none; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; }
+  .svn.is-ready .svn-under { display: flex; }
+  .svn-hint { margin: 0; font-size: 0.88rem; color: var(--color-muted); }
+  .svn-hint b { color: var(--color-text); font-weight: 500; }
+  .svn-replay {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    min-height: 44px; padding: 0 1.1rem;
+    border: 1px solid var(--sv-line); border-radius: 999px;
+    background: rgba(244, 242, 237, 0.03);
+    color: var(--color-text); font: inherit; font-size: 0.9rem;
+    cursor: pointer; flex: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .svn-replay[hidden] { display: none; }
+  .svn-replay:hover { border-color: rgba(249, 115, 22, 0.6); background: rgba(249, 115, 22, 0.08); }
+  .svn-replay:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 3px; }
+  .svn-replay svg { width: 16px; height: 16px; fill: none; stroke: var(--sv-orange); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ================= supporting cards ================= */
+  .svn-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; margin-top: clamp(3.5rem, 7vw, 5.5rem); }
+  .svn-card {
+    display: flex; flex-direction: column; gap: 1.5rem;
+    padding: clamp(1.4rem, 2.6vw, 2rem);
+    border: 1px solid var(--sv-line); border-radius: 22px;
+    background: rgba(17, 17, 20, 0.8);
+  }
+  .svn-card h3 { margin: 0 0 0.5rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+  .svn-card-copy p { margin: 0; color: var(--color-muted); font-size: 0.98rem; max-width: 34rem; }
+  .svn-card--echo { grid-column: span 7; }
+  .svn-card--lang { grid-column: span 5; }
+  .svn-card--where { grid-column: span 5; }
+  .svn-card--tools { grid-column: span 7; }
+  .svn-card--os { grid-column: span 12; }
+
+  /* echo */
+  .svn-echo { margin-top: auto; padding: 1.1rem 1.2rem 1rem; border-radius: 16px; background: #0b0e14; border: 1px solid #262c3d; }
+  .svn-echo-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+  .svn-echo-k { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin: 0; font-size: 0.8rem; color: #8b93a7; }
+  .svn-echo-k i { width: 9px; height: 9px; border-radius: 3px; }
+  .svn-echo-k i.v { background: var(--sv-orange); }
+  .svn-echo-k i.e { margin-left: 0.6rem; background: #64748b; }
+  .svn-echo-tg {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    min-height: 44px; padding: 0 0.9rem 0 0.6rem;
+    border: 1px solid #262c3d; border-radius: 999px;
+    background: #131722; color: #e6e9f0; font: inherit; font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .svn-echo-tg:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
+  .svn-sw { position: relative; width: 34px; height: 20px; border-radius: 999px; background: #262c3d; transition: background 0.3s ease; }
+  .svn-sw i { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #e6e9f0; transition: transform 0.3s cubic-bezier(0.3, 1.4, 0.5, 1); }
+  .svn-echo-tg[aria-pressed="true"] .svn-sw { background: var(--sv-orange); }
+  .svn-echo-tg[aria-pressed="true"] .svn-sw i { transform: translateX(14px); background: #1a1200; }
+  .svn-wave { display: block; width: 100%; height: 7.5rem; margin: 0.9rem 0 0.6rem; }
+  .svn-wave line { stroke: #262c3d; stroke-width: 1; }
+  .svn-wave .vb { fill: var(--sv-orange); }
+  .svn-wave .eg { fill: none; stroke: #64748b; stroke-width: 1; stroke-dasharray: 2 2; opacity: 0; transition: opacity 0.6s ease 0.3s; }
+  .svn-echo[data-echo="on"] .eg { opacity: 0.45; }
+  .svn-wave .eb { fill: #64748b; transform-box: fill-box; transform-origin: center; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease; transition-delay: calc(var(--i) * 9ms); }
+  .svn-echo[data-echo="on"] .eb--sub { transform: scaleY(0.4); opacity: 0.55; }
+  .svn-echo[data-echo="on"] .eb--gate { transform: scaleY(0.04); opacity: 0.2; }
+  .svn-echo-read { display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; font-size: 0.82rem; color: #8b93a7; }
+  .svn-echo-read b { color: #e6e9f0; font-weight: 600; }
+  .svn-db { transition: opacity 0.4s ease; }
+  .svn-echo[data-echo="off"] .svn-echo-read { opacity: 0.4; }
+
+  /* languages */
+  .svn-lang { margin-top: auto; display: grid; gap: 0.75rem; }
+  .svn-lang-set { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.9rem 1rem; border-radius: 14px; background: #131722; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 0.8rem; color: #e6e9f0; }
+  .svn-lang-k { color: #8b93a7; font-size: 0.75rem; }
+  .svn-lang-sel { display: inline-flex; align-items: center; gap: 0.4rem; height: 28px; padding: 0 0.6rem; border: 1px solid #262c3d; border-radius: 7px; background: #1b2030; margin-right: 0.4rem; }
+  .svn-lang-sel svg { width: 10px; height: 10px; fill: none; stroke: #8b93a7; stroke-width: 1.5; }
+  .svn-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 0.6rem; border-radius: 999px; background: rgba(249, 115, 22, 0.14); color: #fdba74; font-size: 0.75rem; }
+  .svn-chip--add { background: none; border: 1px dashed #262c3d; color: #8b93a7; }
+  .svn-mini { display: grid; gap: 0.7rem; padding: 1rem; border-radius: 14px; background: #131722; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .svn-mini-ln { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 0.6rem; }
+  .svn-mini-ln .t { padding-top: 2px; text-align: right; font-size: 11px; color: #8b93a7; font-variant-numeric: tabular-nums; }
+  .svn-mini-ln b { display: block; font-size: 12px; font-weight: 600; color: #e6e9f0; }
+  .svn-mini-ln b.you { color: var(--sv-orange); }
+  .svn-mini-ln p { margin: 0; font-size: 14.5px; line-height: 1.55; color: #e6e9f0; }
+  .svn-mini-ln p[lang="bn"] { font-family: "Nirmala UI", "Bangla Sangam MN", "Kohinoor Bangla", "Noto Sans Bengali", "Hind Siliguri", sans-serif; }
+
+  /* local or cloud */
+  .svn-where { margin-top: auto; display: grid; gap: 0.75rem; }
+  .svn-where-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .svn-opt {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem;
+    min-height: 44px; padding: 0.75rem 0.9rem;
+    border: 1px solid #262c3d; border-radius: 14px;
+    background: #131722; color: #e6e9f0;
+    font: inherit; text-align: left; cursor: pointer;
+    transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .svn-opt b { font-size: 0.88rem; font-weight: 600; }
+  .svn-opt small { font-size: 0.76rem; color: #8b93a7; line-height: 1.35; }
+  .svn-opt:hover { border-color: #3a4258; }
+  .svn-opt[aria-pressed="true"] { border-color: var(--sv-orange); background: rgba(249, 115, 22, 0.08); }
+  .svn-opt:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
+  .svn-where-k { margin: 0.25rem 0 0; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
+  .svn-where-out { margin: 0; min-height: 3.2em; padding: 0.8rem 1rem; border-radius: 12px; background: #0b0e14; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 0.9rem; color: #e6e9f0; }
+  .svn-where-out [hidden] { display: none; }
+
+  /* after the call */
+  .svn-tools { list-style: none; margin: auto 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .svn-tools li { display: flex; flex-direction: column; gap: 0.2rem; padding: 1rem; border-radius: 16px; background: rgba(244, 242, 237, 0.025); border: 1px solid var(--sv-line); font-size: 0.86rem; color: var(--color-muted); line-height: 1.45; }
+  .svn-tools li b { margin-top: 0.6rem; color: var(--color-text); font-weight: 600; font-size: 0.95rem; }
+  .svn-tool-ui { display: inline-flex; align-items: center; gap: 0.35rem; align-self: flex-start; height: 30px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #e6e9f0; }
+  .svn-search { padding: 0 0.7rem; border: 1px solid #262c3d; border-radius: 8px; background: #0b0e14; }
+  .svn-search svg { width: 13px; height: 13px; fill: none; stroke: #8b93a7; stroke-width: 2; stroke-linecap: round; }
+  .svn-speeds i, .svn-files i { font-style: normal; display: inline-grid; place-items: center; height: 26px; padding: 0 0.5rem; border-radius: 6px; border: 1px solid #262c3d; background: #131722; color: #8b93a7; }
+  .svn-speeds i.on { border-color: var(--sv-orange); color: var(--sv-orange); }
+  .svn-files i { font-family: var(--font-mono); color: #e6e9f0; }
+  .svn-again { color: var(--sv-orange); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(249, 115, 22, 0.4); }
+
+  /* platforms */
+  .svn-card--os { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.2fr); column-gap: 2rem; row-gap: 1.25rem; align-items: start; }
+  .svn-os-h { margin: 0 !important; font-size: 1.15rem !important; }
+  .svn-os { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+  .svn-os li { display: flex; flex-direction: column; gap: 0.25rem; padding-left: 0.9rem; border-left: 1px solid var(--sv-line); font-size: 0.88rem; color: var(--color-muted); line-height: 1.45; }
+  .svn-os li b { color: var(--color-text); font-weight: 600; font-size: 0.95rem; }
+  .svn-os-note { grid-column: 2; margin: 0; font-size: 0.86rem; color: var(--color-muted); }
+  .svn-consent { grid-column: 1 / -1; display: flex; gap: 0.75rem; align-items: flex-start; margin: 0; padding: 0.9rem 1.1rem; border-radius: 14px; background: rgba(249, 115, 22, 0.06); border: 1px solid rgba(249, 115, 22, 0.2); font-size: 0.9rem; color: var(--color-muted); }
+  .svn-consent b { color: var(--color-text); font-weight: 600; }
+  .svn-consent svg { width: 20px; height: 20px; flex: none; margin-top: 0.1rem; fill: none; stroke: var(--sv-orange); stroke-width: 1.8; stroke-linecap: round; }
+
+  /* transcribe a file */
+  .svn-file {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: center;
+    margin-top: 1rem; padding: clamp(1.4rem, 2.6vw, 2rem);
+    border-radius: 22px; border: 1px solid var(--sv-line);
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.07), rgba(17, 17, 20, 0.8) 45%);
+  }
+  .svn-file-k { margin: 0 0 0.6rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sv-orange); }
+  .svn-file h3 { margin: 0 0 0.5rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
+  .svn-file-copy p:not(.svn-file-k) { margin: 0; color: var(--color-muted); font-size: 0.98rem; max-width: 32rem; }
+  .svn-file-copy .svn-file-fmt { margin-top: 0.9rem; font-family: var(--font-mono); font-size: 0.75rem; color: rgba(244, 242, 237, 0.5); }
+  .svn-file-ui { padding: 1rem 1.1rem 1.1rem; border-radius: 16px; background: #131722; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #e6e9f0; }
+  .svn-file-row { display: flex; align-items: center; gap: 0.7rem; }
+  .svn-file-ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: #1b2030; color: var(--sv-orange); flex: none; }
+  .svn-file-ic svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+  .svn-file-n { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+  .svn-file-n b { font-size: 13px; font-weight: 600; }
+  .svn-file-n small { font-size: 11.5px; color: #8b93a7; }
+  .svn-file-done { margin-left: auto; padding: 0 0.55rem; border-radius: 999px; background: rgba(34, 197, 94, 0.12); color: #4ade80; font-size: 11.5px; line-height: 22px; }
+  .svn-file-bar { display: block; height: 4px; margin: 0.8rem 0 0.9rem; border-radius: 999px; background: #262c3d; overflow: hidden; }
+  .svn-file-bar i { display: block; height: 100%; background: var(--sv-orange); transform-origin: left; }
+  .svn-file-lines { display: grid; gap: 0.45rem; }
+  .svn-file-lines p { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 0.5rem; margin: 0; font-size: 13.5px; line-height: 1.5; }
+  .svn-file-lines span { padding-top: 1px; text-align: right; font-size: 11px; color: #8b93a7; font-variant-numeric: tabular-nums; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+  /* ================= responsive ================= */
+  @media (max-width: 1180px) {
+    .nt-body { grid-template-columns: 60px minmax(0, 1fr); }
+    .nt-brand { justify-content: center; padding: 16px 0 14px; }
+    .nt-brand-t, .nt-nav-t, .nt-side-foot { display: none; }
+    .nt-nav { padding: 0 8px; }
+    .nt-nav-i { position: relative; justify-content: center; padding: 9px 0; }
+    .nt-nav-dot { position: absolute; top: 4px; right: 4px; }
+    .nt-cols { grid-template-columns: minmax(0, 1fr); }
+    .nt-list { display: none; }
+  }
+  @media (max-width: 960px) {
+    .svn-head { grid-template-columns: minmax(0, 1fr); align-items: start; }
+    .svn-card--echo, .svn-card--lang, .svn-card--where, .svn-card--tools { grid-column: span 12; }
+    .svn-card--os { grid-template-columns: minmax(0, 1fr); }
+    .svn-os-note { grid-column: 1; }
+  }
+  @media (max-width: 760px) {
+    .nt-body { grid-template-columns: minmax(0, 1fr); }
+    .nt-side { display: none; }
+    .nt-main { padding: 16px 14px 14px; }
+    .nt-head { flex-direction: column; gap: 12px; margin-bottom: 14px; }
+    .nt-h1 { font-size: 20px; }
+    .nt-sub { font-size: 13px; }
+    .nt-actions { width: 100%; }
+    .nt-gear { display: none; }
+    .nt-panel { height: 31rem; }
+    .nt-ph { padding: 12px 14px; }
+    .nt-tools { display: none; }
+    .nt-scroll { padding: 14px 14px 16px; }
+    .nt-player { padding: 8px 12px; gap: 8px; }
+    .ln { grid-template-columns: 2.9rem minmax(0, 1fr); gap: 8px; }
+    .nt-listen { grid-template-columns: 2.9rem minmax(0, 1fr); gap: 8px; }
+    .ln-text { font-size: 14.5px; }
+    .svn-chapters { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+    .svn-ch { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.75rem 0.8rem 0.85rem; min-height: 44px; }
+    .svn-ch-d { display: none; }
+    .svn-ch-t { font-size: 0.86rem; line-height: 1.25; }
+    .svn-under { flex-direction: column; align-items: flex-start; }
+    .svn-tools { grid-template-columns: minmax(0, 1fr); }
+    .svn-os { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    .svn-file { grid-template-columns: minmax(0, 1fr); }
+    .svn-where-opts { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 420px) {
+    .nt-recpill { gap: 8px; padding-left: 10px; }
+    .nt-rec-t { font-size: 13px; }
+    .svn-echo { padding: 0.9rem; }
+    .svn-wave { height: 6rem; }
+  }
+  /* bigger touch targets for the small app controls */
+  @media (pointer: coarse) {
+    .ln-time::after { content: ""; position: absolute; inset: -14px -6px -14px -10px; }
+    .nt-people { height: 32px; }
+    .nt-rate { height: 34px; }
+    .nt-play { width: 40px; height: 40px; }
+    .nt-range { height: 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nt-ping::after, .nt-nav-dot, .nt-tile i, .nt-dots i, .i-spin { animation: none !important; }
+    .nt.is-scanning .ln-name :global(.nm) { animation: none !important; }
+    .svn-wave :is(.eb, .eg) { transition-delay: 0s !important; }
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  gsap.registerPlugin(ScrollTrigger);
+
+  const root = document.querySelector<HTMLElement>(".svn");
+  if (root) init(root);
+
+  function init(root: HTMLElement) {
+    const $ = <T extends Element = HTMLElement>(s: string, el: ParentNode = root) => el.querySelector<T>(s)!;
+    const $$ = <T extends Element = HTMLElement>(s: string, el: ParentNode = root) => [...el.querySelectorAll<T>(s)];
+
+    const nt = $(".nt");
+    const startBtn = $<HTMLButtonElement>(".nt-start");
+    const stopBtn = $<HTMLButtonElement>(".nt-stop");
+    const recTime = $(".nt-rec-time");
+    const ol = $(".nt-lines");
+    const listen = $(".nt-listen");
+    const listenT = $(".nt-listen-t");
+    const scroller = $(".nt-scroll");
+    const ov = $(".nt-ov");
+    const sumBtn = $<HTMLButtonElement>(".nt-sum");
+    const people = $<HTMLSelectElement>(".nt-people");
+    const voices = $(".nt-voices");
+    const player = $(".nt-player");
+    const playBtn = $<HTMLButtonElement>(".nt-play");
+    const pos = $(".nt-pos");
+    const range = $<HTMLInputElement>(".nt-range");
+    const rate = $<HTMLSelectElement>(".nt-rate");
+    const chapters = $$<HTMLButtonElement>(".svn-ch");
+    const replay = $<HTMLButtonElement>(".svn-replay");
+    const live = $("[data-svn-live]");
+
+    const lines = $$<HTMLLIElement>(".ln", ol);
+    const data = lines.map((li) => ({
+      li,
+      who: li.dataset.who as "you" | "a" | "b",
+      t: Number(li.dataset.t),
+      text: $(".ln-text", li).textContent!.trim(),
+      time: $<HTMLButtonElement>(".ln-time", li),
+      name: $(".ln-name", li),
+    }));
+    const DURATION = Number(range.max);
+    const RATE = 7.5; // meeting seconds per real second while "recording"
+    const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+    let motion = false;
+    let gen = 0; // bumps on every reset, so stale timers of an old run do nothing
+    let relabelGen = 0;
+    let split = true;
+    let stopReq = false;
+    let clockT = 0;
+    let recStart = 0;
+
+    const alive = (g: number) => g === gen;
+    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, motion ? ms : 0));
+    const announce = (msg: string) => { live.textContent = msg; };
+    const press = (el: HTMLElement) => { el.classList.add("is-press"); setTimeout(() => el.classList.remove("is-press"), 260); };
+    // keep keyboard focus inside the widget when the focused control is swapped out
+    const keepFocus = (from: HTMLElement, to: HTMLElement) => { if (document.activeElement === from) requestAnimationFrame(() => to.focus({ preventScroll: true })); };
+
+    // ---- names ----
+    const nameFor = (who: string) => {
+      if (who === "you") return "You";
+      if (!split) return "Others";
+      if (people.value === "1") return "Speaker 1";
+      return who === "a" ? "Speaker 1" : "Speaker 2";
+    };
+    const setName = (d: (typeof data)[number], name: string, animate: boolean) => {
+      const cur = d.name.querySelector<HTMLElement>(".nm:not(.nm-out)");
+      if (cur && cur.textContent === name) return;
+      if (!animate || !cur) { d.name.innerHTML = ""; const s = document.createElement("span"); s.className = "nm"; s.textContent = name; d.name.appendChild(s); return; }
+      const nn = document.createElement("span");
+      nn.className = "nm nm-in";
+      nn.textContent = name;
+      cur.classList.add("nm-out");
+      d.name.appendChild(nn);
+      setTimeout(() => cur.remove(), 450);
+    };
+    const applyNames = (animate: boolean) => {
+      let k = 0;
+      data.forEach((d) => {
+        const n = nameFor(d.who);
+        const cur = d.name.querySelector(".nm:not(.nm-out)");
+        if (cur?.textContent === n) return;
+        if (animate) setTimeout(() => setName(d, n, true), (k++) * 130);
+        else setName(d, n, false);
+      });
+    };
+
+    // ---- transcript ----
+    const showLine = (i: number, animate: boolean) => {
+      const d = data[i];
+      const p = $(".ln-text", d.li);
+      d.li.classList.remove("is-new", "is-now");
+      p.textContent = "";
+      if (animate) {
+        d.text.split(" ").forEach((w, j) => {
+          const s = document.createElement("span");
+          s.className = "w";
+          s.style.setProperty("--d", `${j * 45}ms`);
+          s.textContent = w + " ";
+          p.appendChild(s);
+        });
+        d.li.classList.add("is-new");
+      } else p.textContent = d.text;
+      setName(d, nameFor(d.who), false);
+      ol.insertBefore(d.li, listen);
+      if (animate) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
+    };
+    const clearLines = () => data.forEach((d) => d.li.remove());
+    const setLive = (on: boolean) => data.forEach((d) => (d.time.disabled = on));
+
+    // ---- chapters ----
+    const setChapter = (n: number, p = 0, dur = 0.25) => {
+      chapters.forEach((c, i) => {
+        const k = i + 1;
+        c.toggleAttribute("aria-current", false);
+        if (k === n) c.setAttribute("aria-current", "step");
+        c.style.setProperty("--dur", k === n ? `${dur}s` : "0.25s");
+        c.style.setProperty("--p", String(k < n ? 1 : k === n ? p : 0));
+      });
+    };
+
+    // ---- states (instant) ----
+    const setPhase = (p: "idle" | "rec" | "finishing" | "post") => { nt.dataset.phase = p; };
+    const setOv = (s: "live" | "ready" | "busy" | "done") => { ov.dataset.state = s; sumBtn.setAttribute("aria-disabled", String(s === "busy")); };
+
+    function reset() {
+      gen++;
+      relabelGen++;
+      stopPlayer(true);
+      nt.classList.remove("is-scanning");
+      ov.classList.remove("is-reveal");
+      voices.hidden = true;
+      stopReq = false;
+    }
+    function stateIdle() {
+      setPhase("idle");
+      split = false;
+      people.value = "auto";
+      people.disabled = true;
+      clearLines();
+      setOv("live");
+      recTime.textContent = "0:00";
+      setChapter(1, 0);
+      scroller.scrollTop = 0;
+    }
+    function stateRecorded() {
+      // every line in, still recording (reduced-motion view of step 1)
+      split = false;
+      people.disabled = true;
+      setPhase("rec");
+      listenT.textContent = "Listening";
+      clearLines();
+      data.forEach((_, i) => showLine(i, false));
+      setLive(true);
+      setOv("live");
+      recTime.textContent = fmt(DURATION);
+      setChapter(1, 1);
+    }
+    function statePost(withSplit: boolean, summary: boolean) {
+      setPhase("post");
+      split = withSplit;
+      people.disabled = !withSplit;
+      clearLines();
+      data.forEach((_, i) => showLine(i, false));
+      setLive(false);
+      setOv(summary ? "done" : "ready");
+      setChapter(summary ? 3 : withSplit ? 3 : 2, summary ? 1 : 0);
+      scroller.scrollTop = 0;
+    }
+
+    // ---- the animated story ----
+    async function story(from: 1 | 2 | 3, byUser = false) {
+      reset();
+      const g = gen;
+      if (from === 1) {
+        stateIdle();
+        if (!byUser) {
+          await sleep(1000); if (!alive(g)) return;
+          press(startBtn);
+          await sleep(240); if (!alive(g)) return;
+        }
+        await record(g); if (!alive(g)) return;
+      } else {
+        statePost(from === 3, false);
+      }
+      if (from <= 2) {
+        await sleep(from === 2 ? 500 : 0); if (!alive(g)) return;
+        await tellApart(g); if (!alive(g)) return;
+        await sleep(1100); if (!alive(g)) return;
+      }
+      await summarize(g, true);
+    }
+
+    async function record(g: number) {
+      setPhase("rec");
+      setOv("live");
+      listenT.textContent = "Listening";
+      split = false;
+      people.disabled = true;
+      clearLines();
+      setLive(true);
+      stopReq = false;
+      announce("Recording a sample call. Lines appear as people talk.");
+      recStart = performance.now();
+      clockT = 0;
+      const tick = () => {
+        if (!alive(g) || nt.dataset.phase !== "rec") return;
+        clockT = Math.min(DURATION, ((performance.now() - recStart) / 1000) * RATE);
+        recTime.textContent = fmt(clockT);
+        setChapter(1, clockT / DURATION, 0.1);
+        if (!stopReq) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+      const until = (t: number) => new Promise<void>((r) => {
+        const check = () => (!alive(g) || stopReq || clockT >= t ? r() : setTimeout(check, 40));
+        check();
+      });
+      for (let i = 0; i < data.length; i++) {
+        await until(data[i].t); if (!alive(g)) return;
+        if (stopReq) { for (; i < data.length; i++) showLine(i, false); scroller.scrollTop = scroller.scrollHeight; break; }
+        showLine(i, true);
+      }
+      await until(DURATION); if (!alive(g)) return;
+      if (!stopReq) { press(stopBtn); await sleep(220); if (!alive(g)) return; }
+      stopReq = true;
+      // Stop -> Finishing up…
+      setPhase("finishing");
+      listenT.textContent = "Finishing the last words…";
+      setChapter(1, 1);
+      await sleep(1300); if (!alive(g)) return;
+      setPhase("post");
+      setLive(false);
+      setOv("ready");
+      keepFocus(stopBtn, startBtn);
+    }
+
+    async function tellApart(g: number) {
+      setChapter(2, 1, 2.4);
+      voices.hidden = false;
+      nt.classList.add("is-scanning");
+      await sleep(2000); if (!alive(g)) return;
+      nt.classList.remove("is-scanning");
+      voices.hidden = true;
+      split = true;
+      applyNames(motion);
+      people.disabled = false;
+      announce("Voices told apart: Others is now Speaker 1 and Speaker 2.");
+    }
+
+    async function summarize(g: number, auto: boolean) {
+      setChapter(3, 0);
+      if (auto) { press(sumBtn); await sleep(240); if (!alive(g)) return; }
+      ov.classList.remove("is-reveal");
+      setOv("busy");
+      setChapter(3, 1, 2.4);
+      scroller.scrollTo({ top: 0, behavior: motion ? "smooth" : "auto" });
+      await sleep(2300); if (!alive(g)) return;
+      setOv("done");
+      if (motion) ov.classList.add("is-reveal");
+      announce("Overview written: summary, key points, decisions and action items.");
+    }
+
+    // ---- player ----
+    let t = 0, playing = false, last = 0, raf = 0, inView = false, current = -1;
+    const markNow = (scroll: boolean) => {
+      let idx = -1;
+      if (t > 0 || playing) data.forEach((d, i) => { if (d.t <= t + 0.01) idx = i; });
+      if (idx === current) return;
+      current = idx;
+      data.forEach((d, i) => d.li.classList.toggle("is-now", i === idx));
+      if (scroll && idx >= 0) {
+        const li = data[idx].li;
+        const top = li.offsetTop - scroller.offsetTop;
+        if (top < scroller.scrollTop || top + li.offsetHeight > scroller.scrollTop + scroller.clientHeight) {
+          scroller.scrollTo({ top: top - 16, behavior: motion ? "smooth" : "auto" });
+        }
+      }
+    };
+    const drawPos = () => { pos.textContent = fmt(t); range.value = String(Math.floor(t)); };
+    const loop = (now: number) => {
+      if (!playing) return;
+      t = Math.min(DURATION, t + ((now - last) / 1000) * Number(rate.value));
+      last = now;
+      drawPos();
+      markNow(true);
+      if (t >= DURATION) { stopPlayer(false); return; }
+      raf = requestAnimationFrame(loop);
+    };
+    function startPlayer() {
+      if (nt.dataset.phase !== "post") return;
+      if (t >= DURATION) t = 0;
+      playing = true;
+      player.classList.add("is-playing");
+      playBtn.setAttribute("aria-label", "Pause");
+      last = performance.now();
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(loop);
+      markNow(true);
+    }
+    function stopPlayer(rewind: boolean) {
+      playing = false;
+      cancelAnimationFrame(raf);
+      player.classList.remove("is-playing");
+      playBtn.setAttribute("aria-label", "Play");
+      if (rewind) { t = 0; current = -2; drawPos(); markNow(false); }
+    }
+    playBtn.addEventListener("click", () => (playing ? stopPlayer(false) : startPlayer()));
+    range.addEventListener("input", () => { t = Number(range.value); drawPos(); markNow(true); });
+    data.forEach((d) => d.time.addEventListener("click", () => {
+      t = d.t; drawPos(); current = -2; startPlayer(); markNow(true);
+    }));
+
+    // ---- visitor controls inside the window ----
+    startBtn.addEventListener("click", () => {
+      if (nt.dataset.phase === "rec" || nt.dataset.phase === "finishing") return;
+      if (motion) story(1, true);
+      else { reset(); stateRecorded(); }
+      keepFocus(startBtn, stopBtn);
+    });
+    stopBtn.addEventListener("click", () => {
+      if (nt.dataset.phase !== "rec") return;
+      if (motion) { stopReq = true; press(stopBtn); }
+      else { reset(); statePost(true, false); keepFocus(stopBtn, startBtn); }
+    });
+    sumBtn.addEventListener("click", () => {
+      if (ov.dataset.state === "busy" || nt.dataset.phase !== "post") return;
+      relabelGen++;
+      const g = ++gen;
+      stopPlayer(false);
+      if (!split) { split = true; applyNames(false); people.disabled = false; nt.classList.remove("is-scanning"); voices.hidden = true; }
+      summarize(g, false);
+    });
+    people.addEventListener("change", async () => {
+      const r = ++relabelGen;
+      voices.hidden = false;
+      if (motion) nt.classList.add("is-scanning");
+      await sleep(900);
+      if (r !== relabelGen) return;
+      nt.classList.remove("is-scanning");
+      voices.hidden = true;
+      applyNames(motion);
+      announce(people.value === "1" ? "Relabelled: one other person, Speaker 1." : "Relabelled: Speaker 1 and Speaker 2.");
+    });
+
+    // ---- chapters + replay ----
+    chapters.forEach((c) => c.addEventListener("click", () => {
+      const n = Number(c.dataset.ch) as 1 | 2 | 3;
+      if (motion) { story(n); return; }
+      reset();
+      if (n === 1) stateRecorded();
+      else if (n === 2) { statePost(true, false); setChapter(2, 1); }
+      else statePost(true, true);
+    }));
+    replay.addEventListener("click", () => story(1));
+
+    // ---- side cards ----
+    const echo = $(".svn-echo");
+    const echoTg = $<HTMLButtonElement>(".svn-echo-tg");
+    const setEcho = (on: boolean) => { echo.dataset.echo = on ? "on" : "off"; echoTg.setAttribute("aria-pressed", String(on)); };
+    echoTg.addEventListener("click", () => setEcho(echo.dataset.echo !== "on"));
+
+    const opts = $$<HTMLButtonElement>(".svn-opt");
+    const sub = $(".nt-sub");
+    const SUB_LOCAL = "Record a call and get a live transcript of who said what. Audio and text stay on this PC.";
+    const SUB_CLOUD = "Record a call and get a live transcript of who said what. Audio is sent to your provider to transcribe; recordings and text stay on this PC.";
+    opts.forEach((o) => o.addEventListener("click", () => {
+      const w = o.dataset.where!;
+      opts.forEach((x) => x.setAttribute("aria-pressed", String(x === o)));
+      $$("[data-where-text]").forEach((s) => (s.hidden = s.dataset.whereText !== w));
+      sub.textContent = w === "cloud" ? SUB_CLOUD : SUB_LOCAL;
+    }));
+
+    root.classList.add("is-ready");
+    setChapter(3, 1);
+    split = true;
+    people.disabled = false;
+    setLive(false);
+
+    // off screen: pause the player loop
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; if (!inView && playing) stopPlayer(false); }).observe(nt);
+
+    // ---- motion: autoplay once on scroll, entrances; reverted if motion is turned off ----
+    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
+      motion = true;
+      replay.hidden = false;
+      let started = false;
+      reset();
+      stateIdle();
+      const io = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting || started) return;
+        started = true;
+        io.disconnect();
+        story(1);
+      }, { threshold: 0.35 });
+      io.observe(nt);
+
+      // echo: show it with the echo first, then take it out
+      setEcho(false);
+      const echoIo = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return;
+        echoIo.disconnect();
+        setTimeout(() => setEcho(true), 900);
+      }, { threshold: 0.6 });
+      echoIo.observe(echo);
+
+      const lift = gsap.from(nt, {
+        y: 60, opacity: 0, scale: 0.97, duration: 1.2, ease: "expo.out",
+        scrollTrigger: { trigger: nt, start: "top 90%", once: true },
+      });
+      const cards = gsap.from(root.querySelectorAll(".svn-card, .svn-file"), {
+        y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.08,
+        scrollTrigger: { trigger: root.querySelector(".svn-grid"), start: "top 85%", once: true },
+      });
+      const bar = gsap.fromTo(root.querySelector(".svn-file-bar i"), { scaleX: 0 }, {
+        scaleX: 1, duration: 2.2, ease: "power1.inOut",
+        scrollTrigger: { trigger: root.querySelector(".svn-file"), start: "top 75%", once: true },
+      });
+      const fileLines = gsap.from(root.querySelectorAll(".svn-file-lines p, .svn-file-done"), {
+        opacity: 0, y: 8, duration: 0.6, ease: "power2.out", stagger: 0.25, delay: 1.6,
+        scrollTrigger: { trigger: root.querySelector(".svn-file"), start: "top 75%", once: true },
+      });
+
+      return () => {
+        motion = false;
+        io.disconnect();
+        echoIo.disconnect();
+        [lift, cards, bar, fileLines].forEach((a) => a.revert());
+        setEcho(true);
+        reset();
+        statePost(true, true);
+        replay.hidden = true;
+      };
+    });
+    if (!motion) replay.hidden = true;
+  }
+</script>
