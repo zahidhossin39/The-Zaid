@@ -1,11 +1,17 @@
 ---
 // The Download button + "other platforms" links. Ships pointing at the GitHub
-// releases page; src/scripts/sv-release.ts swaps in the right installer.
-import { siApple, siLinux } from "simple-icons";
-import { RELEASES_URL } from "../../scripts/sv-release";
+// releases pages; src/scripts/sv-release.ts swaps in the right file for the
+// visitor's OS (the APK on Android, the installer on a computer).
+import { siAndroid, siApple, siLinux } from "simple-icons";
+import { ANDROID_RELEASES_URL, RELEASES_URL } from "../../scripts/sv-release";
 
-interface Props { size?: "xl" | "md"; others?: boolean }
-const { size = "xl", others = true } = Astro.props;
+interface Props {
+  size?: "xl" | "md";
+  others?: boolean;
+  /** list "Android (beta)" under "Also for" (off where the section offers the APK itself) */
+  apk?: boolean;
+}
+const { size = "xl", others = true, apk = true } = Astro.props;
 const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.3L3 18.8v-6.2Zm8.3 0H21v8.8l-9.7-1.4v-7.4Z";
 ---
 
@@ -16,11 +22,12 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
       <svg class="os os-windows" viewBox="0 0 24 24"><path d={WIN} /></svg>
       <svg class="os os-mac" viewBox="0 0 24 24"><path d={siApple.path} /></svg>
       <svg class="os os-linux" viewBox="0 0 24 24"><path d={siLinux.path} /></svg>
+      <svg class="os os-android" viewBox="0 0 24 24"><path d={siAndroid.path} /></svg>
       <svg class="os os-any" viewBox="0 0 24 24"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" /></svg>
     </span>
     <span class="svdl-text">
       <span class="svdl-label" data-sv-os-label>Download Silent Voice</span>
-      <span class="svdl-meta" data-sv-meta>Free · Windows, macOS and Linux</span>
+      <span class="svdl-meta" data-sv-meta>Free · Windows, Mac and Linux</span>
     </span>
     <span class="svdl-arrow" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M12 4v14m0 0-6-6m6 6 6-6" /></svg>
@@ -28,10 +35,12 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
   </a>
   {others && (
     <div class="svdl-others">
-      <p class="svdl-mobile">Silent Voice is a desktop app. Open this page on your computer, or pick a file:</p>
+      <p class="svdl-note svdl-note--android">A beta for Android 10 and newer, 64-bit phones. It isn't on Google Play yet, so you install the file yourself.</p>
+      <p class="svdl-note svdl-note--ios">There's no iPhone or iPad app yet. Silent Voice runs on computers and Android phones:</p>
       <span class="svdl-others-label">Also for</span>
-      <ul data-sv-others>
-        <li><a href={RELEASES_URL}>Windows, macOS and Linux on GitHub</a></li>
+      <ul data-sv-others={apk ? "" : "desktop"}>
+        <li><a href={RELEASES_URL}>Windows, Mac and Linux on GitHub</a></li>
+        {apk && <li><a href={ANDROID_RELEASES_URL}>Android (beta)</a></li>}
       </ul>
     </div>
   )}
@@ -99,8 +108,9 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
   .svdl-icon .os { display: none; }
   :global(html[data-sv-os="windows"]) .svdl-icon .os-windows,
   :global(html[data-sv-os="mac"]) .svdl-icon .os-mac,
-  :global(html[data-sv-os="linux"]) .svdl-icon .os-linux { display: block; }
-  :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"])) .svdl-icon .os-any { display: block; }
+  :global(html[data-sv-os="linux"]) .svdl-icon .os-linux,
+  :global(html[data-sv-os="android"]) .svdl-icon .os-android { display: block; }
+  :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"]):not([data-sv-os="android"])) .svdl-icon .os-any { display: block; }
 
   .svdl-text { display: flex; flex-direction: column; text-align: left; line-height: 1.15; }
   .svdl-label { font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
@@ -138,9 +148,10 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
     font-size: 0.85rem;
     color: var(--color-muted);
   }
-  .svdl-mobile { display: none; flex-basis: 100%; margin: 0 0 0.2rem; text-align: center; font-size: 0.85rem; }
-  :global(html[data-sv-os="mobile"]) .svdl-mobile { display: block; }
-  :global(html[data-sv-os="mobile"]) .svdl-others-label { display: none; }
+  .svdl-note { display: none; flex-basis: 100%; max-width: 30rem; margin: 0 auto 0.35rem; text-align: center; font-size: 0.85rem; line-height: 1.5; text-wrap: pretty; }
+  :global(html[data-sv-os="android"]) .svdl-note--android,
+  :global(html[data-sv-os="ios"]) .svdl-note--ios { display: block; }
+  :global(html[data-sv-os="ios"]) .svdl-others-label { display: none; }
   .svdl-others-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }
   .svdl-others ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.15rem 0.9rem; list-style: none; margin: 0; padding: 0; }
   .svdl-others :global(a) {
@@ -154,6 +165,7 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
     transition: color 0.2s ease, text-decoration-color 0.2s ease;
   }
   .svdl-others :global(a:hover) { color: var(--sv-orange); text-decoration-color: currentColor; }
+  @media (pointer: coarse) { .svdl-others :global(a) { min-height: 44px; } }
 
   @media (max-width: 420px) {
     .svdl--xl .svdl-btn { padding: 0.85rem 1rem 0.85rem 0.85rem; gap: 0.85rem; }

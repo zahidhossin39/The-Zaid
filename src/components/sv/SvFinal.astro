@@ -1,6 +1,7 @@
 ---
 import SvDownload from "./SvDownload.astro";
-import { RELEASES_URL, REPO } from "../../scripts/sv-release";
+import { siAndroid } from "simple-icons";
+import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-release";
 ---
 
 <section class="svx" id="download" aria-labelledby="svx-title">
@@ -11,29 +12,81 @@ import { RELEASES_URL, REPO } from "../../scripts/sv-release";
       <span class="svx-line svx-line--em">Your computer.</span>
     </h2>
     <p class="svx-lead">Free to download, free to keep. No sign-up.</p>
-    <div class="svx-cta"><SvDownload size="xl" /></div>
+    <div class="svx-cta"><SvDownload size="xl" apk={false} /></div>
+
+    <!-- the other kind of device: the APK for computer visitors, the desktop files on Android -->
+    <div class="svx-alt">
+      <a class="svx-alt-link svx-alt--apk" href={ANDROID_RELEASES_URL} data-sv-apk>
+        <span class="svx-alt-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={siAndroid.path} /></svg></span>
+        <span class="svx-alt-text">
+          <span class="svx-alt-title">Also on Android <span class="svx-alt-beta">beta</span></span>
+          <span class="svx-alt-meta" data-sv-apk-meta>Beta · Android 10 and newer</span>
+        </span>
+        <span class="svx-alt-cta">Download APK</span>
+      </a>
+      <a class="svx-alt-link svx-alt--desk" href={RELEASES_URL} data-sv-release-link>
+        <span class="svx-alt-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" class="svx-alt-stroke"><rect x="4" y="5" width="16" height="11" rx="1.5" /><path d="M2 19h20" /></svg>
+        </span>
+        <span class="svx-alt-text">
+          <span class="svx-alt-title">On a computer?</span>
+          <span class="svx-alt-meta">Windows, Mac and Linux</span>
+        </span>
+        <span class="svx-alt-cta">All files</span>
+      </a>
+    </div>
 
     <div class="svx-cards">
-      <article class="svx-card" id="whats-new" data-sv-notes-card hidden>
-        <p class="sv-eyebrow">What's new in <span data-sv-version>this release</span></p>
-        <div class="svx-notes" data-sv-notes></div>
-        <a class="svx-more" href={`https://github.com/${REPO}/blob/main/CHANGELOG.md`} target="_blank" rel="noopener noreferrer">Full changelog →</a>
+      <article class="svx-card" id="whats-new" data-sv-notes-card>
+        <p class="sv-eyebrow" data-sv-notes-title>New in 0.2.0</p>
+        <!-- static notes; replaced by the CHANGELOG.md entry for the current version when one exists -->
+        <div class="svx-notes" data-sv-notes>
+          <ul>
+            <li><strong>Notetaker</strong> for calls and meetings. It records both sides, writes a live transcript, tells speakers apart and ends with a summary.</li>
+            <li><strong>Transcribe a file.</strong> Drop in a recording and get timestamped text, made on your own computer.</li>
+            <li><strong>A smaller Model Store</strong> with only the best models, ranked for your PC and your language.</li>
+            <li><strong>Runs on Mac and Linux too</strong>, and Notetaker records the computer's sound there as well (on a Mac, macOS 13 or newer).</li>
+            <li><strong>Quicker dictation.</strong> "Transcribe while you speak" is on by default. Double-tap the hotkey for hands-free, press Esc to cancel.</li>
+          </ul>
+        </div>
+        <a class="svx-more" href={ANDROID_RELEASES_URL} target="_blank" rel="noopener noreferrer">All releases on GitHub →</a>
       </article>
 
       <article class="svx-card">
         <p class="sv-eyebrow">Before you install</p>
         <dl class="svx-os">
-          <div>
+          <div class="svx-os-row svx-os--windows">
             <dt>Windows</dt>
             <dd>Run the installer. Updates show up inside the app.</dd>
           </div>
-          <div>
-            <dt>macOS</dt>
-            <dd>The app isn't notarised by Apple yet. The first time, right-click it and choose Open. It also needs Accessibility permission for the hotkey and paste.</dd>
+          <div class="svx-os-row svx-os--mac">
+            <dt>Mac</dt>
+            <dd>
+              For Apple Silicon Macs on macOS 12 or newer. Intel Macs aren't supported.
+              The app isn't notarised by Apple yet, so the first time, right-click it in Finder and choose Open,
+              or allow it in System Settings › Privacy &amp; Security.
+              It needs Microphone and Accessibility permission. For the other side of a call, Notetaker also needs
+              Screen &amp; System Audio Recording (macOS 13 or newer).
+            </dd>
           </div>
-          <div>
+          <div class="svx-os-row svx-os--linux">
             <dt>Linux</dt>
-            <dd>Works on X11. Wayland doesn't let one app type into another, so pasting at the cursor won't work there yet.</dd>
+            <dd>
+              x86_64 only. Take the .deb on Ubuntu and Debian, the AppImage anywhere else (run <code>chmod +x</code> on it first).
+              X11 works fully. On Wayland, only Hyprland and Sway, through a key binding and <code>wtype</code>.
+            </dd>
+          </div>
+          <div class="svx-os-row svx-os--android">
+            <dt>Android <span class="svx-os-beta">beta</span></dt>
+            <dd>
+              Android 10 or newer, 64-bit. Allow your browser to install apps, then turn on the
+              "Silent Voice bubble" switch in Accessibility. Android 13 and newer first asks you to
+              "Allow restricted settings" in the app's info page. On Xiaomi phones, also allow Autostart.
+            </dd>
+          </div>
+          <div class="svx-os-row svx-os--ios">
+            <dt>iPhone</dt>
+            <dd>Not available yet.</dd>
           </div>
         </dl>
         <a class="svx-more" href={RELEASES_URL} data-sv-release-link target="_blank" rel="noopener noreferrer">All files for this release →</a>
@@ -47,7 +100,7 @@ import { RELEASES_URL, REPO } from "../../scripts/sv-release";
   <span class="svbar-logo">
     <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" rx="224" fill="#0d0f14" /><rect x="232" y="432" width="80" height="160" rx="40" fill="#f97316" /><rect x="360" y="352" width="80" height="320" rx="40" fill="#f97316" /><rect x="488" y="252" width="80" height="520" rx="40" fill="#fff" /><rect x="616" y="352" width="80" height="320" rx="40" fill="#f97316" /><rect x="744" y="432" width="80" height="160" rx="40" fill="#f97316" /></svg>
   </span>
-  <span class="svbar-text"><strong>Silent Voice</strong> <span data-sv-version></span></span>
+  <span class="svbar-text"><strong>Silent Voice</strong> <span class="svbar-v svbar-v--desk" data-sv-version></span><span class="svbar-v svbar-v--apk" data-sv-apk-version></span></span>
   <a class="svbar-btn" href={RELEASES_URL} data-sv-main>Download</a>
 </div>
 
@@ -66,6 +119,7 @@ import { RELEASES_URL, REPO } from "../../scripts/sv-release";
     animation: svx-breathe 6s ease-in-out infinite;
   }
   @keyframes svx-breathe { 50% { transform: scale(1.12); opacity: 0.8; } }
+  @media (prefers-reduced-motion: reduce) { .svx-glow { animation: none; } }
   .svx-inner { max-width: 70rem; margin: 0 auto; }
   .svx-title {
     margin: 0;
@@ -79,9 +133,10 @@ import { RELEASES_URL, REPO } from "../../scripts/sv-release";
   .svx-line--em { font-style: italic; color: var(--sv-orange); }
   .svx-lead { margin: 1.6rem 0 2.6rem; color: var(--color-muted); font-size: 1.15rem; }
 
-  .svx-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 1rem; align-items: start; margin-top: clamp(4rem, 8vw, 6rem); text-align: left; }
+  .svx-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: 1rem; align-items: start; margin-top: clamp(4rem, 8vw, 6rem); text-align: left; }
   .svx-card { padding: clamp(1.4rem, 3vw, 2rem); border-radius: 22px; border: 1px solid var(--sv-line); background: rgba(17, 17, 20, 0.8); backdrop-filter: blur(10px); }
   .svx-card[hidden] { display: none; }
+  .svx-card { scroll-margin-top: 6rem; }
   .svx-notes :global(ul) { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: 0.8rem; }
   .svx-notes :global(li) {
     position: relative;
@@ -89,6 +144,10 @@ import { RELEASES_URL, REPO } from "../../scripts/sv-release";
     color: var(--color-muted);
     font-size: 0.92rem;
     line-height: 1.5;
+    text-wrap: pretty;
+  }
+  /* long CHANGELOG items are cut at three lines; the static notes are short enough */
+  .svx-card[data-sv-notes-source="changelog"] .svx-notes :global(li) {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -99,12 +158,73 @@ import { RELEASES_URL, REPO } from "../../scripts/sv-release";
   .svx-notes :global(code) { font-family: var(--font-mono); font-size: 0.85em; padding: 0.05rem 0.3rem; border-radius: 4px; background: rgba(244, 242, 237, 0.08); }
 
   .svx-os { margin: 1rem 0 0; display: grid; gap: 1rem; }
-  .svx-os > div { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; }
+  .svx-os-row { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; }
   .svx-os dt { font-weight: 600; font-size: 0.92rem; }
-  .svx-os dd { margin: 0; color: var(--color-muted); font-size: 0.92rem; line-height: 1.5; }
-  :global(html[data-sv-os="windows"]) .svx-os > div:nth-child(1) dt,
-  :global(html[data-sv-os="mac"]) .svx-os > div:nth-child(2) dt,
-  :global(html[data-sv-os="linux"]) .svx-os > div:nth-child(3) dt { color: var(--sv-orange); }
+  .svx-os dd { margin: 0; color: var(--color-muted); font-size: 0.92rem; line-height: 1.5; text-wrap: pretty; }
+  .svx-os code { font-family: var(--font-mono); font-size: 0.85em; padding: 0.05rem 0.3rem; border-radius: 4px; background: rgba(244, 242, 237, 0.08); color: var(--color-text); }
+  .svx-os-beta { display: block; margin-top: 0.15rem; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
+  .svx-os--ios { display: none; }
+  :global(html[data-sv-os="ios"]) .svx-os--ios { display: grid; }
+  /* the visitor's own platform comes first and stands out */
+  :global(html[data-sv-os="windows"]) .svx-os--windows,
+  :global(html[data-sv-os="mac"]) .svx-os--mac,
+  :global(html[data-sv-os="linux"]) .svx-os--linux,
+  :global(html[data-sv-os="android"]) .svx-os--android,
+  :global(html[data-sv-os="ios"]) .svx-os--ios { order: -1; }
+  :global(html[data-sv-os="windows"]) .svx-os--windows dt,
+  :global(html[data-sv-os="mac"]) .svx-os--mac dt,
+  :global(html[data-sv-os="linux"]) .svx-os--linux dt,
+  :global(html[data-sv-os="android"]) .svx-os--android dt,
+  :global(html[data-sv-os="ios"]) .svx-os--ios dt { color: var(--sv-orange); }
+  :global(html[data-sv-os="windows"]) .svx-os--windows dd,
+  :global(html[data-sv-os="mac"]) .svx-os--mac dd,
+  :global(html[data-sv-os="linux"]) .svx-os--linux dd,
+  :global(html[data-sv-os="android"]) .svx-os--android dd,
+  :global(html[data-sv-os="ios"]) .svx-os--ios dd { color: var(--color-text); }
+  @media (max-width: 420px) {
+    .svx-os-row { grid-template-columns: 1fr; gap: 0.3rem; }
+    .svx-os-beta { display: inline; margin: 0 0 0 0.4rem; }
+  }
+
+  /* ---- the other device: APK for computers, desktop files on Android ---- */
+  .svx-alt { display: flex; justify-content: center; margin-top: 1.6rem; }
+  .svx-alt-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-height: 44px;
+    max-width: 100%;
+    padding: 0.5rem 0.55rem 0.5rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid rgba(244, 242, 237, 0.14);
+    background: rgba(17, 17, 20, 0.7);
+    color: var(--color-text);
+    text-decoration: none;
+    text-align: left;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .svx-alt-link:hover { border-color: rgba(249, 115, 22, 0.55); background: rgba(249, 115, 22, 0.07); }
+  .svx-alt-link:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 4px; }
+  .svx-alt--desk { display: none; }
+  :global(html[data-sv-os="android"]) .svx-alt--apk { display: none; }
+  :global(html[data-sv-os="android"]) .svx-alt--desk { display: inline-flex; }
+  .svx-alt-icon { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: rgba(244, 242, 237, 0.08); color: var(--color-text); flex: none; }
+  .svx-alt-icon svg { width: 52%; height: 52%; fill: currentColor; }
+  .svx-alt-icon .svx-alt-stroke { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .svx-alt-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+  .svx-alt-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+  .svx-alt-beta { margin-left: 0.3rem; padding: 0.05rem 0.4rem; border-radius: 999px; border: 1px solid rgba(249, 115, 22, 0.45); color: var(--sv-orange); font-family: var(--font-mono); font-size: 0.62rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; vertical-align: 0.1em; }
+  .svx-alt-meta { margin-top: 0.2rem; font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-muted); }
+  .svx-alt-cta { margin-left: 0.4rem; padding: 0.55rem 0.95rem; border-radius: 999px; background: rgba(244, 242, 237, 0.92); color: #140a02; font-size: 0.82rem; font-weight: 600; white-space: nowrap; transition: background 0.25s ease; }
+  .svx-alt-link:hover .svx-alt-cta { background: var(--sv-orange); }
+  @media (max-width: 400px) {
+    .svx-alt-link { gap: 0.6rem; }
+    .svx-alt-beta { display: none; } /* the meta line says "beta" */
+    .svx-alt-cta { margin-left: 0; padding: 0.5rem 0.75rem; }
+  }
+  /* on Android the desktop pill below says the same as "Also for", so the list steps back */
+  :global(html[data-sv-os="android"]) .svx-cta :global(.svdl-others) { display: none; }
 
   .svx-more { display: inline-flex; align-items: center; min-height: 44px; margin-top: 0.8rem; color: var(--color-text); font-size: 0.9rem; text-decoration: none; border-bottom: 1px solid transparent; transition: color 0.2s ease; }
   .svx-more:hover { color: var(--sv-orange); }
@@ -131,7 +251,10 @@ import { RELEASES_URL, REPO } from "../../scripts/sv-release";
   .svbar-logo { width: 2.2rem; height: 2.2rem; flex: none; }
   .svbar-logo svg { width: 100%; height: 100%; display: block; }
   .svbar-text { font-size: 0.88rem; white-space: nowrap; }
-  .svbar-text span { color: var(--color-muted); font-family: var(--font-mono); font-size: 0.75rem; margin-left: 0.25rem; }
+  .svbar-v { color: var(--color-muted); font-family: var(--font-mono); font-size: 0.75rem; margin-left: 0.25rem; }
+  .svbar-v--apk { display: none; }
+  :global(html[data-sv-os="android"]) .svbar-v--apk { display: inline; }
+  :global(html[data-sv-os="android"]) .svbar-v--desk { display: none; }
   .svbar-btn {
     display: inline-flex;
     align-items: center;
