@@ -291,7 +291,11 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
   const heroBtn = document.querySelector(".svh .svdl-btn");
   const finalBtn = root.querySelector(".svdl-btn");
   // also out of the way while the demo keys are on screen (it would sit on them on phones)
-  const demoKeys = document.querySelector(".svd-hold");
+  // Also out of the way while an interactive mock-up sits in the bottom strip
+  // of the screen (demo keys, Notetaker window, the phone), where it would cover
+  // their controls.
+  const avoid = [...document.querySelectorAll(".svd-hold, .svn-stage, .and-figure, .and-get")];
+  const covering = new Set<Element>();
   let heroGone = false, finalSeen = false, demoOn = false;
   const sync = () => {
     const on = heroGone && !finalSeen && !demoOn;
@@ -301,6 +305,21 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
     bar.setAttribute("aria-hidden", String(!on));
   };
   if (heroBtn) new IntersectionObserver(([e]) => { heroGone = !e.isIntersecting && e.boundingClientRect.top < 0; sync(); }).observe(heroBtn);
-  if (demoKeys) new IntersectionObserver(([e]) => { demoOn = e.isIntersecting; sync(); }).observe(demoKeys);
+  if (avoid.length) {
+    let io: IntersectionObserver | undefined;
+    const watch = () => {
+      io?.disconnect();
+      covering.clear();
+      io = new IntersectionObserver((entries) => {
+        for (const e of entries) e.isIntersecting ? covering.add(e.target) : covering.delete(e.target);
+        demoOn = covering.size > 0;
+        sync();
+      }, { rootMargin: `-${Math.max(0, innerHeight - 130)}px 0px 0px 0px` });
+      avoid.forEach((el) => io!.observe(el));
+    };
+    watch();
+    let t = 0;
+    addEventListener("resize", () => { clearTimeout(t); t = window.setTimeout(watch, 200); });
+  }
   if (finalBtn) new IntersectionObserver(([e]) => { finalSeen = e.isIntersecting || e.boundingClientRect.top < 0; sync(); }).observe(finalBtn);
 </script>

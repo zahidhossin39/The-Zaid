@@ -59,6 +59,12 @@ const ld = {
     --sv-line: rgba(244, 242, 237, 0.09);
   }
   .sv { overflow-x: clip; }
+  /* one section rhythm for the whole page (each section's own padding was
+     stacking into ~320px gaps on wide screens) */
+  main.sv > section:is(.svd, .svn, .svf, .svp, .and, .svs) {
+    padding-top: clamp(4.5rem, 8vw, 7rem);
+    padding-bottom: clamp(4.5rem, 8vw, 7rem);
+  }
   .sv ::selection { background: var(--sv-orange); color: #140a02; }
   .sv :focus-visible { outline-color: var(--sv-orange); }
   .sv-eyebrow {

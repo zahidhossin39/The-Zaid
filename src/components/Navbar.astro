@@ -8,7 +8,7 @@ const home = Astro.url.pathname === "/";
 const at = (hash: string) => (home ? hash : `/${hash}`);
 ---
 
-<header class="navbar">
+<header class:list={["navbar", { "navbar--app": variant === "app" }]}>
   <div class="navbar-inner">
     <a href={home ? "#" : "/"} class="logo">Zaid Hossain</a>
     {variant === "app" ? (
@@ -44,6 +44,21 @@ const at = (hash: string) => (home ? hash : `/${hash}`);
   }
 
   .navbar a { pointer-events: auto; }
+
+  /* App page: a quiet frosted bar once you scroll, instead of the blend
+     mode, so the links stay readable over the busy app mock-ups. */
+  .navbar--app {
+    transition: background-color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+    border-bottom: 1px solid transparent;
+  }
+  .navbar--app.is-solid {
+    mix-blend-mode: normal;
+    background: rgba(10, 10, 11, 0.72);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    border-bottom-color: rgba(244, 242, 237, 0.08);
+  }
+  .navbar--app.is-solid .nav-cta { color: #f97316; }
 
   .navbar-inner {
     max-width: 76rem;
@@ -202,6 +217,17 @@ const at = (hash: string) => (home ? hash : `/${hash}`);
 
     // Outline "Book a call" as a pill once the hero CTA has scrolled above the
     // viewport, so there's always one visible way to book.
+    if (nav.classList.contains("navbar--app")) {
+      const solid = () => nav.classList.toggle("is-solid", window.scrollY > 40);
+      window.addEventListener("scroll", solid, { passive: true });
+      solid();
+      const heroDl = document.querySelector(".svh .svdl-btn");
+      if (heroDl) {
+        new IntersectionObserver(([e]) => {
+          nav.classList.toggle("is-pill", !e.isIntersecting && e.boundingClientRect.top < 0);
+        }).observe(heroDl);
+      }
+    }
     const heroCta = document.querySelector(".hero [data-cal-intent]");
     if (heroCta) {
       new IntersectionObserver(([e]) => {
