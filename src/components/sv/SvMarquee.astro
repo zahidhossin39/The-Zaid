@@ -1,25 +1,36 @@
 ---
 // Orange band of everything Silent Voice doesn't ask for. Drifts on its own;
-// scrolling speeds it up and flips its direction with the scroll.
-const items = ["No subscription", "No word limit", "No account", "Works offline", "Open source", "Runs on your PC"];
+// scrolling speeds it up and flips its direction with the scroll. It eases to
+// a stop under the pointer or keyboard focus, and has its own pause button.
+const items = ["No subscription", "No word limit", "No account", "Works offline", "Open source", "Windows · macOS · Linux · Android"];
 ---
 
-<div class="svm" aria-label={items.join(", ")} role="img">
-  <div class="svm-track" aria-hidden="true">
-    {[0, 1, 2].map(() => (
-      <div class="svm-set">
-        {items.map((t) => (
-          <span class="svm-item">{t}<svg viewBox="0 0 24 24"><path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12C6.4 11.4 11.4 6.4 12 0Z" /></svg></span>
-        ))}
-      </div>
-    ))}
+<div class="svm">
+  <ul class="svm-sr">
+    {items.map((t) => <li>{t}</li>)}
+  </ul>
+  <div class="svm-band">
+    <div class="svm-track" aria-hidden="true">
+      {[0, 1, 2].map(() => (
+        <div class="svm-set">
+          {items.map((t) => (
+            <span class="svm-item">{t}<svg viewBox="0 0 24 24"><path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12C6.4 11.4 11.4 6.4 12 0Z" /></svg></span>
+          ))}
+        </div>
+      ))}
+    </div>
+    <button type="button" class="svm-pause" aria-label="Pause the moving text" aria-pressed="false" hidden>
+      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" /></svg>
+      <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" /></svg>
+    </button>
   </div>
 </div>
 
 <style>
-  .svm {
+  .svm { position: relative; z-index: 2; }
+  .svm-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; list-style: none; }
+  .svm-band {
     position: relative;
-    z-index: 2;
     margin: clamp(1rem, 3vw, 2rem) -2rem;
     padding: clamp(0.9rem, 2vw, 1.4rem) 0;
     background: var(--sv-orange);
@@ -43,32 +54,92 @@ const items = ["No subscription", "No word limit", "No account", "Works offline"
     white-space: nowrap;
   }
   .svm-item svg { width: 0.5em; height: 0.5em; fill: currentColor; }
+
+  /* pause button: sits on the band's right edge, inside the page gutter */
+  .svm-pause {
+    position: absolute;
+    right: calc(2rem + clamp(0.75rem, 2vw, 1.5rem));
+    top: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 0;
+    background: #140a02;
+    color: var(--sv-orange);
+    cursor: pointer;
+    box-shadow: 0 0 0 6px var(--sv-orange);
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .svm-pause[hidden] { display: none; }
+  /* text fades out before it reaches the button */
+  .svm-band:has(.svm-pause:not([hidden]))::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: calc(2rem + clamp(0.75rem, 2vw, 1.5rem) + 44px + 4rem);
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0), var(--sv-orange) 55%);
+    pointer-events: none;
+  }
+  .svm-pause { z-index: 1; }
+  .svm-pause:hover { transform: scale(1.06); }
+  .svm-pause:focus-visible { outline: 2px solid #140a02; outline-offset: 8px; }
+  .svm-pause svg { width: 1rem; height: 1rem; fill: currentColor; }
+  .svm-pause .i-play, .svm-pause[aria-pressed="true"] .i-pause { display: none; }
+  .svm-pause[aria-pressed="true"] .i-play { display: block; }
 </style>
 
 <script>
-  const band = document.querySelector<HTMLElement>(".svm")!;
+  const band = document.querySelector<HTMLElement>(".svm-band")!;
   const track = band.querySelector<HTMLElement>(".svm-track")!;
   const set = band.querySelector<HTMLElement>(".svm-set")!;
-  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const btn = band.querySelector<HTMLButtonElement>(".svm-pause")!;
+  const motion = matchMedia("(prefers-reduced-motion: no-preference)");
 
-  if (!still) {
-    let x = 0, dir = -1, boost = 0, lastY = scrollY, raf = 0, vis = false, last = 0;
-    const loop = (t: number) => {
-      const dt = Math.min(48, t - (last || t)); last = t;
-      const y = scrollY;
-      const dy = y - lastY; lastY = y;
-      if (Math.abs(dy) > 0.5) dir = dy > 0 ? -1 : 1;
-      boost += (Math.min(18, Math.abs(dy)) - boost) * 0.12;
-      x += dir * (0.06 + boost * 0.05) * dt;
-      const w = set.offsetWidth;
-      if (x <= -w) x += w;
-      if (x > 0) x -= w;
-      track.style.transform = `translate3d(${x}px,0,0)`;
-      raf = vis ? requestAnimationFrame(loop) : 0;
-    };
-    new IntersectionObserver(([e]) => {
-      vis = e.isIntersecting;
-      if (vis && !raf) { last = 0; lastY = scrollY; raf = requestAnimationFrame(loop); }
-    }).observe(band);
-  }
+  let x = 0, dir = -1, boost = 0, lastY = scrollY, raf = 0, vis = false, last = 0;
+  let speed = 1; // eases toward 0 while held or paused
+  let held = false, paused = false;
+
+  const loop = (t: number) => {
+    const dt = Math.min(48, t - (last || t)); last = t;
+    const y = scrollY;
+    const dy = y - lastY; lastY = y;
+    const stop = held || paused;
+    if (!stop && Math.abs(dy) > 0.5) dir = dy > 0 ? -1 : 1;
+    boost += ((stop ? 0 : Math.min(18, Math.abs(dy))) - boost) * 0.12;
+    speed += ((stop ? 0 : 1) - speed) * 0.08;
+    x += dir * (0.06 + boost * 0.05) * speed * dt;
+    const w = set.offsetWidth;
+    if (x <= -w) x += w;
+    if (x > 0) x -= w;
+    track.style.transform = `translate3d(${x}px,0,0)`;
+    // sleep once it has come to rest, or when off screen
+    raf = vis && !(stop && speed < 0.002) ? requestAnimationFrame(loop) : 0;
+  };
+  const wake = () => { if (vis && motion.matches && !raf) { last = 0; lastY = scrollY; raf = requestAnimationFrame(loop); } };
+
+  btn.addEventListener("click", () => {
+    paused = !paused;
+    btn.setAttribute("aria-pressed", String(paused));
+    btn.setAttribute("aria-label", paused ? "Play the moving text" : "Pause the moving text");
+    wake();
+  });
+  band.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") { held = true; wake(); } });
+  band.addEventListener("pointerleave", () => { held = false; wake(); });
+  band.addEventListener("focusin", () => { held = true; wake(); });
+  band.addEventListener("focusout", () => { held = false; wake(); });
+
+  new IntersectionObserver(([e]) => { vis = e.isIntersecting; wake(); }).observe(band);
+
+  const applyMotion = () => {
+    btn.hidden = !motion.matches;
+    if (!motion.matches) { cancelAnimationFrame(raf); raf = 0; x = 0; track.style.transform = ""; }
+    else wake();
+  };
+  motion.addEventListener("change", applyMotion);
+  applyMotion();
 </script>

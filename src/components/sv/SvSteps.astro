@@ -1,21 +1,7 @@
 ---
-const steps = [
-  {
-    n: "01",
-    t: "Download and install",
-    d: "One installer for your system. On Windows, new versions show up in the app and install when you click.",
-  },
-  {
-    n: "02",
-    t: "Let it pick a model",
-    d: "It suggests a speech model that suits your computer and downloads it while you set up your microphone.",
-  },
-  {
-    n: "03",
-    t: "Hold the hotkey and talk",
-    d: "Ctrl + Shift + Space to start. You can change it to any keys you like.",
-  },
-];
+// Three steps on a rail that draws with the scroll. Each step has a small
+// picture of what you will see: the files, the model download, the hotkey.
+const platforms = ["Windows", "macOS (Apple Silicon)", "Linux", "Android (beta)"];
 ---
 
 <section class="svs" aria-labelledby="svs-title">
@@ -23,25 +9,46 @@ const steps = [
     <p class="sv-eyebrow">Getting started</p>
     <h2 class="h2" id="svs-title">Ready in three steps.</h2>
   </div>
-  <ol class="svs-list">
+  <div class="svs-track">
     <span class="svs-rail" aria-hidden="true"><i></i></span>
-    {steps.map((s) => (
+    <ol class="svs-list">
       <li class="svs-step">
-        <span class="svs-n" aria-hidden="true">{s.n}</span>
-        <h3>{s.t}</h3>
-        <p>{s.d}</p>
+        <span class="svs-n" aria-hidden="true">01</span>
+        <h3>Download and install</h3>
+        <p>Get the installer for Windows, macOS or Linux. New versions show up in the app and install when you click. On Android it's an APK.</p>
+        <ul class="svs-vis svs-plat" aria-label="Platforms">
+          {platforms.map((p) => <li>{p}</li>)}
+        </ul>
       </li>
-    ))}
-  </ol>
+      <li class="svs-step">
+        <span class="svs-n" aria-hidden="true">02</span>
+        <h3>Let it pick a model</h3>
+        <p>It suggests a speech model that suits your computer and downloads it while you set up your microphone and hotkey.</p>
+        <div class="svs-vis svs-dl" aria-hidden="true">
+          <div class="svs-dl-top"><b>Parakeet TDT 0.6B v2</b><span class="svs-rec">Recommended</span></div>
+          <div class="svs-dl-bar"><i></i></div>
+          <div class="svs-dl-meta"><span data-dl-state>Ready</span><span data-dl-mb>640 MB</span></div>
+        </div>
+      </li>
+      <li class="svs-step">
+        <span class="svs-n" aria-hidden="true">03</span>
+        <h3>Hold the hotkey and talk</h3>
+        <p>Hold <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd>, speak, let go. Double-tap it to keep recording hands-free, and press <kbd>Esc</kbd> to cancel. You can change the keys.</p>
+        <div class="svs-vis svs-keys" aria-hidden="true">
+          <span class="key">Ctrl</span><span class="plus">+</span><span class="key">Shift</span><span class="plus">+</span><span class="key key--wide">Space</span>
+        </div>
+      </li>
+    </ol>
+  </div>
 </section>
 
 <style>
   .svs { padding: clamp(6rem, 12vw, 10rem) 1.25rem; max-width: 76rem; margin: 0 auto; }
   .svs-head { margin-bottom: clamp(3rem, 6vw, 5rem); }
-  .svs-head .h2 { margin-top: 0.9rem; font-size: clamp(2.4rem, 5.5vw, 4.2rem); line-height: 1.02; }
+  .svs-head .h2 { margin-top: 0.9rem; font-size: clamp(2.4rem, 5.5vw, 4.2rem); line-height: 1.02; letter-spacing: -0.03em; }
 
+  .svs-track { position: relative; }
   .svs-list {
-    position: relative;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -52,7 +59,7 @@ const steps = [
   .svs-rail { position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--sv-line); }
   .svs-rail i { position: absolute; inset: 0; background: linear-gradient(90deg, var(--sv-orange), #fdba74); transform-origin: left; }
 
-  .svs-step { position: relative; padding-top: 2rem; }
+  .svs-step { position: relative; display: flex; flex-direction: column; padding-top: 2rem; }
   .svs-step::before {
     content: "";
     position: absolute;
@@ -80,14 +87,64 @@ const steps = [
     background-clip: text;
   }
   .svs-step h3 { margin: 1.2rem 0 0.5rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
-  .svs-step p { margin: 0; color: var(--color-muted); max-width: 22rem; }
+  .svs-step p { margin: 0; color: var(--color-muted); max-width: 23rem; line-height: 1.6; }
+  .svs-step kbd {
+    display: inline-block;
+    padding: 0 0.4em;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+    border-bottom-width: 2px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 0.82em;
+    line-height: 1.6;
+  }
+
+  /* small pictures under each step */
+  .svs-vis { margin-top: 1.5rem; max-width: 23rem; }
+  .svs-plat { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0; list-style: none; }
+  .svs-plat li { padding: 0.35rem 0.75rem; border-radius: 999px; border: 1px solid var(--sv-line); background: rgba(244, 242, 237, 0.02); font-size: 0.8rem; color: var(--color-text); }
+
+  .svs-dl { padding: 0.85rem 0.95rem; border-radius: 14px; background: #131722; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #e6e9f0; }
+  .svs-dl-top { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; font-size: 0.82rem; }
+  .svs-dl-top b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .svs-rec { flex: none; padding: 0.12rem 0.45rem; border-radius: 5px; background: rgba(249, 115, 22, 0.15); color: #fb923c; font-size: 0.66rem; font-weight: 600; }
+  .svs-dl-bar { height: 6px; margin: 0.7rem 0 0.5rem; border-radius: 999px; background: #1b2030; overflow: hidden; }
+  .svs-dl-bar i { display: block; height: 100%; width: var(--p, 100%); border-radius: inherit; background: #f97316; }
+  .svs-dl-meta { display: flex; justify-content: space-between; font-size: 0.72rem; color: #8b93a7; font-variant-numeric: tabular-nums; }
+
+  .svs-keys { display: flex; align-items: center; flex-wrap: wrap; gap: 0.45rem; }
+  .key {
+    display: grid;
+    place-items: center;
+    min-width: 3.4rem;
+    height: 2.7rem;
+    padding: 0 0.8rem;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    background: linear-gradient(180deg, #1c1c21, #141417);
+    box-shadow: 0 4px 0 #050506, inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .key--wide { min-width: 6.5rem; }
+  .key.down { transform: translateY(3px); box-shadow: 0 1px 0 #050506, 0 0 22px -4px rgba(249, 115, 22, 0.7); border-color: var(--sv-orange); color: var(--sv-orange); }
+  .plus { color: var(--color-muted); font-size: 0.85rem; }
 
   @media (max-width: 800px) {
-    .svs-list { grid-template-columns: minmax(0, 1fr); gap: 2.5rem; padding-left: 1.75rem; }
+    .svs-track { padding-left: 1.75rem; }
+    .svs-list { grid-template-columns: minmax(0, 1fr); gap: 3rem; }
     .svs-rail { left: 0; top: 0; bottom: 0; right: auto; width: 1px; height: auto; }
     .svs-rail i { transform-origin: top; }
     .svs-step { padding-top: 0; }
     .svs-step::before { top: 0.6rem; left: calc(-1.75rem - 5px); }
+  }
+  @media (max-width: 400px) {
+    .key { min-width: 0; padding: 0 0.6rem; height: 2.4rem; font-size: 0.8rem; }
+    .key--wide { min-width: 4.8rem; }
   }
 </style>
 
@@ -97,12 +154,18 @@ const steps = [
   gsap.registerPlugin(ScrollTrigger);
 
   const root = document.querySelector<HTMLElement>(".svs")!;
+  const list = root.querySelector<HTMLElement>(".svs-list")!;
   const rail = root.querySelector<HTMLElement>(".svs-rail i")!;
   const nums = [...root.querySelectorAll<HTMLElement>(".svs-n")];
   const steps = [...root.querySelectorAll<HTMLElement>(".svs-step")];
+  const dl = root.querySelector<HTMLElement>(".svs-dl")!;
+  const dlState = dl.querySelector<HTMLElement>("[data-dl-state]")!;
+  const dlMb = dl.querySelector<HTMLElement>("[data-dl-mb]")!;
+  const keys = [...root.querySelectorAll<HTMLElement>(".key")];
 
-  // Base CSS is the finished state (rail drawn, numbers filled). With motion,
-  // the rail draws with the scroll and each number fills as the rail reaches it.
+  // Base CSS is the finished state (rail drawn, numbers filled, model ready).
+  // With motion, the rail draws with the scroll, each number fills as the rail
+  // reaches it, the model downloads and the hotkey is pressed once.
   gsap.matchMedia().add(
     { wide: "(min-width: 801px) and (prefers-reduced-motion: no-preference)", narrow: "(max-width: 800px) and (prefers-reduced-motion: no-preference)" },
     (c) => {
@@ -110,15 +173,40 @@ const steps = [
       gsap.set(rail, wide ? { scaleX: 0 } : { scaleY: 0 });
       nums.forEach((n) => n.style.setProperty("--fill", "0%"));
       const tl = gsap.timeline({
-        scrollTrigger: { trigger: root.querySelector(".svs-list"), start: "top 75%", end: wide ? "top 30%" : "bottom 60%", scrub: 0.6 },
+        scrollTrigger: { trigger: list, start: "top 75%", end: wide ? "top 30%" : "bottom 60%", scrub: 0.6 },
       });
       tl.to(rail, wide ? { scaleX: 1, ease: "none", duration: 1 } : { scaleY: 1, ease: "none", duration: 1 }, 0);
       nums.forEach((n, i) => tl.to(n, { "--fill": "100%", ease: "power1.out", duration: 0.3 }, i * 0.33));
       const fade = gsap.from(steps, {
         y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.12,
-        scrollTrigger: { trigger: root.querySelector(".svs-list"), start: "top 85%", once: true },
+        scrollTrigger: { trigger: list, start: "top 85%", once: true },
       });
-      return () => { tl.kill(); fade.revert(); gsap.set(rail, { clearProps: "all" }); nums.forEach((n) => n.style.removeProperty("--fill")); };
+
+      // step 2: the download runs while you set up the rest
+      const prog = { p: 0 };
+      const paint = () => {
+        dl.style.setProperty("--p", `${prog.p}%`);
+        dlState.textContent = prog.p >= 100 ? "Ready" : `Downloading · ${Math.round(prog.p)}%`;
+        dlMb.textContent = prog.p >= 100 ? "640 MB" : `${Math.round((640 * (100 - prog.p)) / 100)} MB left`;
+      };
+      paint();
+      const down = gsap.to(prog, {
+        p: 100, duration: 3.2, ease: "power1.inOut", onUpdate: paint,
+        scrollTrigger: { trigger: dl, start: "top 85%", once: true },
+      });
+
+      // step 3: the keys go down one by one, hold, and let go
+      const press = gsap.timeline({ scrollTrigger: { trigger: keys[0], start: "top 85%", once: true }, delay: 0.4 });
+      keys.forEach((k, i) => press.call(() => k.classList.add("down"), [], i * 0.22));
+      press.call(() => keys.forEach((k) => k.classList.remove("down")), [], keys.length * 0.22 + 1.6);
+
+      return () => {
+        tl.kill(); fade.revert(); down.kill(); press.kill();
+        gsap.set(rail, { clearProps: "all" });
+        nums.forEach((n) => n.style.removeProperty("--fill"));
+        dl.style.removeProperty("--p"); dlState.textContent = "Ready"; dlMb.textContent = "640 MB";
+        keys.forEach((k) => k.classList.remove("down"));
+      };
     },
   );
 </script>
