@@ -34,10 +34,13 @@ const word = (w: string) => [...w];
       <span class="svh-word svh-word--em" aria-hidden="true">{word("Voice").map((c) => <span class="ch">{c}</span>)}</span>
     </h1>
 
+    <p class="svh-promise" data-hero-in>
+      <span class="svh-os-desk">Talk, and it types. <em>In any app.</em></span>
+      <span class="svh-os-droid">Talk, and it types. <em>In any app on your phone.</em></span>
+    </p>
     <p class="svh-lead" data-hero-in>
-      Hold a key, speak, let go. Your words are typed wherever your cursor is,
-      and your meetings get written down too.
-      <span class="svh-lead-2">Free, unlimited, and it runs on your own computer. Now on Android as well.</span>
+      <span class="svh-os-desk">Hold the hotkey, speak, let go: your words appear at your cursor. Notetaker writes down your calls too. Free, unlimited, and it runs on your own computer.</span>
+      <span class="svh-os-droid">Tap the bubble above your keyboard, talk, tap again: the words are typed for you. Speech becomes text on the phone itself. Free, with no account.</span>
     </p>
 
     <div class="svh-cta" data-hero-in>
@@ -180,15 +183,40 @@ const word = (w: string) => [...w];
   }
   .ch { display: inline-block; will-change: transform; }
 
-  .svh-lead {
-    max-width: 34rem;
-    margin: 1.8rem 0 2.6rem;
-    font-size: clamp(1.05rem, 2vw, 1.25rem);
-    line-height: 1.55;
-    color: var(--color-muted);
+  .svh-promise {
+    margin: 1.6rem 0 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
     text-wrap: balance;
   }
-  .svh-lead-2 { display: block; color: var(--color-text); margin-top: 0.35rem; }
+  .svh-promise em { font-style: italic; color: var(--sv-orange); }
+  .svh-lead {
+    max-width: 36rem;
+    margin: 1rem 0 2.4rem;
+    font-size: clamp(1rem, 1.7vw, 1.125rem);
+    line-height: 1.6;
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+  /* Android visitors get the phone version of the promise */
+  .svh-os-droid { display: none; }
+  :global(html[data-sv-os="android"]) .svh-inner .svh-os-droid { display: inline; }
+  :global(html[data-sv-os="android"]) .svh-inner .svh-os-desk { display: none; }
+
+  /* keep the waveform from running through the small links under the button */
+  .svh-cta { position: relative; isolation: isolate; }
+  .svh-cta::before {
+    content: "";
+    position: absolute;
+    inset: -1.5rem -5rem -2.5rem;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgba(10, 10, 11, 0.9), rgba(10, 10, 11, 0.6) 60%, transparent);
+    pointer-events: none;
+  }
 
   .svh-scroll {
     position: absolute;
@@ -221,10 +249,14 @@ const word = (w: string) => [...w];
 
   .svh-noscript { position: absolute; bottom: 5rem; color: var(--color-muted); font-size: 0.85rem; }
 
+  @media (prefers-reduced-motion: reduce) {
+    .svh-grain, .svh-logo .b, .svh-scroll-line::after { animation: none !important; }
+  }
+
   @media (max-width: 640px) {
     .svh { padding: 6rem 1rem 7.5rem; }
     .svh-logo { margin: 1.8rem 0 1.1rem; }
-    .svh-lead { margin: 1.4rem 0 2rem; }
+    .svh-lead { margin: 0.9rem 0 2rem; }
     .svh-scroll { display: none; }
   }
   @media (max-height: 760px) and (min-width: 641px) {

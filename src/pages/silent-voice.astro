@@ -5,9 +5,7 @@ import Footer from "../components/Footer.astro";
 import SvHero from "../components/sv/SvHero.astro";
 import SvDemo from "../components/sv/SvDemo.astro";
 import SvPrivate from "../components/sv/SvPrivate.astro";
-import SvMarquee from "../components/sv/SvMarquee.astro";
 import SvFeatures from "../components/sv/SvFeatures.astro";
-import SvSteps from "../components/sv/SvSteps.astro";
 import SvFinal from "../components/sv/SvFinal.astro";
 import SvAndroid from "../components/sv/SvAndroid.astro";
 import SvNotetaker from "../components/sv/SvNotetaker.astro";
@@ -41,11 +39,9 @@ const ld = {
     <SvHero />
     <SvDemo />
     <SvNotetaker />
-    <SvMarquee />
     <SvFeatures />
     <SvPrivate />
     <SvAndroid />
-    <SvSteps />
     <SvFinal />
   </main>
   <Footer variant="app" />
@@ -61,7 +57,13 @@ const ld = {
   .sv { overflow-x: clip; }
   /* one section rhythm for the whole page (each section's own padding was
      stacking into ~320px gaps on wide screens) */
-  main.sv > section:is(.svd, .svn, .svf, .svp, .and, .svs) {
+  /* Android visitors: the phone app comes straight after the hero */
+  html[data-sv-os="android"] main.sv { display: flex; flex-direction: column; }
+  html[data-sv-os="android"] main.sv > * { order: 2; }
+  html[data-sv-os="android"] main.sv > .svh { order: 0; }
+  html[data-sv-os="android"] main.sv > .and { order: 1; }
+
+  main.sv > section:is(.svd, .svn, .svf, .svp, .and) {
     padding-top: clamp(4.5rem, 8vw, 7rem);
     padding-bottom: clamp(4.5rem, 8vw, 7rem);
   }

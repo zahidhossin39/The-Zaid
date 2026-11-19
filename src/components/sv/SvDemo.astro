@@ -45,7 +45,7 @@
         </div>
       </div>
 
-      <button class="svd-hold" type="button" aria-describedby="svd-hint">
+      <button class="svd-hold" type="button" aria-label="Try dictation: hold Ctrl + Shift + Space" aria-describedby="svd-hint">
         <span class="key">Ctrl</span>
         <span class="plus" aria-hidden="true">+</span>
         <span class="key">Shift</span>
@@ -252,6 +252,9 @@
   }
   .svd-hint { margin: 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-muted); min-height: 1.2em; }
   .svd-hint.warn { color: var(--sv-orange); animation: svd-shake 0.4s ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .svd-caret, .svd-rec, .svd-busy i, .svd-ring { animation: none !important; }
+  }
   @keyframes svd-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -324,17 +327,11 @@
     cancelAnimationFrame(raf);
     section.classList.remove("is-rec");
     const held = performance.now() - started;
-    if (held < 350) {
-      state = "idle";
-      overlay.dataset.state = "idle";
-      hint.textContent = "Hold it a little longer";
-      hint.classList.remove("warn"); void hint.offsetWidth; hint.classList.add("warn");
-      setStep(null);
-      return;
-    }
+    // A quick tap still shows the result, with a nudge about holding.
+    const quick = held < 350;
     state = "busy";
     overlay.dataset.state = "busy";
-    hint.textContent = "Turning speech into text";
+    hint.textContent = quick ? "In the app you hold the keys while you talk" : "Turning speech into text";
     setStep("let");
     setTimeout(type, still ? 50 : 650);
   };
@@ -389,7 +386,17 @@
   btn.addEventListener("keyup", (e) => {
     if (e.key === " " || e.key === "Enter") { e.preventDefault(); stop(); }
   });
-  btn.addEventListener("click", (e) => e.preventDefault());
+  // Screen readers in browse mode (and other assistive tech) send a bare click
+  // with no pointer or key events before it: play one sample line for them.
+  let pressed = 0;
+  btn.addEventListener("pointerdown", () => (pressed = performance.now()), { capture: true });
+  btn.addEventListener("keydown", () => (pressed = performance.now()), { capture: true });
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (performance.now() - pressed < 2000 || state !== "idle") return;
+    start();
+    setTimeout(stop, still ? 400 : 1200);
+  });
 
   // the real shortcut, while the demo is on screen
   let inView = false;
