@@ -1,23 +1,23 @@
 ---
 // Notetaker, the v0.2.0 headline feature. The centrepiece is a working copy of
-// the real Notetaker window that plays one scripted call: Start recording, the
-// lines arrive live as "You" / "Others", Stop, the Others side is split into
-// Speaker 1 / Speaker 2, then Summarize writes the Overview. The base HTML is
-// the finished meeting (JS off, reduced motion). Around it: echo removal,
-// mixed languages, local or cloud, after-the-call tools, platform notes and a
-// compact "Transcribe a file" card. Facts: facts-app.md "Notetaker", facts-ui.md §3.
+// the real Notetaker window. It starts on the finished meeting (speaker labels
+// and Overview visible), which is also the JS-off and reduced-motion frame.
+// "Play the call" replays it in about 10 s: Start recording, lines arrive as
+// "You" / "Others", Stop, "Others" is split into Speaker 1 / Speaker 2, then
+// Summarize writes the Overview. Beside it: the three steps (each one plays
+// from there). Below: echo removal and Transcribe a file, then a "More about
+// Notetaker" disclosure. Facts: facts-app.md "Notetaker", facts-ui.md §3.
 
 type Who = "you" | "a" | "b";
 const LINES: { t: number; who: Who; text: string }[] = [
-  { t: 4, who: "you", text: "Quick note, I'm recording this so I don't have to take notes. Where are we with the launch?" },
-  { t: 19, who: "a", text: "The landing page is done. I'm only missing the final screenshots from the app." },
-  { t: 41, who: "you", text: "I can send those tomorrow morning. Are we still aiming for the 14th?" },
-  { t: 62, who: "b", text: "The 14th works for me, as long as the email goes out the day before." },
-  { t: 86, who: "a", text: "Then let's keep the 14th and send the email on the 13th." },
-  { t: 111, who: "you", text: "Good. I'll write the email and share a draft with you both on Friday." },
-  { t: 134, who: "b", text: "I'll schedule the launch day posts and check the price page one more time." },
+  { t: 4, who: "you", text: "I'm recording so I don't have to take notes. How's the launch looking?" },
+  { t: 17, who: "a", text: "The landing page is done. I only need the final app screenshots." },
+  { t: 36, who: "you", text: "I'll send those tomorrow morning, and I'll write the launch email." },
+  { t: 58, who: "b", text: "Then the 14th works for me, if the email goes out the day before." },
+  { t: 79, who: "a", text: "Good, launch on the 14th and email on the 13th. I'll check the price page." },
+  { t: 101, who: "b", text: "And I'll schedule the launch day posts." },
 ];
-const DURATION = 151;
+const DURATION = 115;
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const finalName = (w: Who) => (w === "you" ? "You" : w === "a" ? "Speaker 1" : "Speaker 2");
 
@@ -33,6 +33,12 @@ const NAV = [
   { k: "History", d: "M12 7v5l3 2M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9z" },
 ];
 
+const STEPS = [
+  { n: 1, t: "Both sides, live", d: "Your mic is \"You\", the computer's sound is \"Others\". Lines appear as people talk." },
+  { n: 2, t: "Voices told apart", d: "After you stop, \"Others\" becomes Speaker 1, Speaker 2. About 15 s per minute of meeting." },
+  { n: 3, t: "The summary, written", d: "Key points, decisions and action items, from a model on your computer or your own cloud key." },
+];
+
 // Echo picture: the mic hears your voice (orange) plus the call from your
 // speakers (slate). Where only the speakers are heard, the gate mutes it;
 // where you talk over them, the speakers' sound is subtracted (about 8 dB).
@@ -46,147 +52,113 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   const echo = inSeg(i, echoSegs) ? 0.22 + 0.42 * hash(i, 2) : 0.03 + 0.04 * hash(i, 3);
   return { x: i * 10 + 2, voice, echo, gate: voice === 0 };
 });
+const PLAY = "M3.5 2v8l6.5-4z";
 ---
 
 <section class="svn" id="notetaker" aria-labelledby="svn-title">
   <div class="svn-inner">
     <header class="svn-head">
-      <div>
-        <p class="sv-eyebrow">New in 0.2.0 · Notetaker</p>
-        <h2 class="h2" id="svn-title">Your meetings, <em>written down.</em></h2>
-      </div>
-      <p class="svn-lead">
-        Notetaker records your side and the other side of any call. The words show up while people talk,
-        it tells the voices apart, and when you stop, it writes the summary. All on your computer,
-        unless you choose a cloud provider.
-      </p>
+      <p class="sv-eyebrow">New in 0.2.0 · Notetaker</p>
+      <h2 class="h2" id="svn-title">Your meetings, <em>written down.</em></h2>
     </header>
 
-    <!-- story chapters: each one plays the demo from that point -->
-    <div class="svn-controls">
-      <ol class="svn-chapters" aria-label="What the demo shows">
-        <li>
-          <button type="button" class="svn-ch" data-ch="1">
-            <span class="svn-ch-n" aria-hidden="true">01</span>
-            <span class="svn-ch-t">Both sides, live</span>
-            <span class="svn-ch-d">Your mic is "You", the computer's sound is "Others". Lines appear as people talk.</span>
-            <i class="svn-ch-bar" aria-hidden="true"></i>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="svn-ch" data-ch="2">
-            <span class="svn-ch-n" aria-hidden="true">02</span>
-            <span class="svn-ch-t">Voices told apart</span>
-            <span class="svn-ch-d">After you stop, "Others" becomes Speaker 1, Speaker 2. About 15 s per minute of meeting.</span>
-            <i class="svn-ch-bar" aria-hidden="true"></i>
-          </button>
-        </li>
-        <li>
-          <button type="button" class="svn-ch" data-ch="3">
-            <span class="svn-ch-n" aria-hidden="true">03</span>
-            <span class="svn-ch-t">The summary, written</span>
-            <span class="svn-ch-d">Key points, decisions and action items, from a model on your computer or your own cloud key.</span>
-            <i class="svn-ch-bar" aria-hidden="true"></i>
-          </button>
-        </li>
-      </ol>
-    </div>
+    <div class="svn-hero">
+      <!-- left: what it does, and the controls that play the demo -->
+      <div class="svn-side">
+        <p class="svn-lead">
+          Notetaker records your side and the other side of any call. The words show up while people talk,
+          it tells the voices apart, and when you stop, it writes the summary. All on your computer,
+          unless you choose a cloud provider.
+        </p>
 
-    <!-- ===================== the Notetaker window ===================== -->
-    <div class="svn-stage">
-      <div class="nt" data-phase="post" data-split="1" role="group" aria-label="Notetaker demo with a sample call" tabindex="-1">
-        <div class="nt-title" aria-hidden="true">
-          <span class="nt-lights"><i></i><i></i><i></i></span>
-          <span class="nt-wtitle">Silent Voice</span>
-          <span class="nt-winctl">
-            <svg viewBox="0 0 10 10"><path d="M1 5h8" /></svg>
-            <svg viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" rx="1" /></svg>
-            <svg viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" /></svg>
+        <button type="button" class="svn-play" hidden>
+          <span class="svn-play-ic" aria-hidden="true">
+            <svg class="i-p" viewBox="0 0 12 12"><path d={PLAY} /></svg>
+            <svg class="i-s" viewBox="0 0 12 12"><path d="M2 2.2v7.6L7 6zM7.6 2.2h2v7.6h-2z" /></svg>
           </span>
-        </div>
+          <span class="svn-play-l">Play the call</span>
+          <span class="svn-play-d" aria-hidden="true">about 10 s</span>
+        </button>
 
-        <div class="nt-body">
-          <nav class="nt-side" aria-hidden="true">
-            <div class="nt-brand">
-              <svg viewBox="0 0 1024 1024" class="nt-logo">
-                <rect width="1024" height="1024" rx="224" fill="#0d0f14" />
-                <rect x="232" y="432" width="80" height="160" rx="40" fill="#f97316" />
-                <rect x="360" y="352" width="80" height="320" rx="40" fill="#f97316" />
-                <rect x="488" y="252" width="80" height="520" rx="40" fill="#ffffff" />
-                <rect x="616" y="352" width="80" height="320" rx="40" fill="#f97316" />
-                <rect x="744" y="432" width="80" height="160" rx="40" fill="#f97316" />
-              </svg>
-              <span class="nt-brand-t"><b>Silent Voice</b><small>local-first dictation</small></span>
-            </div>
-            <ul class="nt-nav">
-              {NAV.map((n) => (
-                <li class:list={["nt-nav-i", { "is-on": n.k === "Notetaker" }]}>
-                  <svg viewBox="0 0 24 24"><path d={n.d} /></svg>
-                  <span class="nt-nav-t">{n.k}</span>
-                  {n.k === "Notetaker" && <span class="nt-nav-dot"></span>}
-                </li>
-              ))}
-            </ul>
-            <div class="nt-side-foot"><span class="nt-theme"><i></i><i class="on"></i><i></i></span><span>v0.2.0</span></div>
-          </nav>
-
-          <div class="nt-main">
-            <div class="nt-head">
-              <div class="nt-head-t">
-                <p class="nt-h1">Notetaker</p>
-                <p class="nt-sub">Record a call and get a live transcript of who said what. Audio and text stay on this PC.</p>
-              </div>
-              <div class="nt-actions">
-                <span class="nt-gear" aria-hidden="true">
-                  <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>
+        <ol class="svn-chapters" aria-label="What the demo shows">
+          {STEPS.map((s) => (
+            <li>
+              <button type="button" class="svn-ch" data-ch={s.n} disabled>
+                <span class="svn-ch-ic" aria-hidden="true">
+                  <span class="svn-ch-n">0{s.n}</span>
+                  <svg viewBox="0 0 12 12"><path d={PLAY} /></svg>
                 </span>
-                <button type="button" class="nt-start">
-                  <span class="nt-start-ic" aria-hidden="true"></span>Start recording
-                </button>
-                <span class="nt-recpill">
-                  <span class="nt-ping" aria-hidden="true"></span>
-                  <span class="nt-rec-t">Recording <span class="nt-rec-time">{clock(DURATION)}</span></span>
-                  <button type="button" class="nt-stop"><span class="nt-stop-l">■ Stop</span><span class="nt-stop-f">Finishing up…</span></button>
-                </span>
-              </div>
-            </div>
+                <span class="svn-ch-t">{s.t}</span>
+                <span class="svn-ch-d">{s.d}</span>
+                <i class="svn-ch-bar" aria-hidden="true"></i>
+              </button>
+            </li>
+          ))}
+        </ol>
 
-            <div class="nt-cols">
-              <!-- left: setup card + meeting list -->
-              <div class="nt-list" aria-hidden="true">
-                <div class="nt-setup">
-                  <dl>
-                    <div><dt>You</dt><dd>Default microphone</dd></div>
-                    <div><dt>Others</dt><dd>What plays on your speakers</dd></div>
-                  </dl>
-                  <p class="nt-setup-hint">Best with headphones. On speakers your mic also hears the others; Silent Voice drops those repeats, but headphones keep "You" cleanest.</p>
-                  <p class="nt-consent">Let people know you're recording. In many places everyone on a call has to agree to it. <b>Got it</b></p>
+        <p class="svn-hint">Try it in the window: set <b>People besides you</b> to 1, or <span class="h-fine">click</span><span class="h-coarse">tap</span> a time to play from there.</p>
+      </div>
+
+      <!-- ===================== the Notetaker window ===================== -->
+      <div class="svn-stage">
+        <div class="nt" data-phase="post" role="group" aria-label="Notetaker demo with a sample call" tabindex="-1">
+          <div class="nt-title" aria-hidden="true">
+            <span class="nt-lights"><i></i><i></i><i></i></span>
+            <span class="nt-wtitle">Silent Voice</span>
+            <span class="nt-winctl">
+              <svg viewBox="0 0 10 10"><path d="M1 5h8" /></svg>
+              <svg viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" rx="1" /></svg>
+              <svg viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" /></svg>
+            </span>
+          </div>
+
+          <div class="nt-body">
+            <nav class="nt-side" aria-hidden="true">
+              <div class="nt-brand">
+                <svg viewBox="0 0 1024 1024" class="nt-logo">
+                  <rect width="1024" height="1024" rx="224" fill="#0d0f14" />
+                  <rect x="232" y="432" width="80" height="160" rx="40" fill="#f97316" />
+                  <rect x="360" y="352" width="80" height="320" rx="40" fill="#f97316" />
+                  <rect x="488" y="252" width="80" height="520" rx="40" fill="#ffffff" />
+                  <rect x="616" y="352" width="80" height="320" rx="40" fill="#f97316" />
+                  <rect x="744" y="432" width="80" height="160" rx="40" fill="#f97316" />
+                </svg>
+                <span class="nt-brand-t"><b>Silent Voice</b><small>local-first dictation</small></span>
+              </div>
+              <ul class="nt-nav">
+                {NAV.map((n) => (
+                  <li class:list={["nt-nav-i", { "is-on": n.k === "Notetaker" }]}>
+                    <svg viewBox="0 0 24 24"><path d={n.d} /></svg>
+                    <span class="nt-nav-t">{n.k}</span>
+                    {n.k === "Notetaker" && <span class="nt-nav-dot"></span>}
+                  </li>
+                ))}
+              </ul>
+              <div class="nt-side-foot"><span class="nt-theme"><i></i><i class="on"></i><i></i></span><span>v0.2.0</span></div>
+            </nav>
+
+            <div class="nt-main">
+              <div class="nt-head">
+                <div class="nt-head-t">
+                  <p class="nt-h1">Notetaker</p>
+                  <p class="nt-sub">Record a call and get a live transcript of who said what. Audio and text stay on this PC.</p>
                 </div>
-                <div class="nt-search">
-                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
-                  Search meetings
-                </div>
-                <p class="nt-day">Today</p>
-                <div class="nt-row nt-row--now">
-                  <span class="nt-tile"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" /></svg><i></i></span>
-                  <span class="nt-row-t"><b>Meeting at 3:05 PM</b><small class="nt-row-done">3:05 PM · {clock(DURATION)}</small><small class="nt-row-live">Recording now</small></span>
-                </div>
-                <div class="nt-row">
-                  <span class="nt-tile"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" /></svg></span>
-                  <span class="nt-row-t"><b>Design review</b><small>11:30 AM · 38:04</small></span>
-                </div>
-                <p class="nt-day">Yesterday</p>
-                <div class="nt-row">
-                  <span class="nt-tile"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" /></svg></span>
-                  <span class="nt-row-t"><b>Weekly sync</b><small>10:02 AM · 42:17</small></span>
-                </div>
-                <div class="nt-row">
-                  <span class="nt-tile"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v3" /></svg></span>
-                  <span class="nt-row-t"><b>Call with the printer</b><small>4:15 PM · 12:50</small></span>
+                <div class="nt-actions">
+                  <span class="nt-gear" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" /></svg>
+                  </span>
+                  <button type="button" class="nt-start">
+                    <span class="nt-start-ic" aria-hidden="true"></span>Start recording
+                  </button>
+                  <span class="nt-recpill">
+                    <span class="nt-ping" aria-hidden="true"></span>
+                    <span class="nt-rec-t">Recording <span class="nt-rec-time">{clock(DURATION)}</span></span>
+                    <button type="button" class="nt-stop"><span class="nt-stop-l">■ Stop</span><span class="nt-stop-f">Finishing up…</span></button>
+                  </span>
                 </div>
               </div>
 
-              <!-- right: the open meeting -->
+              <!-- the open meeting -->
               <div class="nt-panel">
                 <p class="nt-empty">Start recording when a call begins, and stop when it ends.</p>
 
@@ -206,17 +178,21 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
                       </label>
                       <span class="nt-voices" hidden> · telling voices apart…</span>
                       <span class="nt-sep" aria-hidden="true">·</span>
-                      <span class="nt-again">Transcribe again</span>
+                      <button type="button" class="nt-again" data-state="idle">
+                        <span data-s="idle">Transcribe again</span>
+                        <span data-s="confirm">Replace the text? Transcribe with <span class="nt-again-with">this PC</span></span>
+                        <span data-s="busy">transcribing again… <u>Cancel</u></span>
+                      </button>
                     </p>
                   </div>
                   <div class="nt-tools" aria-hidden="true">
-                    <span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" /></svg><em>Copy</em></span>
-                    <span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg><em>Save…</em></span>
-                    <span><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg><em>Delete</em></span>
+                    <span><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" /></svg></span>
+                    <span><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg></span>
+                    <span><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" /></svg></span>
                   </div>
                 </div>
 
-                <div class="nt-scroll" data-lenis-prevent>
+                <div class="nt-content">
                   <div class="nt-ov" data-state="done">
                     <p class="nt-ov-label">Overview</p>
                     <div class="nt-ov-card">
@@ -230,12 +206,8 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
                       </div>
                       <div class="nt-ov-notes">
                         <div class="ov-sec">
-                          <p class="ov-sh">Summary</p>
-                          <p>A short check on the launch. The date stays on the 14th, with the launch email going out the day before.</p>
-                        </div>
-                        <div class="ov-sec">
                           <p class="ov-sh">Key points</p>
-                          <ul><li>The landing page is done, it only needs the final app screenshots.</li><li>The launch email goes out one day before launch.</li></ul>
+                          <ul><li>The landing page is done; it only needs the final app screenshots.</li></ul>
                         </div>
                         <div class="ov-sec">
                           <p class="ov-sh">Decisions</p>
@@ -245,8 +217,9 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
                           <p class="ov-sh">Action items</p>
                           <ul class="ov-tasks">
                             <li><span class="ov-tag ov-tag--you">You</span>Send the app screenshots tomorrow morning.</li>
-                            <li><span class="ov-tag ov-tag--you">You</span>Share the email draft on Friday.</li>
-                            <li><span class="ov-tag">Others</span>Schedule the launch day posts and check the price page.</li>
+                            <li><span class="ov-tag ov-tag--you">You</span>Write the launch email.</li>
+                            <li><span class="ov-tag" data-who="a">Speaker 1</span>Check the price page.</li>
+                            <li><span class="ov-tag" data-who="b">Speaker 2</span>Schedule the launch day posts.</li>
                           </ul>
                         </div>
                       </div>
@@ -303,32 +276,26 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
             </div>
           </div>
         </div>
+        <p class="sr-only" aria-live="polite" data-svn-live></p>
       </div>
-
-      <div class="svn-under">
-        <p class="svn-hint">Try it: set <b>People besides you</b> to 1, or click a time to play from there.</p>
-        <button type="button" class="svn-replay">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7M4 5v5h5" /></svg>
-          Replay
-        </button>
-      </div>
-      <p class="sr-only" aria-live="polite" data-svn-live></p>
     </div>
 
-    <!-- ===================== around the mock ===================== -->
-    <div class="svn-grid">
+    <!-- ===================== the two that sell it ===================== -->
+    <div class="svn-pair">
       <article class="svn-card svn-card--echo">
         <div class="svn-card-copy">
           <h3>No headphones? The echo comes out.</h3>
           <p>
             On laptop speakers your mic also hears the call. Where it only hears the speakers, that part is muted.
-            Where you talk over them, their sound is taken out of your side. On a real call that meant
-            about 8 dB less echo, with your voice kept.
+            Where you talk over them, their sound is taken out of your side.
           </p>
         </div>
         <div class="svn-echo" data-echo="on">
           <div class="svn-echo-top">
-            <p class="svn-echo-k"><i class="v"></i>Your voice <i class="e"></i>Echo from your speakers</p>
+            <p class="svn-echo-state" aria-live="polite">
+              <span class="svn-echo-tag" data-when="off">Before</span><span class="svn-echo-tag svn-echo-tag--on" data-when="on">After</span>
+              <span data-when="off">Echo mixed into your side</span><span data-when="on">Echo taken out, voice kept</span>
+            </p>
             <button type="button" class="svn-echo-tg" aria-pressed="true">
               <span class="svn-sw" aria-hidden="true"><i></i></span>Echo removal
             </button>
@@ -345,120 +312,101 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
               <rect class="vb" x={b.x} y={60 - b.voice * 50} width="6" height={b.voice * 100} rx="3" />
             ))}
           </svg>
-          <div class="svn-echo-read">
-            <span><b class="svn-db">about 8 dB less</b> echo</span>
-            <span><b>voice kept</b> on a real call</span>
+          <div class="svn-echo-foot">
+            <p class="svn-echo-k"><span><i class="v"></i>Your voice</span><span><i class="e"></i>Echo from your speakers</span></p>
+            <p class="svn-echo-num">
+              <span class="svn-echo-meter" aria-hidden="true"><i></i></span>
+              <span data-when="off"><b>0 dB</b> removed</span><span data-when="on"><b>about 8 dB</b> less, on a real call</span>
+            </p>
           </div>
         </div>
       </article>
 
-      <article class="svn-card svn-card--lang">
+      <article class="svn-card svn-card--file">
         <div class="svn-card-copy">
-          <h3>Two languages, one meeting.</h3>
-          <p>Tell it every language people speak, for example Bangla and English. A piece that comes back in the wrong script is done again in the right language.</p>
-        </div>
-        <div class="svn-lang" aria-hidden="true">
-          <div class="svn-lang-set">
-            <span class="svn-lang-k">Language spoken</span>
-            <span class="svn-lang-sel">Bangla <svg viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3" /></svg></span>
-            <span class="svn-lang-k">Also spoken:</span>
-            <span class="svn-chip">English ×</span>
-            <span class="svn-chip svn-chip--add">+ Add</span>
-          </div>
-          <div class="svn-mini">
-            <div class="svn-mini-ln"><span class="t">12:40</span><div><b>Speaker 1</b><p lang="bn">ঠিক আছে, তাহলে লঞ্চ ১৪ তারিখেই হবে।</p></div></div>
-            <div class="svn-mini-ln"><span class="t">12:46</span><div><b class="you">You</b><p>Perfect. I'll send the email draft on Friday.</p></div></div>
-          </div>
-        </div>
-      </article>
-
-      <article class="svn-card svn-card--where">
-        <div class="svn-card-copy">
-          <h3>On your computer by default.</h3>
-          <p>Notetaker transcribes on your computer and works offline. If you add your own cloud provider you can use it instead, and then the audio is sent to that provider.</p>
-        </div>
-        <div class="svn-where">
-          <div class="svn-where-opts" role="group" aria-label="Where the meeting is transcribed">
-            <button type="button" class="svn-opt" aria-pressed="true" data-where="local">
-              <b>On this PC · offline</b><small>Your voice model. Nothing leaves this PC.</small>
-            </button>
-            <button type="button" class="svn-opt" aria-pressed="false" data-where="cloud">
-              <b>Cloud</b><small>Your own provider and key.</small>
-            </button>
-          </div>
-          <p class="svn-where-k">The Notetaker page then says:</p>
-          <p class="svn-where-out" aria-live="polite">
-            <span data-where-text="local">Audio and text stay on this PC.</span>
-            <span data-where-text="cloud" hidden>Audio is sent to your provider to transcribe; recordings and text stay on this PC.</span>
+          <p class="svn-file-k">Also new: Transcribe</p>
+          <h3>Got a recording already? Drop it in.</h3>
+          <p>
+            Lectures, calls, voice memos, videos. Drop an audio or video file and get a transcript with times,
+            ready to save as .txt, .md or .srt. Files are always transcribed on your computer.
           </p>
         </div>
-      </article>
-
-      <article class="svn-card svn-card--tools">
-        <div class="svn-card-copy">
-          <h3>Find it, play it back, keep it.</h3>
-          <p>Every meeting is saved with its audio, so you can come back to it later.</p>
+        <div class="svn-file-ui" aria-hidden="true">
+          <div class="svn-file-row">
+            <span class="svn-file-ic"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></svg></span>
+            <span class="svn-file-n"><b>interview.m4a</b><small>24:16 · on this PC</small></span>
+            <span class="svn-file-done">Done</span>
+          </div>
+          <span class="svn-file-bar"><i></i></span>
+          <div class="svn-file-lines">
+            <p><span>0:00</span>Thanks for making the time. Let's start with how the shop began.</p>
+            <p><span>0:07</span>It started as a stall at the Friday market, about six years ago.</p>
+          </div>
         </div>
-        <ul class="svn-tools">
-          <li>
-            <span class="svn-tool-ui svn-search" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>price page</span>
-            <b>Search</b><span>Across meeting names, Overviews and every word said.</span>
-          </li>
-          <li>
-            <span class="svn-tool-ui svn-speeds" aria-hidden="true"><i>1×</i><i>1.25×</i><i class="on">1.5×</i><i>2×</i></span>
-            <b>Play back at 1× to 2×</b><span>Click any line's time to play from there.</span>
-          </li>
-          <li>
-            <span class="svn-tool-ui svn-files" aria-hidden="true"><i>.txt</i><i>.md</i><i>.srt</i></span>
-            <b>Save or copy</b><span>As plain text, Markdown with times, or subtitles.</span>
-          </li>
-          <li>
-            <span class="svn-tool-ui svn-again" aria-hidden="true">Transcribe again</span>
-            <b>Transcribe again</b><span>Redo a meeting from its saved audio with a newer model. Cancel puts the old text back.</span>
-          </li>
-        </ul>
+        <p class="svn-file-fmt">mp3 · m4a · aac · mp4 · mov · wav · flac · ogg · mkv</p>
       </article>
+    </div>
 
-      <aside class="svn-card svn-card--os" aria-labelledby="svn-os-title">
-        <h3 id="svn-os-title" class="svn-os-h">Where it records the other side</h3>
-        <ul class="svn-os">
-          <li><b>Windows</b><span>Records both sides.</span></li>
-          <li><b>macOS 13 or later</b><span>Records both sides once you allow Screen &amp; System Audio Recording. On macOS 12 it records your side only.</span></li>
-          <li><b>Linux</b><span>Records both sides with PulseAudio or PipeWire.</span></li>
-        </ul>
-        <p class="svn-os-note">If it can't record the computer's sound, it tells you before you start and keeps your side.</p>
+    <!-- ===================== the rest, one click away ===================== -->
+    <details class="svn-more">
+      <summary>
+        <span class="svn-more-t">More about Notetaker</span>
+        <span class="svn-more-d">Two languages in one call · on your computer or the cloud · search, playback, export · Windows, macOS, Linux</span>
+        <svg class="svn-more-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+      </summary>
+      <div class="svn-more-body">
+        <section class="svn-mi">
+          <h3>Two languages, one meeting</h3>
+          <p>Tell it every language people speak, for example Bangla and English. A piece that comes back in the wrong script is done again in the right language.</p>
+          <div class="svn-lang" aria-hidden="true">
+            <span class="svn-lang-sel">Bangla <svg viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3" /></svg></span>
+            <span class="svn-chip">+ English</span>
+            <span class="svn-lang-ln"><b>Speaker 1</b> <span lang="bn">ঠিক আছে, তাহলে লঞ্চ ১৪ তারিখেই হবে।</span></span>
+          </div>
+        </section>
+
+        <section class="svn-mi">
+          <h3>On your computer by default</h3>
+          <p>Notetaker transcribes on your computer and works offline. If you add your own cloud provider you can use it instead, and then the audio is sent to that provider.</p>
+          <div class="svn-where">
+            <div class="svn-where-opts" role="group" aria-label="Where the meeting is transcribed">
+              <button type="button" class="svn-opt" aria-pressed="true" data-where="local"><b>On this PC · offline</b></button>
+              <button type="button" class="svn-opt" aria-pressed="false" data-where="cloud"><b>Cloud, your own key</b></button>
+            </div>
+            <p class="svn-where-out" aria-live="polite">
+              <span class="svn-where-k">In the app you'll see:</span>
+              <span data-where-text="local">Audio and text stay on this PC.</span>
+              <span data-where-text="cloud" hidden>Audio is sent to your provider to transcribe; recordings and text stay on this PC.</span>
+            </p>
+          </div>
+        </section>
+
+        <section class="svn-mi">
+          <h3>Find it, play it back, keep it</h3>
+          <dl class="svn-tools">
+            <div><dt>Search</dt><dd>Across meeting names, Overviews and every word said.</dd></div>
+            <div><dt>Play back at 1× to 2×</dt><dd>Click any line's time to play from there.</dd></div>
+            <div><dt>Save or copy</dt><dd>Plain text, Markdown with times, or subtitles (.txt, .md, .srt).</dd></div>
+            <div><dt>Transcribe again</dt><dd>Redo a meeting from its saved audio with a newer model. Cancel puts the old text back.</dd></div>
+          </dl>
+        </section>
+
+        <section class="svn-mi">
+          <h3>Where it records the other side</h3>
+          <dl class="svn-tools">
+            <div><dt>Windows</dt><dd>Records both sides.</dd></div>
+            <div><dt>macOS 13 or later</dt><dd>Both sides once you allow Screen &amp; System Audio Recording. On macOS 12, your side only.</dd></div>
+            <div><dt>Linux</dt><dd>Both sides with PulseAudio or PipeWire.</dd></div>
+          </dl>
+          <p class="svn-mi-note">If it can't record the computer's sound, it tells you before you start and keeps your side.</p>
+        </section>
+
         <p class="svn-consent">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.5" /></svg>
           <span><b>Let people know you're recording.</b> In many places everyone on a call has to agree to it. The app reminds you the first time.</span>
         </p>
-      </aside>
-    </div>
-
-    <!-- companion: Transcribe a file -->
-    <article class="svn-file">
-      <div class="svn-file-copy">
-        <p class="svn-file-k">Also new: Transcribe</p>
-        <h3>Got a recording already? Drop it in.</h3>
-        <p>
-          Lectures, calls, voice memos, videos. Drop an audio or video file and get a transcript with times,
-          ready to save as .txt, .md or .srt. Files are always transcribed on your computer.
-        </p>
-        <p class="svn-file-fmt">mp3 · m4a · aac · mp4 · mov · wav · flac · ogg · mkv</p>
       </div>
-      <div class="svn-file-ui" aria-hidden="true">
-        <div class="svn-file-row">
-          <span class="svn-file-ic"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="17" cy="16" r="3" /></svg></span>
-          <span class="svn-file-n"><b>interview.m4a</b><small>24:16 · on this PC</small></span>
-          <span class="svn-file-done">Done</span>
-        </div>
-        <span class="svn-file-bar"><i></i></span>
-        <div class="svn-file-lines">
-          <p><span>0:00</span>Thanks for making the time. Let's start with how the shop began.</p>
-          <p><span>0:07</span>It started as a stall at the Friday market, about six years ago.</p>
-          <p><span>0:15</span>And when did you decide to open a real shop?</p>
-        </div>
-      </div>
-    </article>
+    </details>
   </div>
 </section>
 
@@ -467,55 +415,98 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   .svn::before {
     content: "";
     position: absolute;
-    inset: 12% 0 auto;
+    inset: 8% 0 auto;
     height: 50rem;
-    background: radial-gradient(50% 40% at 50% 30%, rgba(249, 115, 22, 0.1), transparent 70%);
+    background: radial-gradient(50% 40% at 60% 30%, rgba(249, 115, 22, 0.1), transparent 70%);
     pointer-events: none;
   }
   .svn-inner { position: relative; max-width: 78rem; margin: 0 auto; }
 
   /* ---------- head ---------- */
-  .svn-head {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    gap: clamp(1.5rem, 5vw, 5rem);
-    align-items: end;
-    margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
-  }
-  .svn-head .h2 { margin: 0.9rem 0 0; font-size: clamp(2.7rem, 6.4vw, 5rem); line-height: 0.98; letter-spacing: -0.03em; }
+  .svn-head { margin-bottom: clamp(1.75rem, 3.4vw, 2.5rem); }
+  .svn-head .h2 { margin: 0.9rem 0 0; font-size: clamp(2.7rem, 6.4vw, 5rem); line-height: 0.98; letter-spacing: -0.03em; text-wrap: balance; }
   .svn-head em { color: var(--sv-orange); }
-  .svn-lead { margin: 0; max-width: 31rem; color: var(--color-muted); font-size: 1.08rem; }
 
-  /* ---------- chapters ---------- */
-  .svn-controls { display: none; margin-bottom: 1.25rem; }
-  .svn.is-ready .svn-controls { display: block; }
-  .svn-chapters { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+  /* ---------- hero: steps beside the window ---------- */
+  .svn-hero { display: grid; grid-template-columns: minmax(0, 19rem) minmax(0, 1fr); gap: clamp(2rem, 3.4vw, 3rem); align-items: start; }
+  .svn-side { position: sticky; top: 6rem; display: grid; gap: 1.1rem; }
+  .svn-lead { margin: 0 0 0.3rem; color: var(--color-muted); font-size: 1.02rem; line-height: 1.6; }
+
+  .svn-play {
+    display: inline-flex; align-items: center; gap: 0.7rem;
+    justify-self: start;
+    min-height: 50px; padding: 0 1.2rem 0 0.5rem;
+    border: 0; border-radius: 999px;
+    background: var(--sv-orange); color: #1a1200;
+    font: inherit; font-weight: 600; font-size: 0.98rem;
+    cursor: pointer;
+    box-shadow: 0 10px 30px -12px rgba(249, 115, 22, 0.7);
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+  .svn-play[hidden] { display: none; }
+  .svn-play:hover { background: #fb8a3c; }
+  .svn-play:active { transform: scale(0.97); }
+  .svn-play:focus-visible { outline: 2px solid var(--color-text); outline-offset: 3px; }
+  .svn-play-ic { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #1a1200; color: var(--sv-orange); }
+  .svn-play-ic svg { width: 13px; height: 13px; fill: currentColor; grid-area: 1 / 1; }
+  .svn-play-ic .i-s, .svn.is-playing .svn-play-ic .i-p { display: none; }
+  .svn.is-playing .svn-play-ic .i-s { display: block; }
+  .svn-play-d { font-weight: 400; font-size: 0.82rem; opacity: 0.7; }
+  .svn.is-playing .svn-play-d { display: none; }
+
+  .svn-chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
   .svn-ch {
     position: relative;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    column-gap: 0.75rem;
-    align-items: baseline;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    column-gap: 0.85rem;
+    row-gap: 0.2rem;
+    align-items: start;
+    align-content: start;
     width: 100%;
     height: 100%;
-    padding: 1rem 1.1rem 1.15rem;
-    border: 1px solid var(--sv-line);
+    padding: 0.85rem 1rem 0.95rem 0.85rem;
+    border: 1px solid rgba(244, 242, 237, 0.13);
     border-radius: 16px;
-    background: rgba(17, 17, 20, 0.6);
+    background: rgba(24, 24, 28, 0.85);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     color: var(--color-muted);
     font: inherit;
     text-align: left;
-    cursor: pointer;
     overflow: hidden;
-    transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+    transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease;
   }
-  .svn-ch:hover { border-color: rgba(244, 242, 237, 0.2); color: var(--color-text); }
+  .svn-ch:disabled { cursor: default; box-shadow: none; background: rgba(17, 17, 20, 0.6); }
+  .svn-ch:not(:disabled):hover { border-color: rgba(249, 115, 22, 0.5); background: rgba(30, 26, 24, 0.9); transform: translateY(-1px); }
   .svn-ch:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 3px; }
-  .svn-ch[aria-current="step"] { border-color: rgba(249, 115, 22, 0.45); background: rgba(249, 115, 22, 0.06); color: var(--color-text); }
-  .svn-ch-n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--sv-orange); }
-  .svn-ch-t { font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: 1.02rem; letter-spacing: -0.01em; color: var(--color-text); }
-  .svn-ch-d { grid-column: 2; margin-top: 0.3rem; font-size: 0.86rem; line-height: 1.45; }
+  .svn-ch[aria-current="step"] { border-color: rgba(249, 115, 22, 0.55); background: rgba(249, 115, 22, 0.08); }
+  .svn-ch-ic {
+    grid-row: 1 / span 2;
+    display: grid; place-items: center;
+    width: 2.25rem; height: 2.25rem;
+    border-radius: 50%;
+    border: 1px solid rgba(249, 115, 22, 0.45);
+    color: var(--sv-orange);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .svn-ch-ic > * { grid-area: 1 / 1; }
+  .svn-ch-n { font-family: var(--font-mono); font-size: 0.7rem; }
+  .svn-ch-ic svg { display: none; width: 11px; height: 11px; margin-left: 2px; fill: currentColor; }
+  .svn.is-ready .svn-ch-ic svg { display: block; }
+  .svn.is-ready .svn-ch-n { display: none; }
+  .svn-ch:not(:disabled):hover .svn-ch-ic, .svn-ch[aria-current="step"] .svn-ch-ic { background: var(--sv-orange); color: #1a1200; }
+  .svn-ch-t { padding-top: 0.45rem; font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: 1rem; letter-spacing: -0.01em; line-height: 1.25; color: var(--color-text); }
+  .svn-ch-d { grid-column: 2; font-size: 0.86rem; line-height: 1.45; }
   .svn-ch-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: linear-gradient(90deg, var(--sv-orange), #fdba74); transform-origin: left; transform: scaleX(var(--p, 0)); transition: transform var(--dur, 0.25s) linear; }
+
+  .svn-hint { visibility: hidden; margin: 0.2rem 0 0; font-size: 0.86rem; line-height: 1.5; color: var(--color-muted); }
+  .svn-hint b { color: var(--color-text); font-weight: 500; }
+  .svn.is-ready:not(.is-playing) .svn-hint { visibility: visible; }
+  .h-coarse { display: none; }
+  @media (pointer: coarse) { .h-fine { display: none; } .h-coarse { display: inline; } }
+
+  .svn-stage { position: relative; min-width: 0; }
 
   /* ================= the window (real app palette) ================= */
   .svn-stage { position: relative; }
@@ -581,8 +572,8 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   .nt-theme i.on { background: var(--a-bd); }
 
   /* main */
-  .nt-main { min-width: 0; padding: 24px 26px 26px; }
-  .nt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+  .nt-main { min-width: 0; padding: 20px 22px 22px; }
+  .nt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
   .nt-h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
   .nt-sub { margin-top: 4px !important; font-size: 14px; color: var(--a-mu); max-width: 36rem; }
   .nt-actions { display: flex; align-items: center; gap: 8px; flex: none; }
@@ -621,44 +612,12 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   :is(.nt-start, .nt-sum, .nt-play).is-press { transform: scale(0.94); box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.25); }
   .nt-stop.is-press { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.3); }
 
-  .nt-cols { display: grid; grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.35fr); gap: 16px; }
-
-  /* left column */
-  .nt-list { min-width: 0; }
-  .nt-setup { margin-bottom: 12px; padding: 14px 18px; border: 1px solid var(--a-bd); border-radius: 16px; background: var(--a-s1); }
-  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-setup { display: none; }
-  .nt-setup dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0; }
-  .nt-setup dt { font-size: 10px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--a-mu); }
-  .nt-setup dd { margin: 2px 0 0; font-size: 13px; }
-  .nt-setup-hint { margin-top: 10px !important; font-size: 12px; color: var(--a-mu); }
-  .nt-consent { display: none; margin-top: 10px !important; padding: 8px 10px; border-radius: 10px; background: rgba(249, 115, 22, 0.08); font-size: 12px; color: var(--a-tx); }
-  .nt-consent b { color: var(--a-ac); margin-left: 4px; }
-  .nt[data-phase="idle"] .nt-consent { display: block; }
-  .nt-search { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border: 1px solid var(--a-bd); border-radius: 10px; color: var(--a-mu); font-size: 13px; }
-  .nt-search svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
-  .nt-day { margin: 14px 0 6px 4px !important; font-size: 10px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--a-mu); }
-  .nt-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; }
-  .nt-row--now { background: var(--a-s2); }
-  .nt[data-phase="idle"] .nt-row--now { display: none; }
-  .nt-tile { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--a-s2); color: var(--a-mu); flex: none; }
-  .nt-row--now .nt-tile { background: var(--a-bd); color: var(--a-tx); }
-  .nt-tile svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
-  .nt-tile i { display: none; width: 8px; height: 8px; border-radius: 50%; background: var(--a-bad); animation: nt-pulse 1.4s ease-in-out infinite; }
-  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row--now .nt-tile { background: rgba(239, 68, 68, 0.14); }
-  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row--now .nt-tile svg { display: none; }
-  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row--now .nt-tile i { display: block; }
-  .nt-row-t { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
-  .nt-row-t b { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .nt-row-t small { font-size: 11.5px; color: var(--a-mu); }
-  .nt-row-live { display: none; color: #f87171 !important; }
-  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row-live { display: inline; }
-  .nt:is([data-phase="rec"], [data-phase="finishing"]) .nt-row-done { display: none; }
-
   /* right column: meeting panel */
-  .nt-panel { position: relative; display: flex; flex-direction: column; min-width: 0; height: 33rem; border: 1px solid var(--a-bd); border-radius: 16px; background: var(--a-s1); overflow: hidden; }
+  .nt-panel { position: relative; display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--a-bd); border-radius: 16px; background: var(--a-s1); overflow: hidden; }
   .nt-empty { display: none; margin: auto !important; max-width: 18rem; text-align: center; font-size: 13px; color: var(--a-mu); }
   .nt[data-phase="idle"] .nt-empty { display: block; }
-  .nt[data-phase="idle"] :is(.nt-ph, .nt-scroll, .nt-player) { display: none; }
+  .nt[data-phase="idle"] :is(.nt-ph, .nt-content, .nt-player) { display: none; }
+  .nt[data-phase="idle"] .nt-panel { justify-content: center; }
 
   .nt-ph { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 22px; border-bottom: 1px solid var(--a-bd); }
   .nt-ph-t { min-width: 0; }
@@ -681,18 +640,24 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   .nt-people:disabled { opacity: 0.6; cursor: default; }
   .nt-people option { background: var(--a-s1); }
   .nt-voices { color: var(--a-ac); }
-  .nt-again { color: var(--a-ac); }
+  .nt-again { display: inline-flex; align-items: center; min-height: 24px; padding: 0 2px; border: 0; border-radius: 4px; background: none; color: var(--a-ac) !important; font-size: 12px !important; cursor: pointer; text-align: left; }
+  .nt-again:hover [data-s="idle"] { text-decoration: underline; text-underline-offset: 3px; }
+  .nt-again > span { display: none; }
+  .nt-again[data-state="idle"] [data-s="idle"], .nt-again[data-state="confirm"] [data-s="confirm"], .nt-again[data-state="busy"] [data-s="busy"] { display: inline; }
+  .nt-again[data-state="confirm"] { color: #fbbf24 !important; }
+  .nt-again[data-state="busy"] { color: var(--a-mu) !important; }
+  .nt-again u { color: var(--a-tx); text-underline-offset: 3px; }
+  .svn:not(.is-ready) .nt-again { pointer-events: none; }
   .nt-tools { display: flex; gap: 6px; flex: none; }
   .nt-tools span { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 9px; border: 1px solid var(--a-bd); border-radius: 8px; font-size: 12px; color: var(--a-mu); }
   .nt-tools svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  .nt-tools em { display: none; }
   .nt-tools span { width: 30px; justify-content: center; padding: 0; }
   .nt[data-phase="rec"] .nt-tools, .nt[data-phase="finishing"] .nt-tools { visibility: hidden; }
 
-  .nt-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 22px 20px; scrollbar-width: thin; scrollbar-color: var(--a-bd) transparent; overscroll-behavior: contain; }
+  .nt-content { flex: 1; padding: 16px 22px 18px; }
 
   /* overview */
-  .nt-ov { margin-bottom: 22px; }
+  .nt-ov { position: relative; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--a-bd); }
   .nt-ov-label { font-size: 12px; font-weight: 600; color: var(--a-mu); }
   .nt-ov-card { margin-top: 8px; padding: 14px 16px; border: 1px solid var(--a-bd); border-radius: 12px; background: rgba(27, 32, 48, 0.4); }
   .nt-ov[data-state="done"] .nt-ov-card { padding: 0; border-color: transparent; background: none; }
@@ -704,22 +669,22 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   .nt-ov[data-state="busy"] [data-for="busy"],
   .nt-ov[data-state="done"] [data-for="done"] { display: block; }
   .nt-ov[data-state="done"] .nt-ov-empty { display: none; }
-  .nt-ov-notes { display: none; max-width: 72ch; }
-  .nt-ov[data-state="done"] .nt-ov-notes { display: grid; gap: 12px; }
+  .nt-ov-notes { display: none; max-width: 72ch; padding-right: 5.5rem; }
+  .nt-ov[data-state="done"] .nt-ov-notes { display: grid; gap: 10px; }
   .ov-sh { font-size: 13.5px; font-weight: 600; margin-bottom: 3px !important; }
   .ov-sec p:not(.ov-sh), .ov-sec li { font-size: 14px; line-height: 1.55; color: var(--a-tx); }
   .ov-sec ul { margin: 0; padding-left: 18px; list-style: disc; }
   .ov-sec li::marker { color: var(--a-mu); }
   .ov-sec .ov-tasks { list-style: none; padding-left: 0 !important; display: grid; gap: 4px; }
+  .ov-tasks li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; }
   .ov-tag { display: inline-block; margin-right: 8px; padding: 0 6px; border-radius: 4px; background: var(--a-s2); color: var(--a-mu); font-size: 11px; font-weight: 600; line-height: 18px; vertical-align: 1px; }
   .ov-tag--you { background: rgba(249, 115, 22, 0.14); color: var(--a-ac); }
   .nt-ov.is-reveal .ov-sec { animation: nt-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
   .nt-ov.is-reveal .ov-sec:nth-child(2) { animation-delay: 0.18s; }
   .nt-ov.is-reveal .ov-sec:nth-child(3) { animation-delay: 0.36s; }
-  .nt-ov.is-reveal .ov-sec:nth-child(4) { animation-delay: 0.54s; }
   .nt-ov-ctrl { display: none; margin-top: 12px; }
   .nt-ov:is([data-state="ready"], [data-state="busy"], [data-state="done"]) .nt-ov-ctrl { display: block; }
-  .nt-ov[data-state="done"] .nt-ov-ctrl { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--a-bd); }
+  .nt-ov[data-state="done"] .nt-ov-ctrl { position: absolute; top: -6px; right: 0; margin: 0; }
   .nt-sum {
     display: inline-flex; align-items: center; gap: 8px;
     height: 40px; padding: 0 16px;
@@ -742,7 +707,7 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   .nt-ov[data-state="busy"] .nt-ov-empty .ov-h { background: linear-gradient(90deg, var(--a-tx) 35%, var(--a-ac) 50%, var(--a-tx) 65%) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: nt-scan 1.6s linear infinite; }
 
   /* transcript */
-  .nt-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+  .nt-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .ln { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 12px; }
   .ln-time {
     position: relative;
@@ -774,7 +739,7 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
     animation: nt-scan 1.1s linear infinite;
   }
   .nt.is-scanning .ln:not([data-who="you"]) .ln-body { box-shadow: inset 2px 0 0 rgba(249, 115, 22, 0.55); }
-  .ln-text { margin-top: 1px !important; font-size: 15px; line-height: 1.62; color: var(--a-tx); }
+  .ln-text { margin-top: 1px !important; font-size: 14.5px; line-height: 1.55; color: var(--a-tx); }
   .ln.is-new { animation: nt-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
   .ln-text :global(.w) { animation: nt-word 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--d, 0s); }
 
@@ -807,48 +772,28 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   @keyframes nt-nm-out { to { transform: translateY(-110%); opacity: 0; filter: blur(3px); } }
   @keyframes nt-nm-glow { 0%, 40% { text-shadow: 0 0 12px rgba(249, 115, 22, 0.9); color: #fdba74; } }
 
-  /* under the window */
-  .svn-under { display: none; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; }
-  .svn.is-ready .svn-under { display: flex; }
-  .svn-hint { margin: 0; font-size: 0.88rem; color: var(--color-muted); }
-  .svn-hint b { color: var(--color-text); font-weight: 500; }
-  .svn-replay {
-    display: inline-flex; align-items: center; gap: 0.5rem;
-    min-height: 44px; padding: 0 1.1rem;
-    border: 1px solid var(--sv-line); border-radius: 999px;
-    background: rgba(244, 242, 237, 0.03);
-    color: var(--color-text); font: inherit; font-size: 0.9rem;
-    cursor: pointer; flex: none;
-    transition: border-color 0.2s ease, background 0.2s ease;
-  }
-  .svn-replay[hidden] { display: none; }
-  .svn-replay:hover { border-color: rgba(249, 115, 22, 0.6); background: rgba(249, 115, 22, 0.08); }
-  .svn-replay:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 3px; }
-  .svn-replay svg { width: 16px; height: 16px; fill: none; stroke: var(--sv-orange); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .nt.is-redoing .ln-text { opacity: 0.4; transition: opacity 0.3s ease; }
 
-  /* ================= supporting cards ================= */
-  .svn-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; margin-top: clamp(3.5rem, 7vw, 5.5rem); }
+  /* ================= echo + transcribe ================= */
+  .svn-pair { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1rem; margin-top: clamp(2.5rem, 4.5vw, 3.25rem); }
   .svn-card {
-    display: flex; flex-direction: column; gap: 1.5rem;
-    padding: clamp(1.4rem, 2.6vw, 2rem);
+    display: flex; flex-direction: column; gap: 1.25rem;
+    padding: clamp(1.3rem, 2.2vw, 1.6rem);
     border: 1px solid var(--sv-line); border-radius: 22px;
     background: rgba(17, 17, 20, 0.8);
   }
-  .svn-card h3 { margin: 0 0 0.5rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
-  .svn-card-copy p { margin: 0; color: var(--color-muted); font-size: 0.98rem; max-width: 34rem; }
-  .svn-card--echo { grid-column: span 7; }
-  .svn-card--lang { grid-column: span 5; }
-  .svn-card--where { grid-column: span 5; }
-  .svn-card--tools { grid-column: span 7; }
-  .svn-card--os { grid-column: span 12; }
+  .svn-card h3 { margin: 0 0 0.45rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+  .svn-card-copy p { margin: 0; color: var(--color-muted); font-size: 0.95rem; line-height: 1.55; max-width: 40rem; }
 
   /* echo */
-  .svn-echo { margin-top: auto; padding: 1.1rem 1.2rem 1rem; border-radius: 16px; background: #0b0e14; border: 1px solid #262c3d; }
+  .svn-echo { margin-top: auto; padding: 1rem 1.1rem 0.9rem; border-radius: 16px; background: #0b0e14; border: 1px solid #262c3d; }
   .svn-echo-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
-  .svn-echo-k { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin: 0; font-size: 0.8rem; color: #8b93a7; }
-  .svn-echo-k i { width: 9px; height: 9px; border-radius: 3px; }
-  .svn-echo-k i.v { background: var(--sv-orange); }
-  .svn-echo-k i.e { margin-left: 0.6rem; background: #64748b; }
+  .svn-echo-state { display: flex; align-items: center; gap: 0.6rem; margin: 0; font-size: 0.9rem; color: #e6e9f0; font-weight: 500; }
+  .svn-echo-tag { display: inline-grid; place-items: center; height: 24px; padding: 0 0.6rem; border-radius: 999px; background: #262c3d; color: #e6e9f0; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; }
+  .svn-echo-tag--on { background: var(--sv-orange); color: #1a1200; }
+  .svn-echo [data-when] { display: none; }
+  .svn-echo[data-echo="on"] [data-when="on"], .svn-echo[data-echo="off"] [data-when="off"] { display: inline; }
+  .svn-echo[data-echo="on"] .svn-echo-tag[data-when="on"], .svn-echo[data-echo="off"] .svn-echo-tag[data-when="off"] { display: inline-grid; }
   .svn-echo-tg {
     display: inline-flex; align-items: center; gap: 0.6rem;
     min-height: 44px; padding: 0 0.9rem 0 0.6rem;
@@ -856,12 +801,13 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
     background: #131722; color: #e6e9f0; font: inherit; font-size: 0.85rem;
     cursor: pointer;
   }
+  .svn-echo-tg:hover { border-color: #3a4258; }
   .svn-echo-tg:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
   .svn-sw { position: relative; width: 34px; height: 20px; border-radius: 999px; background: #262c3d; transition: background 0.3s ease; }
   .svn-sw i { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #e6e9f0; transition: transform 0.3s cubic-bezier(0.3, 1.4, 0.5, 1); }
   .svn-echo-tg[aria-pressed="true"] .svn-sw { background: var(--sv-orange); }
   .svn-echo-tg[aria-pressed="true"] .svn-sw i { transform: translateX(14px); background: #1a1200; }
-  .svn-wave { display: block; width: 100%; height: 7.5rem; margin: 0.9rem 0 0.6rem; }
+  .svn-wave { display: block; width: 100%; height: 5.75rem; margin: 0.7rem 0 0.5rem; }
   .svn-wave line { stroke: #262c3d; stroke-width: 1; }
   .svn-wave .vb { fill: var(--sv-orange); }
   .svn-wave .eg { fill: none; stroke: #64748b; stroke-width: 1; stroke-dasharray: 2 2; opacity: 0; transition: opacity 0.6s ease 0.3s; }
@@ -869,82 +815,23 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   .svn-wave .eb { fill: #64748b; transform-box: fill-box; transform-origin: center; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease; transition-delay: calc(var(--i) * 9ms); }
   .svn-echo[data-echo="on"] .eb--sub { transform: scaleY(0.4); opacity: 0.55; }
   .svn-echo[data-echo="on"] .eb--gate { transform: scaleY(0.04); opacity: 0.2; }
-  .svn-echo-read { display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; font-size: 0.82rem; color: #8b93a7; }
-  .svn-echo-read b { color: #e6e9f0; font-weight: 600; }
-  .svn-db { transition: opacity 0.4s ease; }
-  .svn-echo[data-echo="off"] .svn-echo-read { opacity: 0.4; }
-
-  /* languages */
-  .svn-lang { margin-top: auto; display: grid; gap: 0.75rem; }
-  .svn-lang-set { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; padding: 0.9rem 1rem; border-radius: 14px; background: #131722; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 0.8rem; color: #e6e9f0; }
-  .svn-lang-k { color: #8b93a7; font-size: 0.75rem; }
-  .svn-lang-sel { display: inline-flex; align-items: center; gap: 0.4rem; height: 28px; padding: 0 0.6rem; border: 1px solid #262c3d; border-radius: 7px; background: #1b2030; margin-right: 0.4rem; }
-  .svn-lang-sel svg { width: 10px; height: 10px; fill: none; stroke: #8b93a7; stroke-width: 1.5; }
-  .svn-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 0.6rem; border-radius: 999px; background: rgba(249, 115, 22, 0.14); color: #fdba74; font-size: 0.75rem; }
-  .svn-chip--add { background: none; border: 1px dashed #262c3d; color: #8b93a7; }
-  .svn-mini { display: grid; gap: 0.7rem; padding: 1rem; border-radius: 14px; background: #131722; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .svn-mini-ln { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); gap: 0.6rem; }
-  .svn-mini-ln .t { padding-top: 2px; text-align: right; font-size: 11px; color: #8b93a7; font-variant-numeric: tabular-nums; }
-  .svn-mini-ln b { display: block; font-size: 12px; font-weight: 600; color: #e6e9f0; }
-  .svn-mini-ln b.you { color: var(--sv-orange); }
-  .svn-mini-ln p { margin: 0; font-size: 14.5px; line-height: 1.55; color: #e6e9f0; }
-  .svn-mini-ln p[lang="bn"] { font-family: "Nirmala UI", "Bangla Sangam MN", "Kohinoor Bangla", "Noto Sans Bengali", "Hind Siliguri", sans-serif; }
-
-  /* local or cloud */
-  .svn-where { margin-top: auto; display: grid; gap: 0.75rem; }
-  .svn-where-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-  .svn-opt {
-    display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem;
-    min-height: 44px; padding: 0.75rem 0.9rem;
-    border: 1px solid #262c3d; border-radius: 14px;
-    background: #131722; color: #e6e9f0;
-    font: inherit; text-align: left; cursor: pointer;
-    transition: border-color 0.25s ease, background 0.25s ease;
-  }
-  .svn-opt b { font-size: 0.88rem; font-weight: 600; }
-  .svn-opt small { font-size: 0.76rem; color: #8b93a7; line-height: 1.35; }
-  .svn-opt:hover { border-color: #3a4258; }
-  .svn-opt[aria-pressed="true"] { border-color: var(--sv-orange); background: rgba(249, 115, 22, 0.08); }
-  .svn-opt:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
-  .svn-where-k { margin: 0.25rem 0 0; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
-  .svn-where-out { margin: 0; min-height: 3.2em; padding: 0.8rem 1rem; border-radius: 12px; background: #0b0e14; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 0.9rem; color: #e6e9f0; }
-  .svn-where-out [hidden] { display: none; }
-
-  /* after the call */
-  .svn-tools { list-style: none; margin: auto 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-  .svn-tools li { display: flex; flex-direction: column; gap: 0.2rem; padding: 1rem; border-radius: 16px; background: rgba(244, 242, 237, 0.025); border: 1px solid var(--sv-line); font-size: 0.86rem; color: var(--color-muted); line-height: 1.45; }
-  .svn-tools li b { margin-top: 0.6rem; color: var(--color-text); font-weight: 600; font-size: 0.95rem; }
-  .svn-tool-ui { display: inline-flex; align-items: center; gap: 0.35rem; align-self: flex-start; height: 30px; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #e6e9f0; }
-  .svn-search { padding: 0 0.7rem; border: 1px solid #262c3d; border-radius: 8px; background: #0b0e14; }
-  .svn-search svg { width: 13px; height: 13px; fill: none; stroke: #8b93a7; stroke-width: 2; stroke-linecap: round; }
-  .svn-speeds i, .svn-files i { font-style: normal; display: inline-grid; place-items: center; height: 26px; padding: 0 0.5rem; border-radius: 6px; border: 1px solid #262c3d; background: #131722; color: #8b93a7; }
-  .svn-speeds i.on { border-color: var(--sv-orange); color: var(--sv-orange); }
-  .svn-files i { font-family: var(--font-mono); color: #e6e9f0; }
-  .svn-again { color: var(--sv-orange); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(249, 115, 22, 0.4); }
-
-  /* platforms */
-  .svn-card--os { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 2.2fr); column-gap: 2rem; row-gap: 1.25rem; align-items: start; }
-  .svn-os-h { margin: 0 !important; font-size: 1.15rem !important; }
-  .svn-os { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
-  .svn-os li { display: flex; flex-direction: column; gap: 0.25rem; padding-left: 0.9rem; border-left: 1px solid var(--sv-line); font-size: 0.88rem; color: var(--color-muted); line-height: 1.45; }
-  .svn-os li b { color: var(--color-text); font-weight: 600; font-size: 0.95rem; }
-  .svn-os-note { grid-column: 2; margin: 0; font-size: 0.86rem; color: var(--color-muted); }
-  .svn-consent { grid-column: 1 / -1; display: flex; gap: 0.75rem; align-items: flex-start; margin: 0; padding: 0.9rem 1.1rem; border-radius: 14px; background: rgba(249, 115, 22, 0.06); border: 1px solid rgba(249, 115, 22, 0.2); font-size: 0.9rem; color: var(--color-muted); }
-  .svn-consent b { color: var(--color-text); font-weight: 600; }
-  .svn-consent svg { width: 20px; height: 20px; flex: none; margin-top: 0.1rem; fill: none; stroke: var(--sv-orange); stroke-width: 1.8; stroke-linecap: round; }
+  .svn-echo-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; flex-wrap: wrap; }
+  .svn-echo-k { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin: 0; font-size: 0.8rem; color: #8b93a7; }
+  .svn-echo-k > span { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
+  .svn-echo-k i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+  .svn-echo-k i.v { background: var(--sv-orange); }
+  .svn-echo-k i.e { background: #64748b; }
+  .svn-echo-num { display: flex; align-items: center; gap: 0.6rem; margin: 0; font-size: 0.82rem; color: #8b93a7; white-space: nowrap; }
+  .svn-echo-num b { color: #e6e9f0; font-weight: 600; font-size: 0.95rem; }
+  .svn-echo[data-echo="on"] .svn-echo-num b { color: var(--sv-orange); }
+  .svn-echo-meter { position: relative; width: 52px; height: 6px; border-radius: 999px; background: #262c3d; overflow: hidden; }
+  .svn-echo-meter i { position: absolute; inset: 0; background: #64748b; transform-origin: left; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+  .svn-echo[data-echo="on"] .svn-echo-meter i { transform: scaleX(0.4); background: var(--sv-orange); }
 
   /* transcribe a file */
-  .svn-file {
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1.5rem, 4vw, 3rem); align-items: center;
-    margin-top: 1rem; padding: clamp(1.4rem, 2.6vw, 2rem);
-    border-radius: 22px; border: 1px solid var(--sv-line);
-    background: linear-gradient(135deg, rgba(249, 115, 22, 0.07), rgba(17, 17, 20, 0.8) 45%);
-  }
-  .svn-file-k { margin: 0 0 0.6rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sv-orange); }
-  .svn-file h3 { margin: 0 0 0.5rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; }
-  .svn-file-copy p:not(.svn-file-k) { margin: 0; color: var(--color-muted); font-size: 0.98rem; max-width: 32rem; }
-  .svn-file-copy .svn-file-fmt { margin-top: 0.9rem; font-family: var(--font-mono); font-size: 0.75rem; color: rgba(244, 242, 237, 0.5); }
-  .svn-file-ui { padding: 1rem 1.1rem 1.1rem; border-radius: 16px; background: #131722; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #e6e9f0; }
+  .svn-card--file { background: linear-gradient(135deg, rgba(249, 115, 22, 0.07), rgba(17, 17, 20, 0.8) 50%); }
+  .svn-file-k { margin: 0 0 0.55rem !important; font-family: var(--font-mono); font-size: 0.7rem !important; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sv-orange) !important; }
+  .svn-file-ui { margin-top: auto; padding: 0.95rem 1.05rem 1rem; border-radius: 16px; background: #131722; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #e6e9f0; }
   .svn-file-row { display: flex; align-items: center; gap: 0.7rem; }
   .svn-file-ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: #1b2030; color: var(--sv-orange); flex: none; }
   .svn-file-ic svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
@@ -952,30 +839,92 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   .svn-file-n b { font-size: 13px; font-weight: 600; }
   .svn-file-n small { font-size: 11.5px; color: #8b93a7; }
   .svn-file-done { margin-left: auto; padding: 0 0.55rem; border-radius: 999px; background: rgba(34, 197, 94, 0.12); color: #4ade80; font-size: 11.5px; line-height: 22px; }
-  .svn-file-bar { display: block; height: 4px; margin: 0.8rem 0 0.9rem; border-radius: 999px; background: #262c3d; overflow: hidden; }
+  .svn-file-bar { display: block; height: 4px; margin: 0.75rem 0 0.8rem; border-radius: 999px; background: #262c3d; overflow: hidden; }
   .svn-file-bar i { display: block; height: 100%; background: var(--sv-orange); transform-origin: left; }
-  .svn-file-lines { display: grid; gap: 0.45rem; }
+  .svn-file-lines { display: grid; gap: 0.4rem; }
   .svn-file-lines p { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 0.5rem; margin: 0; font-size: 13.5px; line-height: 1.5; }
   .svn-file-lines span { padding-top: 1px; text-align: right; font-size: 11px; color: #8b93a7; font-variant-numeric: tabular-nums; }
+  .svn-file-fmt { margin: -0.4rem 0 0; font-family: var(--font-mono); font-size: 0.72rem; color: rgba(244, 242, 237, 0.55); }
+
+  /* ================= more about Notetaker ================= */
+  .svn-more { margin-top: 1rem; border: 1px solid var(--sv-line); border-radius: 22px; background: rgba(17, 17, 20, 0.8); }
+  .svn-more summary {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.4rem 1.25rem;
+    min-height: 64px; padding: 0.9rem 1.4rem;
+    border-radius: 22px;
+    cursor: pointer; list-style: none;
+    transition: background 0.2s ease;
+  }
+  .svn-more summary::-webkit-details-marker { display: none; }
+  .svn-more summary:hover { background: rgba(244, 242, 237, 0.025); }
+  .svn-more summary:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
+  .svn-more-t { font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; color: var(--color-text); }
+  .svn-more-d { font-size: 0.86rem; color: var(--color-muted); }
+  .svn-more-ch { width: 30px; height: 30px; padding: 6px; border-radius: 50%; border: 1px solid var(--sv-line); fill: none; stroke: var(--sv-orange); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s ease; }
+  .svn-more[open] .svn-more-ch { transform: rotate(180deg); }
+  .svn-more-body { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem 1.75rem; padding: 0.6rem 1.4rem 1.4rem; border-top: 1px solid var(--sv-line); padding-top: 1.4rem; }
+  .svn-mi h3 { margin: 0 0 0.5rem; font-family: "Inter Tight", var(--font-sans); font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; color: var(--color-text); }
+  .svn-mi > p { margin: 0; font-size: 0.88rem; line-height: 1.5; color: var(--color-muted); }
+  .svn-mi-note { margin-top: 0.6rem !important; font-size: 0.82rem !important; }
+  .svn-lang { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; margin-top: 0.8rem; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 0.78rem; color: #e6e9f0; }
+  .svn-lang-sel { display: inline-flex; align-items: center; gap: 0.35rem; height: 26px; padding: 0 0.55rem; border: 1px solid #262c3d; border-radius: 7px; background: #1b2030; }
+  .svn-lang-sel svg { width: 10px; height: 10px; fill: none; stroke: #8b93a7; stroke-width: 1.5; }
+  .svn-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 0.6rem; border-radius: 999px; background: rgba(249, 115, 22, 0.14); color: #fdba74; }
+  .svn-lang-ln { flex-basis: 100%; padding: 0.55rem 0.7rem; border-radius: 10px; background: #131722; border: 1px solid #262c3d; font-size: 0.86rem; line-height: 1.5; }
+  .svn-lang-ln b { display: block; font-size: 0.72rem; color: #8b93a7; font-weight: 600; }
+  .svn-lang-ln [lang="bn"] { font-family: "Nirmala UI", "Bangla Sangam MN", "Kohinoor Bangla", "Noto Sans Bengali", "Hind Siliguri", sans-serif; }
+  .svn-where { display: grid; gap: 0.5rem; margin-top: 0.8rem; }
+  .svn-where-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+  .svn-opt {
+    min-height: 44px; padding: 0.4rem 0.6rem;
+    border: 1px solid #262c3d; border-radius: 12px;
+    background: #131722; color: #e6e9f0;
+    font: inherit; font-size: 0.8rem; line-height: 1.25; text-align: left; cursor: pointer;
+    transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .svn-opt b { font-weight: 600; }
+  .svn-opt:hover { border-color: #3a4258; }
+  .svn-opt[aria-pressed="true"] { border-color: var(--sv-orange); background: rgba(249, 115, 22, 0.08); }
+  .svn-opt:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
+  .svn-where-out { margin: 0; padding: 0.6rem 0.75rem; border-radius: 12px; background: #0b0e14; border: 1px solid #262c3d; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 0.84rem; line-height: 1.45; color: #e6e9f0; }
+  .svn-where-k { display: block; margin-bottom: 0.15rem; font-size: 0.74rem; color: #8b93a7; }
+  .svn-where-out [hidden] { display: none; }
+  .svn-tools { display: grid; gap: 0.55rem; margin: 0; }
+  .svn-tools div { padding-left: 0.75rem; border-left: 1px solid var(--sv-line); }
+  .svn-tools dt { font-size: 0.86rem; font-weight: 600; color: var(--color-text); }
+  .svn-tools dd { margin: 0.1rem 0 0; font-size: 0.82rem; line-height: 1.45; color: var(--color-muted); }
+  .svn-consent { grid-column: 1 / -1; display: flex; gap: 0.75rem; align-items: flex-start; margin: 0; padding: 0.8rem 1rem; border-radius: 14px; background: rgba(249, 115, 22, 0.06); border: 1px solid rgba(249, 115, 22, 0.2); font-size: 0.88rem; color: var(--color-muted); }
+  .svn-consent b { color: var(--color-text); font-weight: 600; }
+  .svn-consent svg { width: 20px; height: 20px; flex: none; margin-top: 0.05rem; fill: none; stroke: var(--sv-orange); stroke-width: 1.8; stroke-linecap: round; }
 
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
   /* ================= responsive ================= */
-  @media (max-width: 1180px) {
+  @media (max-width: 1279px) {
     .nt-body { grid-template-columns: 60px minmax(0, 1fr); }
     .nt-brand { justify-content: center; padding: 16px 0 14px; }
     .nt-brand-t, .nt-nav-t, .nt-side-foot { display: none; }
     .nt-nav { padding: 0 8px; }
     .nt-nav-i { position: relative; justify-content: center; padding: 9px 0; }
     .nt-nav-dot { position: absolute; top: 4px; right: 4px; }
-    .nt-cols { grid-template-columns: minmax(0, 1fr); }
-    .nt-list { display: none; }
+    .svn-more-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
-  @media (max-width: 960px) {
-    .svn-head { grid-template-columns: minmax(0, 1fr); align-items: start; }
-    .svn-card--echo, .svn-card--lang, .svn-card--where, .svn-card--tools { grid-column: span 12; }
-    .svn-card--os { grid-template-columns: minmax(0, 1fr); }
-    .svn-os-note { grid-column: 1; }
+  @media (max-width: 1099px) {
+    .svn-hero { grid-template-columns: minmax(0, 1fr); }
+    .svn-side { position: static; grid-template-columns: minmax(0, 1fr); }
+    .svn-lead { max-width: 44rem; }
+    .svn-chapters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .svn-ch { grid-template-columns: minmax(0, 1fr); }
+    .svn-ch-ic { grid-row: auto; margin-bottom: 0.3rem; }
+    .svn-ch-t { padding-top: 0; }
+    .svn-ch-d { grid-column: 1; }
+    .svn-hint { margin: 0; }
+  }
+  @media (max-width: 860px) {
+    .svn-pair { grid-template-columns: minmax(0, 1fr); }
+    .svn-more summary { grid-template-columns: minmax(0, 1fr) auto; }
+    .svn-more-d { grid-column: 1; grid-row: 2; }
+    .svn-more-ch { grid-column: 2; grid-row: 1 / span 2; }
   }
   @media (max-width: 760px) {
     .nt-body { grid-template-columns: minmax(0, 1fr); }
@@ -986,42 +935,51 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
     .nt-sub { font-size: 13px; }
     .nt-actions { width: 100%; }
     .nt-gear { display: none; }
-    .nt-panel { height: 31rem; }
     .nt-ph { padding: 12px 14px; }
+    .nt-details--post .nt-sep { display: none; }
+    .nt-details--post { column-gap: 12px; }
     .nt-tools { display: none; }
-    .nt-scroll { padding: 14px 14px 16px; }
+    .nt-content { padding: 14px 14px 16px; }
+    .nt-ov-notes { padding-right: 0; }
+    .nt-ov[data-state="done"] .nt-ov-ctrl { top: -10px; }
     .nt-player { padding: 8px 12px; gap: 8px; }
     .ln { grid-template-columns: 2.9rem minmax(0, 1fr); gap: 8px; }
     .nt-listen { grid-template-columns: 2.9rem minmax(0, 1fr); gap: 8px; }
-    .ln-text { font-size: 14.5px; }
-    .svn-chapters { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
-    .svn-ch { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.75rem 0.8rem 0.85rem; min-height: 44px; }
-    .svn-ch-d { display: none; }
-    .svn-ch-t { font-size: 0.86rem; line-height: 1.25; }
-    .svn-under { flex-direction: column; align-items: flex-start; }
-    .svn-tools { grid-template-columns: minmax(0, 1fr); }
-    .svn-os { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
-    .svn-file { grid-template-columns: minmax(0, 1fr); }
-    .svn-where-opts { grid-template-columns: minmax(0, 1fr); }
+    .ln-text { font-size: 14px; }
+    .svn-chapters { grid-template-columns: minmax(0, 1fr); gap: 0.5rem; }
+    .svn-ch { grid-template-columns: 2.25rem minmax(0, 1fr); padding: 0.75rem 0.9rem 0.8rem 0.75rem; }
+    .svn-ch-ic { grid-row: 1 / span 2; margin: 0; }
+    .svn-ch-t { padding-top: 0.1rem; font-size: 0.95rem; }
+    .svn-ch-d { grid-column: 2; font-size: 0.84rem; }
+    .svn-play { justify-self: stretch; }
+    .svn-more-body { grid-template-columns: minmax(0, 1fr); padding: 1.2rem 1.1rem 1.2rem; }
+    .svn-more summary { padding: 0.9rem 1.1rem; }
   }
   @media (max-width: 420px) {
     .nt-recpill { gap: 8px; padding-left: 10px; }
     .nt-rec-t { font-size: 13px; }
     .svn-echo { padding: 0.9rem; }
-    .svn-wave { height: 6rem; }
+    .svn-wave { height: 5.5rem; }
+    .svn-echo-state { font-size: 0.84rem; }
   }
-  /* bigger touch targets for the small app controls */
+  /* touch: every control kept in the mock gets a 44px target */
   @media (pointer: coarse) {
-    .ln-time::after { content: ""; position: absolute; inset: -14px -6px -14px -10px; }
-    .nt-people { height: 32px; }
-    .nt-rate { height: 34px; }
-    .nt-play { width: 40px; height: 40px; }
-    .nt-range { height: 24px; }
+    .ln-time { min-width: 44px; min-height: 44px; align-items: flex-start; padding-top: 4px; }
+    .nt-people { height: 44px; padding-left: 12px; padding-right: 26px; }
+    .nt-again { min-height: 44px; }
+    .nt-rate { height: 44px; padding: 0 10px; }
+    .nt-play { width: 44px; height: 44px; }
+    .nt-range { height: 44px; }
+    .nt-start { height: 44px; }
+    .nt-recpill { height: 44px; }
+    .nt-stop { height: 34px; }
+    .nt-sum, .nt-ov[data-state="done"] .nt-sum { height: 44px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .nt-ping::after, .nt-nav-dot, .nt-tile i, .nt-dots i, .i-spin { animation: none !important; }
     .nt.is-scanning .ln-name :global(.nm) { animation: none !important; }
     .svn-wave :is(.eb, .eg) { transition-delay: 0s !important; }
+    .svn-ch, .svn-play, .svn-more-ch { transition: none; }
   }
 </style>
 
@@ -1033,56 +991,67 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
   const root = document.querySelector<HTMLElement>(".svn");
   if (root) init(root);
 
+  type Who = "you" | "a" | "b";
+
   function init(root: HTMLElement) {
     const $ = <T extends Element = HTMLElement>(s: string, el: ParentNode = root) => el.querySelector<T>(s)!;
     const $$ = <T extends Element = HTMLElement>(s: string, el: ParentNode = root) => [...el.querySelectorAll<T>(s)];
 
     const nt = $(".nt");
+    const panel = $(".nt-panel");
     const startBtn = $<HTMLButtonElement>(".nt-start");
     const stopBtn = $<HTMLButtonElement>(".nt-stop");
     const recTime = $(".nt-rec-time");
     const ol = $(".nt-lines");
     const listen = $(".nt-listen");
     const listenT = $(".nt-listen-t");
-    const scroller = $(".nt-scroll");
     const ov = $(".nt-ov");
     const sumBtn = $<HTMLButtonElement>(".nt-sum");
     const people = $<HTMLSelectElement>(".nt-people");
     const voices = $(".nt-voices");
+    const againBtn = $<HTMLButtonElement>(".nt-again");
+    const againWith = $(".nt-again-with");
     const player = $(".nt-player");
     const playBtn = $<HTMLButtonElement>(".nt-play");
     const pos = $(".nt-pos");
     const range = $<HTMLInputElement>(".nt-range");
     const rate = $<HTMLSelectElement>(".nt-rate");
     const chapters = $$<HTMLButtonElement>(".svn-ch");
-    const replay = $<HTMLButtonElement>(".svn-replay");
+    const playCall = $<HTMLButtonElement>(".svn-play");
+    const playCallL = $(".svn-play-l");
     const live = $("[data-svn-live]");
+    const tags = $$(".ov-tag[data-who]");
 
     const lines = $$<HTMLLIElement>(".ln", ol);
     const data = lines.map((li) => ({
       li,
-      who: li.dataset.who as "you" | "a" | "b",
+      who: li.dataset.who as Who,
       t: Number(li.dataset.t),
       text: $(".ln-text", li).textContent!.trim(),
       time: $<HTMLButtonElement>(".ln-time", li),
       name: $(".ln-name", li),
     }));
     const DURATION = Number(range.max);
-    const RATE = 7.5; // meeting seconds per real second while "recording"
+    const REC_SECONDS = 5.5; // the whole call "records" in about 5.5 s
+    const RATE = DURATION / REC_SECONDS;
     const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
+    // `motion` only switches the decorative animation (word blur, label flips,
+    // entrances). The story itself runs on real time either way, because it is
+    // started by the visitor and its point is the order of events.
     let motion = false;
-    let gen = 0; // bumps on every reset, so stale timers of an old run do nothing
+    let gen = 0; // bumps on every reset, so the timers of an old run do nothing
     let relabelGen = 0;
     let split = true;
     let stopReq = false;
     let clockT = 0;
     let recStart = 0;
+    let storyOn = false;
 
     const alive = (g: number) => g === gen;
-    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, motion ? ms : 0));
+    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
     const announce = (msg: string) => { live.textContent = msg; };
-    const press = (el: HTMLElement) => { el.classList.add("is-press"); setTimeout(() => el.classList.remove("is-press"), 260); };
+    const press = (el: HTMLElement) => { if (!motion) return; el.classList.add("is-press"); setTimeout(() => el.classList.remove("is-press"), 260); };
     // keep keyboard focus inside the widget when the focused control is swapped out
     const keepFocus = (from: HTMLElement, to: HTMLElement) => { if (document.activeElement === from) requestAnimationFrame(() => to.focus({ preventScroll: true })); };
 
@@ -1104,15 +1073,17 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       d.name.appendChild(nn);
       setTimeout(() => cur.remove(), 450);
     };
+    // the Overview's action items follow the same labels as the transcript
     const applyNames = (animate: boolean) => {
       let k = 0;
       data.forEach((d) => {
         const n = nameFor(d.who);
         const cur = d.name.querySelector(".nm:not(.nm-out)");
         if (cur?.textContent === n) return;
-        if (animate) setTimeout(() => setName(d, n, true), (k++) * 130);
+        if (animate) setTimeout(() => setName(d, n, true), (k++) * 110);
         else setName(d, n, false);
       });
+      tags.forEach((tg) => (tg.textContent = nameFor(tg.dataset.who!)));
     };
 
     // ---- transcript ----
@@ -1125,7 +1096,7 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
         d.text.split(" ").forEach((w, j) => {
           const s = document.createElement("span");
           s.className = "w";
-          s.style.setProperty("--d", `${j * 45}ms`);
+          s.style.setProperty("--d", `${j * 28}ms`);
           s.textContent = w + " ";
           p.appendChild(s);
         });
@@ -1133,12 +1104,11 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       } else p.textContent = d.text;
       setName(d, nameFor(d.who), false);
       ol.insertBefore(d.li, listen);
-      if (animate) scroller.scrollTo({ top: scroller.scrollHeight, behavior: "smooth" });
     };
     const clearLines = () => data.forEach((d) => d.li.remove());
     const setLive = (on: boolean) => data.forEach((d) => (d.time.disabled = on));
 
-    // ---- chapters ----
+    // ---- steps ----
     const setChapter = (n: number, p = 0, dur = 0.25) => {
       chapters.forEach((c, i) => {
         const k = i + 1;
@@ -1152,11 +1122,52 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
     // ---- states (instant) ----
     const setPhase = (p: "idle" | "rec" | "finishing" | "post") => { nt.dataset.phase = p; };
     const setOv = (s: "live" | "ready" | "busy" | "done") => { ov.dataset.state = s; sumBtn.setAttribute("aria-disabled", String(s === "busy")); };
+    // while the call replays, the panel keeps its finished height, so nothing on the page jumps
+    const lock = () => { if (!panel.style.minHeight) panel.style.minHeight = `${panel.offsetHeight}px`; };
+    const unlock = () => { panel.style.minHeight = ""; };
+    const setStory = (on: boolean) => {
+      storyOn = on;
+      root.classList.toggle("is-playing", on);
+      playCallL.textContent = on ? "Skip to the end" : "Play the call";
+      if (!on) unlock();
+    };
+
+    // ---- Transcribe again (confirm, then a short redo that can be cancelled) ----
+    let againT = 0, againG = 0;
+    const setAgain = (s: "idle" | "confirm" | "busy") => { againBtn.dataset.state = s; };
+    const againReset = () => { clearTimeout(againT); againG++; nt.classList.remove("is-redoing"); setAgain("idle"); };
+    againBtn.addEventListener("click", async () => {
+      const s = againBtn.dataset.state;
+      if (s === "idle") {
+        setAgain("confirm");
+        clearTimeout(againT);
+        againT = window.setTimeout(() => { if (againBtn.dataset.state === "confirm") setAgain("idle"); }, 6000);
+        return;
+      }
+      if (s === "busy") {
+        againReset();
+        announce("Cancelled. The old text is back.");
+        return;
+      }
+      clearTimeout(againT);
+      const g = ++againG;
+      stopPlayer(false);
+      setAgain("busy");
+      nt.classList.add("is-redoing");
+      announce("Transcribing again from the saved audio.");
+      await sleep(1800);
+      if (g !== againG) return;
+      nt.classList.remove("is-redoing");
+      data.forEach((_, i) => showLine(i, motion));
+      setAgain("idle");
+      announce("Transcribed again from the saved audio.");
+    });
 
     function reset() {
       gen++;
       relabelGen++;
       stopPlayer(true);
+      againReset();
       nt.classList.remove("is-scanning");
       ov.classList.remove("is-reveal");
       voices.hidden = true;
@@ -1171,20 +1182,6 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       setOv("live");
       recTime.textContent = "0:00";
       setChapter(1, 0);
-      scroller.scrollTop = 0;
-    }
-    function stateRecorded() {
-      // every line in, still recording (reduced-motion view of step 1)
-      split = false;
-      people.disabled = true;
-      setPhase("rec");
-      listenT.textContent = "Listening";
-      clearLines();
-      data.forEach((_, i) => showLine(i, false));
-      setLive(true);
-      setOv("live");
-      recTime.textContent = fmt(DURATION);
-      setChapter(1, 1);
     }
     function statePost(withSplit: boolean, summary: boolean) {
       setPhase("post");
@@ -1192,33 +1189,43 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       people.disabled = !withSplit;
       clearLines();
       data.forEach((_, i) => showLine(i, false));
+      applyNames(false);
       setLive(false);
       setOv(summary ? "done" : "ready");
-      setChapter(summary ? 3 : withSplit ? 3 : 2, summary ? 1 : 0);
-      scroller.scrollTop = 0;
+    }
+    // the finished meeting, right away (also used when the demo leaves the screen)
+    function finishNow() {
+      reset();
+      statePost(true, true);
+      setStory(false);
+      setChapter(0);
     }
 
-    // ---- the animated story ----
-    async function story(from: 1 | 2 | 3, byUser = false) {
+    // ---- the story ----
+    async function story(from: 1 | 2 | 3) {
       reset();
+      statePost(true, true);
+      lock(); // measured on the finished frame
       const g = gen;
+      setStory(true);
       if (from === 1) {
         stateIdle();
-        if (!byUser) {
-          await sleep(1000); if (!alive(g)) return;
-          press(startBtn);
-          await sleep(240); if (!alive(g)) return;
-        }
+        await sleep(350); if (!alive(g)) return;
+        press(startBtn);
+        await sleep(200); if (!alive(g)) return;
         await record(g); if (!alive(g)) return;
       } else {
         statePost(from === 3, false);
+        setChapter(from, 0);
       }
       if (from <= 2) {
-        await sleep(from === 2 ? 500 : 0); if (!alive(g)) return;
+        await sleep(from === 2 ? 400 : 150); if (!alive(g)) return;
         await tellApart(g); if (!alive(g)) return;
-        await sleep(1100); if (!alive(g)) return;
+        await sleep(500); if (!alive(g)) return;
       }
-      await summarize(g, true);
+      await summarize(g, true); if (!alive(g)) return;
+      setStory(false);
+      setTimeout(() => { if (alive(g)) setChapter(0); }, 900);
     }
 
     async function record(g: number) {
@@ -1233,12 +1240,14 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       announce("Recording a sample call. Lines appear as people talk.");
       recStart = performance.now();
       clockT = 0;
+      // one rAF loop for the clock; it ends with the recording, and the whole
+      // story is cut short (finishNow) if the demo leaves the screen or the tab
       const tick = () => {
-        if (!alive(g) || nt.dataset.phase !== "rec") return;
+        if (!alive(g) || nt.dataset.phase !== "rec" || stopReq) return;
         clockT = Math.min(DURATION, ((performance.now() - recStart) / 1000) * RATE);
         recTime.textContent = fmt(clockT);
         setChapter(1, clockT / DURATION, 0.1);
-        if (!stopReq) requestAnimationFrame(tick);
+        requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
       const until = (t: number) => new Promise<void>((r) => {
@@ -1247,17 +1256,16 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       });
       for (let i = 0; i < data.length; i++) {
         await until(data[i].t); if (!alive(g)) return;
-        if (stopReq) { for (; i < data.length; i++) showLine(i, false); scroller.scrollTop = scroller.scrollHeight; break; }
-        showLine(i, true);
+        if (stopReq) { for (; i < data.length; i++) showLine(i, false); break; }
+        showLine(i, motion);
       }
       await until(DURATION); if (!alive(g)) return;
-      if (!stopReq) { press(stopBtn); await sleep(220); if (!alive(g)) return; }
+      if (!stopReq) { press(stopBtn); await sleep(200); if (!alive(g)) return; }
       stopReq = true;
-      // Stop -> Finishing up…
       setPhase("finishing");
       listenT.textContent = "Finishing the last words…";
       setChapter(1, 1);
-      await sleep(1300); if (!alive(g)) return;
+      await sleep(650); if (!alive(g)) return;
       setPhase("post");
       setLive(false);
       setOv("ready");
@@ -1265,10 +1273,11 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
     }
 
     async function tellApart(g: number) {
-      setChapter(2, 1, 2.4);
+      setChapter(2, 1, 1.3);
       voices.hidden = false;
       nt.classList.add("is-scanning");
-      await sleep(2000); if (!alive(g)) return;
+      announce("Telling the voices apart.");
+      await sleep(1300); if (!alive(g)) return;
       nt.classList.remove("is-scanning");
       voices.hidden = true;
       split = true;
@@ -1279,32 +1288,24 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
 
     async function summarize(g: number, auto: boolean) {
       setChapter(3, 0);
-      if (auto) { press(sumBtn); await sleep(240); if (!alive(g)) return; }
+      if (auto) { press(sumBtn); await sleep(220); if (!alive(g)) return; }
       ov.classList.remove("is-reveal");
       setOv("busy");
-      setChapter(3, 1, 2.4);
-      scroller.scrollTo({ top: 0, behavior: motion ? "smooth" : "auto" });
-      await sleep(2300); if (!alive(g)) return;
+      setChapter(3, 1, 1.4);
+      await sleep(1400); if (!alive(g)) return;
       setOv("done");
       if (motion) ov.classList.add("is-reveal");
-      announce("Overview written: summary, key points, decisions and action items.");
+      announce("Overview written: key points, decisions and action items.");
     }
 
     // ---- player ----
-    let t = 0, playing = false, last = 0, raf = 0, inView = false, current = -1;
-    const markNow = (scroll: boolean) => {
+    let t = 0, playing = false, last = 0, raf = 0, current = -1;
+    const markNow = () => {
       let idx = -1;
       if (t > 0 || playing) data.forEach((d, i) => { if (d.t <= t + 0.01) idx = i; });
       if (idx === current) return;
       current = idx;
       data.forEach((d, i) => d.li.classList.toggle("is-now", i === idx));
-      if (scroll && idx >= 0) {
-        const li = data[idx].li;
-        const top = li.offsetTop - scroller.offsetTop;
-        if (top < scroller.scrollTop || top + li.offsetHeight > scroller.scrollTop + scroller.clientHeight) {
-          scroller.scrollTo({ top: top - 16, behavior: motion ? "smooth" : "auto" });
-        }
-      }
     };
     const drawPos = () => { pos.textContent = fmt(t); range.value = String(Math.floor(t)); };
     const loop = (now: number) => {
@@ -1312,12 +1313,12 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       t = Math.min(DURATION, t + ((now - last) / 1000) * Number(rate.value));
       last = now;
       drawPos();
-      markNow(true);
+      markNow();
       if (t >= DURATION) { stopPlayer(false); return; }
       raf = requestAnimationFrame(loop);
     };
     function startPlayer() {
-      if (nt.dataset.phase !== "post") return;
+      if (nt.dataset.phase !== "post" || storyOn) return;
       if (t >= DURATION) t = 0;
       playing = true;
       player.classList.add("is-playing");
@@ -1325,45 +1326,48 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       last = performance.now();
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(loop);
-      markNow(true);
+      markNow();
     }
     function stopPlayer(rewind: boolean) {
       playing = false;
       cancelAnimationFrame(raf);
       player.classList.remove("is-playing");
       playBtn.setAttribute("aria-label", "Play");
-      if (rewind) { t = 0; current = -2; drawPos(); markNow(false); }
+      if (rewind) { t = 0; current = -2; drawPos(); markNow(); }
     }
     playBtn.addEventListener("click", () => (playing ? stopPlayer(false) : startPlayer()));
-    range.addEventListener("input", () => { t = Number(range.value); drawPos(); markNow(true); });
+    range.addEventListener("input", () => { t = Number(range.value); drawPos(); markNow(); });
     data.forEach((d) => d.time.addEventListener("click", () => {
-      t = d.t; drawPos(); current = -2; startPlayer(); markNow(true);
+      t = d.t; drawPos(); current = -2; startPlayer(); markNow();
     }));
 
     // ---- visitor controls inside the window ----
     startBtn.addEventListener("click", () => {
       if (nt.dataset.phase === "rec" || nt.dataset.phase === "finishing") return;
-      if (motion) story(1, true);
-      else { reset(); stateRecorded(); }
+      story(1);
       keepFocus(startBtn, stopBtn);
     });
     stopBtn.addEventListener("click", () => {
       if (nt.dataset.phase !== "rec") return;
-      if (motion) { stopReq = true; press(stopBtn); }
-      else { reset(); statePost(true, false); keepFocus(stopBtn, startBtn); }
+      stopReq = true;
+      press(stopBtn);
     });
-    sumBtn.addEventListener("click", () => {
+    sumBtn.addEventListener("click", async () => {
       if (ov.dataset.state === "busy" || nt.dataset.phase !== "post") return;
       relabelGen++;
+      againReset();
       const g = ++gen;
       stopPlayer(false);
+      setStory(false);
+      lock();
       if (!split) { split = true; applyNames(false); people.disabled = false; nt.classList.remove("is-scanning"); voices.hidden = true; }
-      summarize(g, false);
+      await summarize(g, false);
+      if (alive(g)) { unlock(); setChapter(0); }
     });
     people.addEventListener("change", async () => {
       const r = ++relabelGen;
       voices.hidden = false;
-      if (motion) nt.classList.add("is-scanning");
+      nt.classList.add("is-scanning");
       await sleep(900);
       if (r !== relabelGen) return;
       nt.classList.remove("is-scanning");
@@ -1372,23 +1376,24 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       announce(people.value === "1" ? "Relabelled: one other person, Speaker 1." : "Relabelled: Speaker 1 and Speaker 2.");
     });
 
-    // ---- chapters + replay ----
-    chapters.forEach((c) => c.addEventListener("click", () => {
-      const n = Number(c.dataset.ch) as 1 | 2 | 3;
-      if (motion) { story(n); return; }
-      reset();
-      if (n === 1) stateRecorded();
-      else if (n === 2) { statePost(true, false); setChapter(2, 1); }
-      else statePost(true, true);
-    }));
-    replay.addEventListener("click", () => story(1));
+    // ---- steps + play the call ----
+    chapters.forEach((c) => {
+      c.disabled = false;
+      c.addEventListener("click", () => story(Number(c.dataset.ch) as 1 | 2 | 3));
+    });
+    playCall.hidden = false;
+    playCall.addEventListener("click", () => {
+      if (storyOn) { finishNow(); announce("Skipped to the finished meeting."); }
+      else story(1);
+    });
 
-    // ---- side cards ----
+    // ---- echo ----
     const echo = $(".svn-echo");
     const echoTg = $<HTMLButtonElement>(".svn-echo-tg");
     const setEcho = (on: boolean) => { echo.dataset.echo = on ? "on" : "off"; echoTg.setAttribute("aria-pressed", String(on)); };
     echoTg.addEventListener("click", () => setEcho(echo.dataset.echo !== "on"));
 
+    // ---- local or cloud (also changes the window's subtitle and the redo prompt) ----
     const opts = $$<HTMLButtonElement>(".svn-opt");
     const sub = $(".nt-sub");
     const SUB_LOCAL = "Record a call and get a live transcript of who said what. Audio and text stay on this PC.";
@@ -1398,30 +1403,44 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       opts.forEach((x) => x.setAttribute("aria-pressed", String(x === o)));
       $$("[data-where-text]").forEach((s) => (s.hidden = s.dataset.whereText !== w));
       sub.textContent = w === "cloud" ? SUB_CLOUD : SUB_LOCAL;
+      againWith.textContent = w === "cloud" ? "your provider" : "this PC";
     }));
 
     root.classList.add("is-ready");
-    setChapter(3, 1);
-    split = true;
-    people.disabled = false;
+    setChapter(0);
     setLive(false);
 
-    // off screen: pause the player loop
-    new IntersectionObserver(([e]) => { inView = e.isIntersecting; if (!inView && playing) stopPlayer(false); }).observe(nt);
+    // ---- off screen or hidden tab: nothing keeps running ----
+    const pauseAll = () => {
+      if (storyOn) finishNow();
+      if (playing) stopPlayer(false);
+    };
+    new IntersectionObserver(([e]) => { if (!e.isIntersecting) pauseAll(); }).observe(nt);
+    document.addEventListener("visibilitychange", () => { if (document.hidden) pauseAll(); });
 
-    // ---- motion: autoplay once on scroll, entrances; reverted if motion is turned off ----
+    // ---- motion: one short "voices told apart" flip on first view, entrances ----
     gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
       motion = true;
-      replay.hidden = false;
-      let started = false;
+      // the finished meeting, but with "Others" until the window is seen
       reset();
-      stateIdle();
-      const io = new IntersectionObserver(([e]) => {
-        if (!e.isIntersecting || started) return;
-        started = true;
+      statePost(false, true);
+      let flipped = false;
+      const io = new IntersectionObserver(async ([e]) => {
+        if (!e.isIntersecting || flipped) return;
+        flipped = true;
         io.disconnect();
-        story(1);
-      }, { threshold: 0.35 });
+        if (storyOn || split || nt.dataset.phase !== "post") return;
+        const g = gen;
+        await sleep(450); if (!alive(g) || storyOn) return;
+        voices.hidden = false;
+        nt.classList.add("is-scanning");
+        await sleep(1200); if (!alive(g) || storyOn) return;
+        nt.classList.remove("is-scanning");
+        voices.hidden = true;
+        split = true;
+        people.disabled = false;
+        applyNames(true);
+      }, { threshold: 0.45 });
       io.observe(nt);
 
       // echo: show it with the echo first, then take it out
@@ -1429,25 +1448,25 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
       const echoIo = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         echoIo.disconnect();
-        setTimeout(() => setEcho(true), 900);
+        setTimeout(() => setEcho(true), 1100);
       }, { threshold: 0.6 });
       echoIo.observe(echo);
 
       const lift = gsap.from(nt, {
-        y: 60, opacity: 0, scale: 0.97, duration: 1.2, ease: "expo.out",
-        scrollTrigger: { trigger: nt, start: "top 90%", once: true },
+        y: 50, opacity: 0, scale: 0.98, duration: 1.1, ease: "expo.out",
+        scrollTrigger: { trigger: nt, start: "top 92%", once: true },
       });
-      const cards = gsap.from(root.querySelectorAll(".svn-card, .svn-file"), {
-        y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.08,
-        scrollTrigger: { trigger: root.querySelector(".svn-grid"), start: "top 85%", once: true },
+      const cards = gsap.from(root.querySelectorAll(".svn-card, .svn-more"), {
+        y: 36, opacity: 0, duration: 0.9, ease: "expo.out", stagger: 0.08,
+        scrollTrigger: { trigger: root.querySelector(".svn-pair"), start: "top 88%", once: true },
       });
       const bar = gsap.fromTo(root.querySelector(".svn-file-bar i"), { scaleX: 0 }, {
-        scaleX: 1, duration: 2.2, ease: "power1.inOut",
-        scrollTrigger: { trigger: root.querySelector(".svn-file"), start: "top 75%", once: true },
+        scaleX: 1, duration: 1.8, ease: "power1.inOut",
+        scrollTrigger: { trigger: root.querySelector(".svn-card--file"), start: "top 80%", once: true },
       });
       const fileLines = gsap.from(root.querySelectorAll(".svn-file-lines p, .svn-file-done"), {
-        opacity: 0, y: 8, duration: 0.6, ease: "power2.out", stagger: 0.25, delay: 1.6,
-        scrollTrigger: { trigger: root.querySelector(".svn-file"), start: "top 75%", once: true },
+        opacity: 0, y: 8, duration: 0.5, ease: "power2.out", stagger: 0.2, delay: 1.3,
+        scrollTrigger: { trigger: root.querySelector(".svn-card--file"), start: "top 80%", once: true },
       });
 
       return () => {
@@ -1456,11 +1475,8 @@ const echoBars = Array.from({ length: BARS }, (_, i) => {
         echoIo.disconnect();
         [lift, cards, bar, fileLines].forEach((a) => a.revert());
         setEcho(true);
-        reset();
-        statePost(true, true);
-        replay.hidden = true;
+        finishNow();
       };
     });
-    if (!motion) replay.hidden = true;
   }
 </script>
