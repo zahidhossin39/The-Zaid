@@ -1,7 +1,7 @@
 ---
 import SvDownload from "./SvDownload.astro";
 import { siAndroid } from "simple-icons";
-import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-release";
+import { ANDROID_RELEASES_URL, ISSUES_URL, LICENSE_URL, PRIVACY_URL, RELEASES_URL, SOURCE_URL } from "../../scripts/sv-release";
 ---
 
 <section class="svx" id="download" aria-labelledby="svx-title">
@@ -9,7 +9,8 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
   <div class="svx-inner">
     <h2 class="svx-title" id="svx-title">
       <span class="svx-line">Your voice.</span>
-      <span class="svx-line svx-line--em">Your computer.</span>
+      <!-- on Android the button below is the APK, so the line says phone (a swap, no layout jump) -->
+      <span class="svx-line svx-line--em"><span class="svx-pc">Your computer.</span><span class="svx-phone">Your phone.</span></span>
     </h2>
     <p class="svx-lead">Free to download, free to keep. No sign-up.</p>
     <div class="svx-cta"><SvDownload size="xl" apk={false} /></div>
@@ -45,52 +46,76 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
             <li><strong>Notetaker</strong> for calls and meetings. It records both sides, writes a live transcript, tells speakers apart and ends with a summary.</li>
             <li><strong>Transcribe a file.</strong> Drop in a recording and get timestamped text, made on your own computer.</li>
             <li><strong>A smaller Model Store</strong> with only the best models, ranked for your PC and your language.</li>
-            <li><strong>Runs on Mac and Linux too</strong>, and Notetaker records the computer's sound there as well (on a Mac, macOS 13 or newer).</li>
             <li><strong>Quicker dictation.</strong> "Transcribe while you speak" is on by default. Double-tap the hotkey for hands-free, press Esc to cancel.</li>
           </ul>
         </div>
+        <!-- outside the notes slot, so it stays when the CHANGELOG entry replaces them -->
+        <p class="svx-early">
+          <span class="svx-early-tag">Early</span>
+          <span><strong>Mac and Linux builds are new.</strong> If something breaks, <a href={ISSUES_URL} target="_blank" rel="noopener noreferrer">tell me on GitHub</a>.</span>
+        </p>
         <a class="svx-more" href={ANDROID_RELEASES_URL} target="_blank" rel="noopener noreferrer">All releases on GitHub →</a>
       </article>
 
-      <article class="svx-card">
+      <article class="svx-card" id="install">
         <p class="sv-eyebrow">Before you install</p>
         <dl class="svx-os">
-          <div class="svx-os-row svx-os--windows">
+          <div class="svx-os-row svx-os--windows" id="install-windows">
             <dt>Windows</dt>
-            <dd>Run the installer. Updates show up inside the app.</dd>
-          </div>
-          <div class="svx-os-row svx-os--mac">
-            <dt>Mac</dt>
             <dd>
-              For Apple Silicon Macs on macOS 12 or newer. Intel Macs aren't supported.
-              The app isn't notarised by Apple yet, so the first time, right-click it in Finder and choose Open,
-              or allow it in System Settings › Privacy &amp; Security.
+              <strong>Windows may say it protected your PC.</strong> Choose More info, then Run anyway: the installer
+              isn't code-signed yet. After that, updates show up inside the app. Windows 10 and 11.
+            </dd>
+          </div>
+          <div class="svx-os-row svx-os--mac" id="install-mac">
+            <dt>Mac <span class="svx-os-beta">New in 0.2.0</span></dt>
+            <dd>
+              <strong>Not notarised by Apple yet.</strong> On first launch, open System Settings › Privacy &amp; Security
+              and choose Open Anyway. On macOS 14 or older, right-click the app and choose Open instead.
+              For Apple Silicon (M1 or newer) on macOS 12 or newer; Intel Macs aren't supported.
               It needs Microphone and Accessibility permission. For the other side of a call, Notetaker also needs
               Screen &amp; System Audio Recording (macOS 13 or newer).
             </dd>
           </div>
-          <div class="svx-os-row svx-os--linux">
-            <dt>Linux</dt>
+          <div class="svx-os-row svx-os--linux" id="install-linux">
+            <dt>Linux <span class="svx-os-beta">New in 0.2.0</span></dt>
             <dd>
+              <strong>Works on X11, Hyprland and Sway. Not on GNOME or KDE Wayland yet.</strong> On
+              Hyprland and Sway, bind a key to it and install <code>wtype</code>.
               x86_64 only. Take the .deb on Ubuntu and Debian, the AppImage anywhere else (run <code>chmod +x</code> on it first).
-              X11 works fully. On Wayland, only Hyprland and Sway, through a key binding and <code>wtype</code>.
             </dd>
           </div>
-          <div class="svx-os-row svx-os--android">
+          <div class="svx-os-row svx-os--android" id="install-android">
             <dt>Android <span class="svx-os-beta">beta</span></dt>
             <dd>
-              Android 10 or newer, 64-bit. Allow your browser to install apps, then turn on the
-              "Silent Voice bubble" switch in Accessibility. Android 13 and newer first asks you to
-              "Allow restricted settings" in the app's info page. On Xiaomi phones, also allow Autostart.
+              <strong>A beta you install from GitHub, not Google Play.</strong> Android 10 or newer, 64-bit.
+              Allow your browser to install apps, then turn on the "Silent Voice bubble" switch in Accessibility.
+              Android 13 and newer first asks you to "Allow restricted settings" in the app's info page.
+              On Xiaomi phones, also allow Autostart.
             </dd>
           </div>
-          <div class="svx-os-row svx-os--ios">
+          <div class="svx-os-row svx-os--ios" id="install-ios">
             <dt>iPhone</dt>
             <dd>Not available yet.</dd>
           </div>
         </dl>
         <a class="svx-more" href={RELEASES_URL} data-sv-release-link target="_blank" rel="noopener noreferrer">All files for this release →</a>
       </article>
+    </div>
+
+    <!-- trust: what anyone can check, with no extra requests (the date comes from the releases call) -->
+    <div class="svx-open" aria-labelledby="svx-open-title">
+      <p class="svx-open-title" id="svx-open-title">Built in the open</p>
+      <ul class="svx-open-facts">
+        <li><a href={LICENSE_URL} target="_blank" rel="noopener noreferrer">MIT licence</a></li>
+        <li><span><span data-sv-version>v0.2.0</span> released <time data-sv-date datetime="2026-11-11">Nov 11, 2026</time></span></li>
+      </ul>
+      <ul class="svx-open-links">
+        <li><a href={RELEASES_URL} data-sv-release-link target="_blank" rel="noopener noreferrer">Release notes</a></li>
+        <li><a href={ISSUES_URL} target="_blank" rel="noopener noreferrer">Report a bug</a></li>
+        <li><a href={PRIVACY_URL} target="_blank" rel="noopener noreferrer">Privacy</a></li>
+        <li><a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">Source</a></li>
+      </ul>
     </div>
   </div>
 </section>
@@ -100,8 +125,10 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
   <span class="svbar-logo">
     <svg viewBox="0 0 1024 1024"><rect width="1024" height="1024" rx="224" fill="#0d0f14" /><rect x="232" y="432" width="80" height="160" rx="40" fill="#f97316" /><rect x="360" y="352" width="80" height="320" rx="40" fill="#f97316" /><rect x="488" y="252" width="80" height="520" rx="40" fill="#fff" /><rect x="616" y="352" width="80" height="320" rx="40" fill="#f97316" /><rect x="744" y="432" width="80" height="160" rx="40" fill="#f97316" /></svg>
   </span>
-  <span class="svbar-text"><strong>Silent Voice</strong> <span class="svbar-v svbar-v--desk" data-sv-version></span><span class="svbar-v svbar-v--apk" data-sv-apk-version></span></span>
-  <a class="svbar-btn" href={RELEASES_URL} data-sv-main>Download</a>
+  <span class="svbar-text"><strong>Silent Voice</strong></span>
+  <a class="svbar-btn" href={RELEASES_URL} data-sv-main>
+    <span data-sv-bar-label>Download</span><span class="svbar-v svbar-v--desk" data-sv-version></span><span class="svbar-v svbar-v--apk" data-sv-apk-version></span>
+  </a>
 </div>
 
 <style>
@@ -131,6 +158,9 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
   }
   .svx-line { display: block; }
   .svx-line--em { font-style: italic; color: var(--sv-orange); }
+  .svx-phone { display: none; }
+  :global(html[data-sv-os="android"]) .svx-line .svx-phone { display: inline; }
+  :global(html[data-sv-os="android"]) .svx-line .svx-pc { display: none; }
   .svx-lead { margin: 1.6rem 0 2.6rem; color: var(--color-muted); font-size: 1.15rem; }
 
   .svx-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: 1rem; align-items: start; margin-top: clamp(4rem, 8vw, 6rem); text-align: left; }
@@ -158,11 +188,11 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
   .svx-notes :global(code) { font-family: var(--font-mono); font-size: 0.85em; padding: 0.05rem 0.3rem; border-radius: 4px; background: rgba(244, 242, 237, 0.08); }
 
   .svx-os { margin: 1rem 0 0; display: grid; gap: 1rem; }
-  .svx-os-row { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; }
+  .svx-os-row { display: grid; grid-template-columns: 6.6rem 1fr; gap: 1rem; scroll-margin-top: 6rem; }
   .svx-os dt { font-weight: 600; font-size: 0.92rem; }
   .svx-os dd { margin: 0; color: var(--color-muted); font-size: 0.92rem; line-height: 1.5; text-wrap: pretty; }
   .svx-os code { font-family: var(--font-mono); font-size: 0.85em; padding: 0.05rem 0.3rem; border-radius: 4px; background: rgba(244, 242, 237, 0.08); color: var(--color-text); }
-  .svx-os-beta { display: block; margin-top: 0.15rem; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
+  .svx-os-beta { display: block; margin-top: 0.15rem; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-muted); white-space: nowrap; }
   .svx-os--ios { display: none; }
   :global(html[data-sv-os="ios"]) .svx-os--ios { display: grid; }
   /* the visitor's own platform comes first and stands out */
@@ -226,10 +256,44 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
   /* on Android the desktop pill below says the same as "Also for", so the list steps back */
   :global(html[data-sv-os="android"]) .svx-cta :global(.svdl-others) { display: none; }
 
+  /* "Mac and Linux builds are new", kept under the notes */
+  .svx-early { display: flex; gap: 0.7rem; align-items: baseline; margin: 1.1rem 0 0; padding-top: 1rem; border-top: 1px solid var(--sv-line); color: var(--color-muted); font-size: 0.92rem; line-height: 1.5; text-wrap: pretty; }
+  .svx-early strong { color: var(--color-text); font-weight: 600; }
+  .svx-early a { color: var(--color-text); text-decoration: underline; text-decoration-color: rgba(244, 242, 237, 0.35); text-underline-offset: 3px; }
+  .svx-early a:hover { color: var(--sv-orange); text-decoration-color: currentColor; }
+  .svx-early-tag { flex: none; padding: 0.05rem 0.45rem; border-radius: 999px; border: 1px solid rgba(249, 115, 22, 0.45); color: var(--sv-orange); font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .svx-os dd strong { color: var(--color-text); font-weight: 600; }
+
+  /* ---- built in the open ---- */
+  .svx-open {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem 1.6rem;
+    margin-top: clamp(2rem, 4vw, 2.75rem);
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--sv-line);
+    font-size: 0.88rem;
+    color: var(--color-muted);
+  }
+  .svx-open-title { margin: 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sv-orange); }
+  .svx-open ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 1.1rem; margin: 0; padding: 0; list-style: none; }
+  .svx-open li { display: inline-flex; align-items: center; min-height: 36px; }
+  .svx-open-facts li + li::before { content: ""; width: 3px; height: 3px; margin-right: 1.1rem; border-radius: 50%; background: currentColor; opacity: 0.6; }
+  .svx-open-facts { gap: 0 !important; }
+  .svx-open-facts li + li { margin-left: 1.1rem; }
+  .svx-open a { color: var(--color-text); text-decoration: underline; text-decoration-color: rgba(244, 242, 237, 0.3); text-underline-offset: 4px; transition: color 0.2s ease, text-decoration-color 0.2s ease; }
+  .svx-open a:hover { color: var(--sv-orange); text-decoration-color: currentColor; }
+  .svx-open a:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 3px; border-radius: 3px; }
+  @media (pointer: coarse) { .svx-open li { min-height: 44px; } }
+
   .svx-more { display: inline-flex; align-items: center; min-height: 44px; margin-top: 0.8rem; color: var(--color-text); font-size: 0.9rem; text-decoration: none; border-bottom: 1px solid transparent; transition: color 0.2s ease; }
   .svx-more:hover { color: var(--sv-orange); }
 
-  /* ---- floating pill ---- */
+  /* ---- floating pill ----
+     Phones: full width-ish at the bottom centre, only while scrolling up.
+     768px and up: a compact pill docked bottom-right (logo + Download vX). */
   .svbar {
     position: fixed;
     left: 50%;
@@ -240,35 +304,60 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
     gap: 0.8rem;
     padding: 0.45rem 0.45rem 0.45rem 0.5rem;
     border-radius: 999px;
-    background: rgba(17, 17, 20, 0.85);
+    background: rgba(17, 17, 20, 0.88);
     border: 1px solid rgba(244, 242, 237, 0.12);
     box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.8), 0 0 40px -10px rgba(249, 115, 22, 0.35);
     backdrop-filter: blur(14px);
     transform: translate(-50%, 160%);
-    transition: transform 0.6s cubic-bezier(.22, 1.2, .36, 1);
+    transition: transform 0.5s cubic-bezier(.22, 1.2, .36, 1);
   }
   .svbar.show { transform: translate(-50%, 0); }
   .svbar-logo { width: 2.2rem; height: 2.2rem; flex: none; }
   .svbar-logo svg { width: 100%; height: 100%; display: block; }
   .svbar-text { font-size: 0.88rem; white-space: nowrap; }
-  .svbar-v { color: var(--color-muted); font-family: var(--font-mono); font-size: 0.75rem; margin-left: 0.25rem; }
+  .svbar-v { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 400; margin-left: 0.4rem; opacity: 0.7; }
+  .svbar-v:empty { display: none; }
   .svbar-v--apk { display: none; }
   :global(html[data-sv-os="android"]) .svbar-v--apk { display: inline; }
   :global(html[data-sv-os="android"]) .svbar-v--desk { display: none; }
+  :global(html[data-sv-share]) .svbar-btn .svbar-v { display: none; }
   .svbar-btn {
     display: inline-flex;
     align-items: center;
-    min-height: 40px;
-    padding: 0 1.1rem;
+    min-height: 44px;
+    padding: 0 1.15rem;
     border-radius: 999px;
     background: var(--sv-orange);
     color: #140a02;
     font-weight: 600;
     font-size: 0.88rem;
+    white-space: nowrap;
     text-decoration: none;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
   .svbar-btn:hover { transform: scale(1.04); box-shadow: 0 0 30px rgba(249, 115, 22, 0.6); }
+  .svbar-btn:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 3px; }
+  @media (min-width: 768px) {
+    .svbar {
+      left: auto;
+      right: max(1.5rem, env(safe-area-inset-right));
+      bottom: max(1.5rem, env(safe-area-inset-bottom));
+      gap: 0.55rem;
+      padding: 0.35rem;
+      transform: translateY(170%);
+    }
+    .svbar.show { transform: none; }
+    .svbar-logo { width: 2.1rem; height: 2.1rem; }
+    .svbar-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .svbar-btn { min-height: 40px; padding: 0 1rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .svbar { transition: opacity 0.2s ease; opacity: 0; transform: translate(-50%, 0); }
+    .svbar.show { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) and (min-width: 768px) {
+    .svbar { transform: none; }
+  }
 </style>
 
 <script>
@@ -285,26 +374,30 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
     return () => t.revert();
   });
 
-  // The pill shows once the hero button has scrolled away, and hides again
-  // while the final button is on screen, so there is never a doubled CTA.
+  // The pill shows once the whole hero download block (button, caveat and
+  // "Also for" row) has scrolled away, and hides again while the final button
+  // is on screen, so there is never a doubled CTA and it never sits on the
+  // hero's links. On phones it also waits until the visitor scrolls up, so it
+  // isn't covering the text they are reading.
   const bar = document.querySelector<HTMLElement>(".svbar")!;
-  const heroBtn = document.querySelector(".svh .svdl-btn");
+  const heroBlock = document.querySelector(".svh .svdl") ?? document.querySelector(".svh .svdl-btn");
   const finalBtn = root.querySelector(".svdl-btn");
-  // also out of the way while the demo keys are on screen (it would sit on them on phones)
   // Also out of the way while an interactive mock-up sits in the bottom strip
   // of the screen (demo keys, Notetaker window, the phone), where it would cover
   // their controls.
   const avoid = [...document.querySelectorAll(".svd-hold, .svn-stage, .and-figure, .and-get")];
   const covering = new Set<Element>();
-  let heroGone = false, finalSeen = false, demoOn = false;
+  const phone = matchMedia("(max-width: 767px)");
+  let heroGone = false, finalSeen = false, demoOn = false, scrollingUp = false;
   const sync = () => {
-    const on = heroGone && !finalSeen && !demoOn;
+    const on = heroGone && !finalSeen && !demoOn && (!phone.matches || scrollingUp);
+    if (on === bar.classList.contains("show")) return;
     bar.classList.toggle("show", on);
     // hidden pill must not be reachable by keyboard or screen readers
     bar.toggleAttribute("inert", !on);
     bar.setAttribute("aria-hidden", String(!on));
   };
-  if (heroBtn) new IntersectionObserver(([e]) => { heroGone = !e.isIntersecting && e.boundingClientRect.top < 0; sync(); }).observe(heroBtn);
+  if (heroBlock) new IntersectionObserver(([e]) => { heroGone = !e.isIntersecting && e.boundingClientRect.top < 0; sync(); }).observe(heroBlock);
   if (avoid.length) {
     let io: IntersectionObserver | undefined;
     const watch = () => {
@@ -322,4 +415,18 @@ import { ANDROID_RELEASES_URL, RELEASES_URL, REPO } from "../../scripts/sv-relea
     addEventListener("resize", () => { clearTimeout(t); t = window.setTimeout(watch, 200); });
   }
   if (finalBtn) new IntersectionObserver(([e]) => { finalSeen = e.isIntersecting || e.boundingClientRect.top < 0; sync(); }).observe(finalBtn);
+  // scroll direction (phones): a small dead zone so a jittery finger doesn't flicker it
+  let anchorY = scrollY; // where the current scroll direction started
+  addEventListener("scroll", () => {
+    const y = scrollY;
+    if (scrollingUp) {
+      if (y < anchorY) anchorY = y;
+      else if (y > anchorY + 24) { scrollingUp = false; anchorY = y; }
+    } else {
+      if (y > anchorY) anchorY = y;
+      else if (y < anchorY - 24) { scrollingUp = true; anchorY = y; }
+    }
+    if (phone.matches) sync();
+  }, { passive: true });
+  phone.addEventListener("change", sync);
 </script>

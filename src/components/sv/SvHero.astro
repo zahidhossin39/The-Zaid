@@ -161,7 +161,7 @@ const word = (w: string) => [...w];
     margin: 0;
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(4.2rem, 15vw, 12.5rem);
+    font-size: clamp(3.6rem, min(15vw, 17svh), 12.5rem);
     line-height: 0.88;
     letter-spacing: -0.035em;
     display: flex;
@@ -259,8 +259,15 @@ const word = (w: string) => [...w];
     .svh-lead { margin: 0.9rem 0 2rem; }
     .svh-scroll { display: none; }
   }
-  @media (max-height: 760px) and (min-width: 641px) {
+  @media (max-height: 900px) and (min-width: 641px) {
     .svh-scroll { display: none; }
+  }
+  /* laptop screens: keep the whole download block above the fold */
+  @media (max-height: 900px) and (min-width: 641px) {
+    .svh { padding-top: 5.25rem; padding-bottom: 3.5rem; }
+    .svh-logo { width: 56px; margin: 1.1rem 0 0.7rem; }
+    .svh-promise { margin-top: 1rem; }
+    .svh-lead { margin: 0.6rem 0 1.5rem; }
   }
 </style>
 

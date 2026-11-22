@@ -1,9 +1,11 @@
 ---
-// The Download button + "other platforms" links. Ships pointing at the GitHub
-// releases pages; src/scripts/sv-release.ts swaps in the right file for the
-// visitor's OS (the APK on Android, the installer on a computer).
+// The Download button, a one-line caveat for the visitor's OS right under it,
+// and the "other platforms" links. Ships pointing at the GitHub releases
+// pages; src/scripts/sv-release.ts swaps in the right file for the visitor's
+// OS (the APK on Android, the installer on a computer, "Send me the link" on
+// an iPhone).
 import { siAndroid, siApple, siLinux } from "simple-icons";
-import { ANDROID_RELEASES_URL, RELEASES_URL } from "../../scripts/sv-release";
+import { ANDROID_RELEASES_URL, RELEASES_URL, detectOS } from "../../scripts/sv-release";
 
 interface Props {
   size?: "xl" | "md";
@@ -13,8 +15,13 @@ interface Props {
 }
 const { size = "xl", others = true, apk = true } = Astro.props;
 const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.3L3 18.8v-6.2Zm8.3 0H21v8.8l-9.7-1.4v-7.4Z";
+// Mark the visitor's OS before first paint, so the caveat under the button
+// is there from the start instead of pushing the page down a moment later.
+// It is the same detectOS() the release script runs (that one sets it again).
+const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try{r.dataset.svOs=(${detectOS.toString()})()||"unknown"}catch(e){}})()`;
 ---
 
+<script is:inline set:html={early}></script>
 <div class={`svdl svdl--${size}`}>
   <a class="svdl-btn" href={RELEASES_URL} data-sv-main data-magnetic>
     <span class="svdl-glow" aria-hidden="true"></span>
@@ -24,6 +31,7 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
       <svg class="os os-linux" viewBox="0 0 24 24"><path d={siLinux.path} /></svg>
       <svg class="os os-android" viewBox="0 0 24 24"><path d={siAndroid.path} /></svg>
       <svg class="os os-any" viewBox="0 0 24 24"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" /></svg>
+      <svg class="os os-share" viewBox="0 0 24 24"><path d="M12 15V3m0 0L8 7m4-4 4 4M8 11H6.5A1.5 1.5 0 0 0 5 12.5v7A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-7a1.5 1.5 0 0 0-1.5-1.5H16" /></svg>
     </span>
     <span class="svdl-text">
       <span class="svdl-label" data-sv-os-label>Download Silent Voice</span>
@@ -33,9 +41,34 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
       <svg viewBox="0 0 24 24"><path d="M12 4v14m0 0-6-6m6 6 6-6" /></svg>
     </span>
   </a>
+
+  <!-- "Link copied" for phones (shown by the release script in share mode) -->
+  <p class="svdl-status" data-sv-status role="status" hidden></p>
+
+  <!-- the one thing to know before installing, for the visitor's OS -->
+  <div class="svdl-caveats">
+    <p class="svdl-caveat svdl-caveat--windows">
+      Windows may say it protected your PC: choose <b>More info</b>, then <b>Run anyway</b>. The installer isn't
+      code-signed yet. <a href="#install-windows">Install notes</a>
+    </p>
+    <p class="svdl-caveat svdl-caveat--mac">
+      <span class="svdl-new">New in 0.2.0</span> For M1 or newer (Intel Macs aren't supported). Not notarised yet: on
+      first launch open <b>System Settings › Privacy &amp; Security › Open Anyway</b>. <a href="#install-mac">Install notes</a>
+    </p>
+    <p class="svdl-caveat svdl-caveat--linux">
+      <span class="svdl-new">New in 0.2.0</span> Works on X11, Hyprland and Sway. Not on GNOME or KDE Wayland yet. <a
+      href="#install-linux">Install notes</a>
+    </p>
+    <p class="svdl-caveat svdl-caveat--android">
+      Beta for Android 10+, installed from GitHub. <a href="#install-android">How to install</a>
+    </p>
+    <p class="svdl-caveat svdl-caveat--any">
+      Before you install, read <a href="#install">the notes for your system</a>.
+    </p>
+  </div>
+
   {others && (
     <div class="svdl-others">
-      <p class="svdl-note svdl-note--android">A beta for Android 10 and newer, 64-bit phones. It isn't on Google Play yet, so you install the file yourself.</p>
       <p class="svdl-note svdl-note--ios">There's no iPhone or iPad app yet. Silent Voice runs on computers and Android phones:</p>
       <span class="svdl-others-label">Also for</span>
       <ul data-sv-others={apk ? "" : "desktop"}>
@@ -110,7 +143,11 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
   :global(html[data-sv-os="mac"]) .svdl-icon .os-mac,
   :global(html[data-sv-os="linux"]) .svdl-icon .os-linux,
   :global(html[data-sv-os="android"]) .svdl-icon .os-android { display: block; }
-  :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"]):not([data-sv-os="android"])) .svdl-icon .os-any { display: block; }
+  :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"]):not([data-sv-os="android"]):not([data-sv-share])) .svdl-icon .os-any { display: block; }
+  .svdl-icon .os-share { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  :global(html[data-sv-share]) .svdl-icon .os-share { display: block; }
+  /* "Send me the link" doesn't download anything, so no down arrow */
+  :global(html[data-sv-share]) .svdl-btn .svdl-arrow { display: none; }
 
   .svdl-text { display: flex; flex-direction: column; text-align: left; line-height: 1.15; }
   .svdl-label { font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
@@ -139,6 +176,64 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
     100% { transform: translateY(0); }
   }
 
+  /* ---- status line ("Link copied") and the per-OS caveat ---- */
+  .svdl-status {
+    min-height: 1.5em; /* reserved, so the confirmation doesn't push the page */
+    margin: -0.35rem 0 -0.45rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--color-text);
+    text-align: center;
+  }
+  .svdl-status[hidden] { display: none; }
+
+  .svdl-caveats { display: contents; }
+  .svdl-caveat {
+    display: none;
+    max-width: 35rem;
+    margin: -0.2rem auto 0;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    color: var(--color-muted);
+    text-align: center;
+    text-wrap: balance;
+  }
+  .svdl-caveat b { font-weight: 500; color: var(--color-text); }
+  .svdl-caveat a {
+    color: var(--color-text);
+    white-space: nowrap;
+    text-decoration: underline;
+    text-decoration-color: rgba(244, 242, 237, 0.3);
+    text-underline-offset: 3px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  }
+  .svdl-caveat a:hover { color: var(--sv-orange); text-decoration-color: currentColor; }
+  .svdl-caveat a:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; border-radius: 3px; }
+  .svdl-new {
+    display: inline-block;
+    margin-right: 0.3rem;
+    padding: 0 0.42rem;
+    border-radius: 999px;
+    border: 1px solid rgba(249, 115, 22, 0.45);
+    color: var(--sv-orange);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    line-height: 1.45rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    vertical-align: 0.06em;
+    white-space: nowrap;
+  }
+  :global(html[data-sv-os="windows"]) .svdl-caveat--windows,
+  :global(html[data-sv-os="mac"]) .svdl-caveat--mac,
+  :global(html[data-sv-os="linux"]) .svdl-caveat--linux,
+  :global(html[data-sv-os="android"]) .svdl-caveat--android { display: block; }
+  /* no JS, or a computer the page can't name: point at the notes for every system */
+  :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"]):not([data-sv-os="android"]):not([data-sv-os="ios"]):not([data-sv-share])) .svdl-caveat--any { display: block; }
+  @media (pointer: coarse) {
+    .svdl-caveat a { display: inline-block; padding: 0.55rem 0.15rem; margin: -0.55rem 0; }
+  }
+
   .svdl-others {
     display: flex;
     flex-wrap: wrap;
@@ -149,7 +244,6 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
     color: var(--color-muted);
   }
   .svdl-note { display: none; flex-basis: 100%; max-width: 30rem; margin: 0 auto 0.35rem; text-align: center; font-size: 0.85rem; line-height: 1.5; text-wrap: pretty; }
-  :global(html[data-sv-os="android"]) .svdl-note--android,
   :global(html[data-sv-os="ios"]) .svdl-note--ios { display: block; }
   :global(html[data-sv-os="ios"]) .svdl-others-label { display: none; }
   .svdl-others-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.8; }

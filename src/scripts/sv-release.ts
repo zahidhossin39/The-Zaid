@@ -8,6 +8,12 @@
 export const REPO = "zahidhossin39/Silent-Voice";
 export const RELEASES_URL = `https://github.com/${REPO}/releases/latest`;
 export const ANDROID_RELEASES_URL = `https://github.com/${REPO}/releases`;
+export const ISSUES_URL = `https://github.com/${REPO}/issues`;
+export const PRIVACY_URL = `https://github.com/${REPO}/blob/main/PRIVACY.md`;
+export const LICENSE_URL = `https://github.com/${REPO}/blob/main/LICENSE`;
+export const SOURCE_URL = `https://github.com/${REPO}`;
+/** The stable address phones are sent to (QR code, "Send me the link"). */
+export const PAGE_URL = "https://zaidhossain.com/silent-voice";
 const API_URL = `https://api.github.com/repos/${REPO}/releases?per_page=40`;
 const CHANGELOG_URL = `https://raw.githubusercontent.com/${REPO}/main/CHANGELOG.md`;
 const CACHE_KEY = "sv-release-v2";
@@ -26,6 +32,13 @@ type GhRelease = {
 };
 
 const OS_LABEL: Record<Desktop, string> = { windows: "Windows", mac: "Mac", linux: "Linux" };
+// what the main button says before the API answers, and the file type after
+const INTERIM: Record<Desktop, string> = {
+  windows: "Installer · Windows 10 and 11",
+  mac: "Apple Silicon (M1 or newer)",
+  linux: "AppImage · x86_64",
+};
+const TYPE: Record<Desktop, string> = { windows: "Installer", mac: "Apple Silicon", linux: "AppImage" };
 
 // ---- small helpers (declared first: everything below uses them) ----
 const $$ = <T extends Element = HTMLElement>(sel: string) => [...document.querySelectorAll<T>(sel)];
@@ -210,23 +223,25 @@ function fillOthers(os: OS | null, d: Pick | null, apk: Asset | undefined, apkPa
   const page = d?.html_url ?? RELEASES_URL;
   const win = pick.windows(a), mac = pick.mac(a), img = pick.linux(a), deb = pick.deb(a);
   const macOthers = a.filter((x) => isDmg(x.name) && x !== mac);
+  // Mac and Linux builds are new in 0.2.0 and still early: the labels say so
+  const macLink = (x: Asset): Link => ({ label: `Mac (new, ${macArch(x.name) || x.name})`, href: x.url });
 
   const desk: Record<Desktop, Link[]> = {
     windows: [{ label: "Windows", href: win?.url ?? page }],
     mac: [
-      { label: macArch(mac?.name ?? "") ? `Mac (${macArch(mac!.name)})` : "Mac", href: mac?.url ?? page },
-      ...macOthers.map((x) => ({ label: `Mac (${macArch(x.name) || x.name})`, href: x.url })),
+      { label: macArch(mac?.name ?? "") ? `Mac (new, ${macArch(mac!.name)})` : "Mac (new)", href: mac?.url ?? page },
+      ...macOthers.map(macLink),
     ],
     linux: [
-      { label: "Linux (.AppImage)", href: img?.url ?? page },
-      ...(deb ? [{ label: "Ubuntu / Debian (.deb)", href: deb.url }] : []),
+      { label: "Linux (new, .AppImage)", href: img?.url ?? page },
+      ...(deb ? [{ label: "Ubuntu / Debian (new, .deb)", href: deb.url }] : []),
     ],
   };
   const android: Link = { label: "Android (beta)", href: apk?.url ?? apkPage };
 
   let list: Link[];
   if (os === "windows") list = [...desk.mac, ...desk.linux];
-  else if (os === "mac") list = [...macOthers.map((x) => ({ label: `Mac (${macArch(x.name) || x.name})`, href: x.url })), ...desk.windows, ...desk.linux];
+  else if (os === "mac") list = [...macOthers.map(macLink), ...desk.windows, ...desk.linux];
   else if (os === "linux") list = [...desk.linux.slice(1), ...desk.windows, ...desk.mac];
   else list = [...desk.windows, ...desk.mac, ...desk.linux];
 
@@ -239,23 +254,82 @@ function fillOthers(os: OS | null, d: Pick | null, apk: Asset | undefined, apkPa
   });
 }
 
+// ---- phones that can't run the app: "Send me the link" ----
+// On an iPhone (or another phone that isn't Android) the useful thing is to
+// get the page onto a computer, so the main button opens the share sheet, or
+// copies the link where there is none. Its href stays on the releases page
+// for the rare browser that can do neither.
+function isOtherPhone(os: OS | null) {
+  const nav = navigator as Navigator & { userAgentData?: { mobile?: boolean } };
+  return os === null && (!!nav.userAgentData?.mobile || /Mobi|IEMobile|Opera Mini/i.test(navigator.userAgent));
+}
+
+function tell(a: HTMLAnchorElement, msg: string, short: string) {
+  const bar = a.querySelector<HTMLElement>("[data-sv-bar-label]");
+  if (bar) {
+    // the floating pill has no room for a sentence: its button says it
+    bar.textContent = short;
+    window.clearTimeout(Number(bar.dataset.t || 0));
+    bar.dataset.t = String(window.setTimeout(() => (bar.textContent = "Send link"), 2600));
+  }
+  const status = a.closest(".svdl")?.querySelector<HTMLElement>("[data-sv-status]");
+  if (status) {
+    status.textContent = msg;
+    window.clearTimeout(Number(status.dataset.t || 0));
+    status.dataset.t = String(window.setTimeout(() => (status.textContent = ""), 6000));
+  }
+}
+
+async function shareLink(e: MouseEvent) {
+  const a = e.currentTarget as HTMLAnchorElement;
+  const data = { title: "Silent Voice", url: PAGE_URL };
+  const canShare = typeof navigator.share === "function" && (!navigator.canShare || navigator.canShare(data));
+  const canCopy = !!navigator.clipboard?.writeText;
+  if (!canShare && !canCopy) return; // the link goes to the releases page instead
+  e.preventDefault();
+  if (canShare) {
+    try {
+      await navigator.share(data);
+      return;
+    } catch (err) {
+      if ((err as DOMException)?.name === "AbortError") return; // the visitor closed the sheet
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(PAGE_URL);
+    tell(a, "Link copied. Send it to yourself.", "Link copied");
+  } catch {
+    tell(a, `Open ${PAGE_URL.replace(/^https:\/\//, "")} on your computer.`, "Copy failed");
+  }
+}
+
+function shareMode() {
+  document.documentElement.dataset.svShare = "";
+  setText("[data-sv-os-label]", "Send me the link");
+  setText("[data-sv-meta]", "Open it later on your computer");
+  setText("[data-sv-bar-label]", "Send link");
+  $$("[data-sv-status]").forEach((s) => s.removeAttribute("hidden"));
+  setMain(ANDROID_RELEASES_URL, false);
+  $$<HTMLAnchorElement>("[data-sv-main]").forEach((a) => a.addEventListener("click", shareLink));
+}
+
 export async function initRelease(): Promise<ReleaseState> {
   const os = detectOS();
   const root = document.documentElement;
   root.dataset.svOs = os ?? "unknown";
+  const share = os === "ios" || isOtherPhone(os);
 
   // Label the buttons for the visitor's OS straight away; the link itself
   // stays on a releases page until the API answers.
   if (os === "android") {
     setText("[data-sv-os-label]", "Download for Android");
-    setText("[data-sv-meta]", "Beta · Android 10 and newer");
+    setText("[data-sv-meta]", "APK beta · Android 10 and newer");
     setMain(ANDROID_RELEASES_URL, false);
-  } else if (os === "ios") {
-    setText("[data-sv-os-label]", "See all downloads");
-    setText("[data-sv-meta]", "For computers and Android");
-    setMain(ANDROID_RELEASES_URL, false);
+  } else if (share) {
+    shareMode();
   } else if (os) {
     setText("[data-sv-os-label]", `Download for ${OS_LABEL[os]}`);
+    setText("[data-sv-meta]", INTERIM[os]);
   }
 
   let picks: Picks;
@@ -263,8 +337,8 @@ export async function initRelease(): Promise<ReleaseState> {
     picks = await getPicks();
   } catch {
     root.dataset.svRelease = "failed";
-    if (os !== "android" && os !== "ios") setText("[data-sv-meta]", "Latest release on GitHub");
-    if (os === "android") setText("[data-sv-meta]", "Beta · on GitHub");
+    if (os === "android") setText("[data-sv-meta]", "APK beta · on GitHub");
+    else if (!share) setText("[data-sv-meta]", "Latest release on GitHub");
     return { os };
   }
 
@@ -279,34 +353,32 @@ export async function initRelease(): Promise<ReleaseState> {
     a.toggleAttribute("download", !!apk);
   });
   if (apkVersion) setText("[data-sv-apk-version]", apkVersion);
+  // one APK line wherever it is offered (the Android card and the final pill)
   if (apkVersion) setText("[data-sv-apk-meta]", apk ? `${apkVersion} · ${mb(apk.size)} · beta` : `${apkVersion} · beta`);
 
   // ---- desktop ----
   // Only a v1.2.3-style tag is a desktop version, so the page can never read "vandroid-...".
   const version = d && /^v\d+(\.\d+)*/i.test(d.tag) ? d.tag.replace(/^v/i, "") : undefined;
   if (d && version) {
-    const published = date(d.published_at);
     setText("[data-sv-version]", `v${version}`);
-    setText("[data-sv-date]", published);
-    $$<HTMLTimeElement>("time[data-sv-date]").forEach((t) => (t.dateTime = d.published_at));
+    setText("[data-sv-date]", date(d.published_at));
+    $$<HTMLTimeElement>("time[data-sv-date]").forEach((t) => (t.dateTime = d.published_at.slice(0, 10)));
     $$<HTMLAnchorElement>("[data-sv-release-link]").forEach((a) => (a.href = d.html_url));
   }
 
-  // ---- the main button ----
+  // ---- the main button: "v0.2.0 · <type> · <size>" on every OS ----
   if (os === "android") {
     setMain(apk?.url ?? apkPage, !!apk);
-    setText("[data-sv-meta]", apk ? `Beta · ${apkVersion} · ${mb(apk.size)}` : "Beta · on GitHub");
-  } else if (os === "ios") {
+    setText("[data-sv-meta]", apk ? `${apkVersion} · APK beta · ${mb(apk.size)}` : "APK beta · on GitHub");
+  } else if (share) {
     setMain(ANDROID_RELEASES_URL, false);
   } else {
     const main = os && d ? pick[os](d.assets) : undefined;
     // no matching file in this release: keep the releases-page fallback
     setMain(main?.url ?? d?.html_url ?? RELEASES_URL, !!main);
     if (!version) setText("[data-sv-meta]", "Latest release on GitHub");
-    else if (os === "mac" && main) setText("[data-sv-meta]", `v${version} · ${macArch(main.name) || "Mac"} · ${mb(main.size)}`);
-    else if (os === "linux" && main) setText("[data-sv-meta]", `v${version} · AppImage · ${mb(main.size)}`);
-    else if (main) setText("[data-sv-meta]", `v${version} · ${date(d!.published_at)} · ${mb(main.size)}`);
-    else setText("[data-sv-meta]", `v${version} · ${date(d!.published_at)}`);
+    else if (os && main) setText("[data-sv-meta]", `v${version} · ${os === "mac" ? macArch(main.name) || "Mac" : TYPE[os]} · ${mb(main.size)}`);
+    else setText("[data-sv-meta]", `v${version} · all files on GitHub`);
   }
 
   if (d) fillOthers(os, d, apk, apkPage);
