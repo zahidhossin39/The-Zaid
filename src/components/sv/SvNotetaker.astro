@@ -36,7 +36,7 @@ const NAV = [
 const STEPS = [
   { n: 1, t: "Both sides, live", d: "Your mic is \"You\", the computer's sound is \"Others\". Lines appear as people talk." },
   { n: 2, t: "Voices told apart", d: "After you stop, \"Others\" becomes Speaker 1, Speaker 2. About 15 s per minute of meeting." },
-  { n: 3, t: "The summary, written", d: "Key points, decisions and action items, from a model on your computer or your own cloud key." },
+  { n: 3, t: "Summarize, in one click", d: "Key points, decisions and action items, from a summary model you pick: a local AI model (about 0.8 to 4.9 GB) or your own cloud key." },
 ];
 
 // Echo picture: the mic hears your voice (orange) plus the call from your
@@ -67,7 +67,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
       <div class="svn-side">
         <p class="svn-lead">
           Notetaker records your side and the other side of any call. The words show up while people talk,
-          it tells the voices apart, and when you stop, it writes the summary. All on your computer,
+          and after the call it tells the voices apart. Click Summarize for the notes. All on your computer,
           unless you choose a cloud provider.
         </p>
 
@@ -96,7 +96,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
           ))}
         </ol>
 
-        <p class="svn-hint">Try it in the window: set <b>People besides you</b> to 1, or <span class="h-fine">click</span><span class="h-coarse">tap</span> a time to play from there.</p>
+        <p class="svn-hint">Try it in the window: set <b>People</b> to 1, or <span class="h-fine">click</span><span class="h-coarse">tap</span> a time to jump to that line. The demo has no sound.</p>
       </div>
 
       <!-- ===================== the Notetaker window ===================== -->
@@ -152,7 +152,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
                   </button>
                   <span class="nt-recpill">
                     <span class="nt-ping" aria-hidden="true"></span>
-                    <span class="nt-rec-t">Recording <span class="nt-rec-time">{clock(DURATION)}</span></span>
+                    <span class="nt-rec-t"><span class="nt-rec-w">Recording </span><span class="nt-rec-time">{clock(DURATION)}</span></span>
                     <button type="button" class="nt-stop"><span class="nt-stop-l">■ Stop</span><span class="nt-stop-f">Finishing up…</span></button>
                   </span>
                 </div>
@@ -167,9 +167,9 @@ const PLAY = "M3.5 2v8l6.5-4z";
                     <p class="nt-mtitle">Meeting at 3:05 PM</p>
                     <p class="nt-details nt-details--live">Today · 3:05 PM · Recording now</p>
                     <p class="nt-details nt-details--post">
-                      <span>Today · 3:05 PM · {clock(DURATION)}</span>
+                      <span class="nt-date">Today · 3:05 PM · {clock(DURATION)}</span>
                       <span class="nt-sep" aria-hidden="true">·</span>
-                      <label class="nt-people-l">People besides you
+                      <label class="nt-people-l"><span>People<span class="nt-pl-long"> besides you</span></span>
                         <select class="nt-people" title="How many voices to tell apart on the Others side. Auto lets the model guess.">
                           <option value="auto" selected>Auto</option>
                           <option value="1">1</option>
@@ -207,7 +207,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
                       <div class="nt-ov-notes">
                         <div class="ov-sec">
                           <p class="ov-sh">Key points</p>
-                          <ul><li>The landing page is done; it only needs the final app screenshots.</li></ul>
+                          <ul><li>The landing page is done, apart from the final screenshots.</li></ul>
                         </div>
                         <div class="ov-sec">
                           <p class="ov-sh">Decisions</p>
@@ -216,10 +216,10 @@ const PLAY = "M3.5 2v8l6.5-4z";
                         <div class="ov-sec">
                           <p class="ov-sh">Action items</p>
                           <ul class="ov-tasks">
-                            <li><span class="ov-tag ov-tag--you">You</span>Send the app screenshots tomorrow morning.</li>
+                            <li><span class="ov-tag ov-tag--you">You</span>Send the screenshots tomorrow.</li>
                             <li><span class="ov-tag ov-tag--you">You</span>Write the launch email.</li>
                             <li><span class="ov-tag" data-who="a">Speaker 1</span>Check the price page.</li>
-                            <li><span class="ov-tag" data-who="b">Speaker 2</span>Schedule the launch day posts.</li>
+                            <li><span class="ov-tag" data-who="b">Speaker 2</span>Schedule the launch posts.</li>
                           </ul>
                         </div>
                       </div>
@@ -238,7 +238,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
                     </div>
                   </div>
 
-                  <ol class="nt-lines" aria-label="Transcript">
+                  <ol class="nt-lines" aria-label="Transcript" data-lenis-prevent>
                     {LINES.map((l, i) => (
                       <li class="ln" data-i={i} data-who={l.who} data-t={l.t}>
                         <button type="button" class="ln-time" aria-label={`Play from ${clock(l.t)}`} title="Play from here">
@@ -265,6 +265,9 @@ const PLAY = "M3.5 2v8l6.5-4z";
                   <span class="nt-pos">0:00</span>
                   <input class="nt-range" type="range" min="0" max={DURATION} step="1" value="0" aria-label="Seek" />
                   <span class="nt-dur">{clock(DURATION)}</span>
+                  <span class="nt-silent" title="In the app this plays the real recording">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM16 9.5l5 5M21 9.5l-5 5" /></svg>Silent demo
+                  </span>
                   <select class="nt-rate" aria-label="Playback speed">
                     <option value="1" selected>1×</option>
                     <option value="1.25">1.25×</option>
@@ -351,7 +354,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
     <details class="svn-more">
       <summary>
         <span class="svn-more-t">More about Notetaker</span>
-        <span class="svn-more-d">Two languages in one call · on your computer or the cloud · search, playback, export · Windows, macOS, Linux</span>
+        <span class="svn-more-d">Two languages in one call · on your computer or the cloud · search, playback, export · where it records the other side</span>
         <svg class="svn-more-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
       </summary>
       <div class="svn-more-body">
@@ -395,7 +398,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
           <h3>Where it records the other side</h3>
           <dl class="svn-tools">
             <div><dt>Windows</dt><dd>Records both sides.</dd></div>
-            <div><dt>macOS 13 or later</dt><dd>Both sides once you allow Screen &amp; System Audio Recording. On macOS 12, your side only.</dd></div>
+            <div><dt>macOS 13 or later</dt><dd>Both sides once you allow Screen &amp; System Audio Recording. Not yet tested on a real Mac, so <a href="https://github.com/zahidhossin39/Silent-Voice/issues" target="_blank" rel="noopener noreferrer">tell me if it works<span class="sr-only"> (opens in a new tab)</span></a>. On macOS 12, your side only.</dd></div>
             <div><dt>Linux</dt><dd>Both sides with PulseAudio or PipeWire.</dd></div>
           </dl>
           <p class="svn-mi-note">If it can't record the computer's sound, it tells you before you start and keeps your side.</p>
@@ -411,7 +414,8 @@ const PLAY = "M3.5 2v8l6.5-4z";
 </section>
 
 <style>
-  .svn { position: relative; padding: clamp(6rem, 12vw, 10rem) 1.25rem; }
+  /* outer padding comes from the page (main.sv > section: --sv-space, --sv-gutter) */
+  .svn { position: relative; }
   .svn::before {
     content: "";
     position: absolute;
@@ -420,7 +424,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
     background: radial-gradient(50% 40% at 60% 30%, rgba(249, 115, 22, 0.1), transparent 70%);
     pointer-events: none;
   }
-  .svn-inner { position: relative; max-width: 78rem; margin: 0 auto; }
+  .svn-inner { position: relative; max-width: var(--sv-max); margin: 0 auto; }
 
   /* ---------- head ---------- */
   .svn-head { margin-bottom: clamp(1.75rem, 3.4vw, 2.5rem); }
@@ -531,6 +535,11 @@ const PLAY = "M3.5 2v8l6.5-4z";
     font-size: 14px;
     line-height: 1.45;
     transition: box-shadow 0.6s ease;
+    /* the whole window fits under the nav, so "Play the call" plays in view;
+       when it is taller than that, the transcript scrolls inside */
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100svh - 6.5rem);
   }
   .nt:focus { outline: none; }
   .nt[data-phase="rec"] { box-shadow: 0 50px 120px -40px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(239, 68, 68, 0.35), 0 0 140px -40px rgba(239, 68, 68, 0.35); }
@@ -538,7 +547,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt p { margin: 0; }
   .nt button, .nt select, .nt input { font: inherit; color: inherit; }
 
-  .nt-title { position: relative; display: flex; align-items: center; height: 40px; background: var(--a-s1); border-bottom: 1px solid var(--a-bd); padding: 0 0 0 14px; }
+  .nt-title { flex: none; position: relative; display: flex; align-items: center; height: 40px; background: var(--a-s1); border-bottom: 1px solid var(--a-bd); padding: 0 0 0 14px; }
   .nt-lights { display: none; gap: 8px; }
   .nt-lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
   .nt-lights i:nth-child(2) { background: #febc2e; }
@@ -551,10 +560,10 @@ const PLAY = "M3.5 2v8l6.5-4z";
   :global(html[data-sv-os="mac"]) .nt-wtitle { position: absolute; left: 50%; transform: translateX(-50%); }
   :global(html[data-sv-os="mac"]) .nt-title { height: 34px; }
 
-  .nt-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); }
+  .nt-body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
 
   /* sidebar */
-  .nt-side { display: flex; flex-direction: column; background: var(--a-s1); border-right: 1px solid var(--a-bd); }
+  .nt-side { display: flex; flex-direction: column; min-height: 0; overflow: hidden; background: var(--a-s1); border-right: 1px solid var(--a-bd); }
   .nt-brand { display: flex; align-items: center; gap: 10px; padding: 18px 18px 16px; }
   .nt-logo { width: 32px; height: 32px; border-radius: 8px; flex: none; }
   .nt-brand-t { display: flex; flex-direction: column; line-height: 1.2; }
@@ -572,8 +581,8 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt-theme i.on { background: var(--a-bd); }
 
   /* main */
-  .nt-main { min-width: 0; padding: 20px 22px 22px; }
-  .nt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+  .nt-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 20px 22px 22px; }
+  .nt-head { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
   .nt-h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
   .nt-sub { margin-top: 4px !important; font-size: 14px; color: var(--a-mu); max-width: 36rem; }
   .nt-actions { display: flex; align-items: center; gap: 8px; flex: none; }
@@ -613,13 +622,13 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt-stop.is-press { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.3); }
 
   /* right column: meeting panel */
-  .nt-panel { position: relative; display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--a-bd); border-radius: 16px; background: var(--a-s1); overflow: hidden; }
+  .nt-panel { position: relative; container-type: inline-size; flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; min-height: 0; border: 1px solid var(--a-bd); border-radius: 16px; background: var(--a-s1); overflow: hidden; }
   .nt-empty { display: none; margin: auto !important; max-width: 18rem; text-align: center; font-size: 13px; color: var(--a-mu); }
   .nt[data-phase="idle"] .nt-empty { display: block; }
   .nt[data-phase="idle"] :is(.nt-ph, .nt-content, .nt-player) { display: none; }
   .nt[data-phase="idle"] .nt-panel { justify-content: center; }
 
-  .nt-ph { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 22px; border-bottom: 1px solid var(--a-bd); }
+  .nt-ph { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 15px 22px; border-bottom: 1px solid var(--a-bd); }
   .nt-ph-t { min-width: 0; }
   .nt-mtitle { font-size: 17px; font-weight: 600; letter-spacing: -0.005em; }
   .nt-details { margin-top: 3px !important; font-size: 12px; color: var(--a-mu); }
@@ -654,10 +663,10 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt-tools span { width: 30px; justify-content: center; padding: 0; }
   .nt[data-phase="rec"] .nt-tools, .nt[data-phase="finishing"] .nt-tools { visibility: hidden; }
 
-  .nt-content { flex: 1; padding: 16px 22px 18px; }
+  .nt-content { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; padding: 16px 22px 18px; }
 
   /* overview */
-  .nt-ov { position: relative; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--a-bd); }
+  .nt-ov { flex: none; position: relative; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--a-bd); }
   .nt-ov-label { font-size: 12px; font-weight: 600; color: var(--a-mu); }
   .nt-ov-card { margin-top: 8px; padding: 14px 16px; border: 1px solid var(--a-bd); border-radius: 12px; background: rgba(27, 32, 48, 0.4); }
   .nt-ov[data-state="done"] .nt-ov-card { padding: 0; border-color: transparent; background: none; }
@@ -707,7 +716,20 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt-ov[data-state="busy"] .nt-ov-empty .ov-h { background: linear-gradient(90deg, var(--a-tx) 35%, var(--a-ac) 50%, var(--a-tx) 65%) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: nt-scan 1.6s linear infinite; }
 
   /* transcript */
-  .nt-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .nt-lines {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 6.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none; margin: 0; padding: 0 4px 0 0;
+    display: grid; align-content: start; gap: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--a-bd) transparent;
+    /* a soft edge where lines continue out of sight */
+    -webkit-mask-image: linear-gradient(transparent, #000 6px, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(transparent, #000 6px, #000 calc(100% - 14px), transparent);
+  }
   .ln { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 12px; }
   .ln-time {
     position: relative;
@@ -752,7 +774,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt-dots i:nth-child(3) { animation-delay: 0.3s; }
 
   /* player */
-  .nt-player { display: none; align-items: center; gap: 10px; padding: 9px 22px; border-top: 1px solid var(--a-bd); background: var(--a-s1); }
+  .nt-player { flex: none; display: none; align-items: center; gap: 10px; padding: 9px 22px; border-top: 1px solid var(--a-bd); background: var(--a-s1); }
   .nt[data-phase="post"] .nt-player { display: flex; }
   .nt-play { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border: 0; border-radius: 50%; background: var(--a-ac); color: var(--a-on) !important; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.3s ease; }
   .nt-play svg { width: 12px; height: 12px; fill: currentColor; }
@@ -760,6 +782,9 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt-player.is-playing .nt-play .i-pause { display: block; }
   .nt-pos, .nt-dur { font-size: 11px; color: var(--a-mu); font-variant-numeric: tabular-nums; min-width: 2.2em; }
   .nt-range { flex: 1; min-width: 0; accent-color: var(--a-ac); height: 4px; cursor: pointer; }
+  .nt-silent { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 0 8px; height: 22px; border-radius: 999px; background: var(--a-s2); color: var(--a-mu); font-size: 11px; white-space: nowrap; }
+  .nt-silent svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nt-player.is-playing .nt-silent { color: var(--a-tx); box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.45); }
   .nt-rate { height: 26px; padding: 0 6px; border: 1px solid var(--a-bd); border-radius: 6px; background: var(--a-s2); color: var(--a-tx) !important; font-size: 12px !important; cursor: pointer; }
 
   @keyframes nt-ping { 75%, 100% { transform: scale(2.2); opacity: 0; } }
@@ -893,6 +918,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .svn-tools div { padding-left: 0.75rem; border-left: 1px solid var(--sv-line); }
   .svn-tools dt { font-size: 0.86rem; font-weight: 600; color: var(--color-text); }
   .svn-tools dd { margin: 0.1rem 0 0; font-size: 0.82rem; line-height: 1.45; color: var(--color-muted); }
+  .svn-tools dd a { color: var(--color-text); text-decoration: underline; text-decoration-color: rgba(249, 115, 22, 0.6); text-underline-offset: 3px; }
   .svn-consent { grid-column: 1 / -1; display: flex; gap: 0.75rem; align-items: flex-start; margin: 0; padding: 0.8rem 1rem; border-radius: 14px; background: rgba(249, 115, 22, 0.06); border: 1px solid rgba(249, 115, 22, 0.2); font-size: 0.88rem; color: var(--color-muted); }
   .svn-consent b { color: var(--color-text); font-weight: 600; }
   .svn-consent svg { width: 20px; height: 20px; flex: none; margin-top: 0.05rem; fill: none; stroke: var(--sv-orange); stroke-width: 1.8; stroke-linecap: round; }
@@ -910,9 +936,16 @@ const PLAY = "M3.5 2v8l6.5-4z";
     .svn-more-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 1099px) {
-    .svn-hero { grid-template-columns: minmax(0, 1fr); }
-    .svn-side { position: static; grid-template-columns: minmax(0, 1fr); }
-    .svn-lead { max-width: 44rem; }
+    /* stacked: "Play the call" sits right above the window, so the button and
+       what it plays share one view (the page scrolls the pair into place) */
+    .svn-hero { grid-template-columns: minmax(0, 1fr); row-gap: 1.1rem; }
+    .svn-side { display: contents; }
+    .svn-lead { order: 1; max-width: 44rem; margin: 0; }
+    .svn-chapters { order: 2; margin-bottom: 0.4rem; }
+    .svn-play { order: 3; }
+    .svn-stage { order: 4; }
+    .svn-hint { order: 5; }
+    .nt { max-height: calc(100svh - 156px); }
     .svn-chapters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .svn-ch { grid-template-columns: minmax(0, 1fr); }
     .svn-ch-ic { grid-row: auto; margin-bottom: 0.3rem; }
@@ -955,12 +988,59 @@ const PLAY = "M3.5 2v8l6.5-4z";
     .svn-more-body { grid-template-columns: minmax(0, 1fr); padding: 1.2rem 1.1rem 1.2rem; }
     .svn-more summary { padding: 0.9rem 1.1rem; }
   }
+  /* compact window: phones and short laptop screens. No fake sidebar or title
+     bar, tighter spacing and smaller type, so the transcript and the Overview
+     fit on screen together */
+  @media (max-width: 760px), (max-height: 820px) {
+    .nt { font-size: 13px; }
+    .nt-title { display: none; }
+    .nt-body { grid-template-columns: minmax(0, 1fr); }
+    .nt-side { display: none; }
+    .nt-main { padding: 12px 14px 14px; }
+    .nt-head { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+    .nt-h1 { font-size: 17px; }
+    .nt-sub { display: none; }
+    .nt-actions { width: auto; margin-left: auto; }
+    .nt-gear { display: none; }
+    .nt-start, .nt-recpill { height: 36px; }
+    .nt-ph { padding: 10px 14px; }
+    .nt-mtitle { font-size: 15px; }
+    .nt-tools span { width: 28px; height: 28px; }
+    .nt-content { padding: 10px 14px 10px; }
+    .nt-ov { margin-bottom: 10px; padding-bottom: 10px; }
+    .nt-ov-card { padding: 10px 12px; }
+    .nt-ov-notes { gap: 6px; }
+    .ov-sh { font-size: 12.5px; margin-bottom: 1px !important; }
+    .ov-sec p:not(.ov-sh), .ov-sec li { font-size: 13px; line-height: 1.45; }
+    .ov-sec .ov-tasks { gap: 2px; }
+    .ov-tag { font-size: 10.5px; line-height: 16px; }
+    .nt-sum { height: 34px; }
+    .nt-ov[data-state="done"] .nt-sum { height: 30px; }
+    .nt-lines { gap: 4px; min-height: 5.5rem; }
+    .ln-who { font-size: 11.5px; }
+    .ln-text { font-size: 13.5px; line-height: 1.45; }
+    .nt-player { padding: 6px 14px; }
+    /* date and "Transcribe again" share the first row, the People choice the second */
+    .nt-details--post .nt-sep { display: none; }
+    .nt-details--post { column-gap: 12px; }
+    .nt-again { order: 1; }
+    .nt-people-l { order: 2; }
+    .nt-voices { order: 3; }
+  }
   @media (max-width: 420px) {
+    .nt-rec-w, .nt-pl-long { display: none; }
+    .nt-date { flex-basis: 100%; }
+    .nt-people-l { order: 1; }
+    .nt-again { order: 2; }
     .nt-recpill { gap: 8px; padding-left: 10px; }
     .nt-rec-t { font-size: 13px; }
     .svn-echo { padding: 0.9rem; }
     .svn-wave { height: 5.5rem; }
     .svn-echo-state { font-size: 0.84rem; }
+  }
+  /* a narrow player keeps play, position, seek and the "Silent demo" label */
+  @container (max-width: 430px) {
+    .nt-dur, .nt-rate { display: none; }
   }
   /* touch: every control kept in the mock gets a 44px target */
   @media (pointer: coarse) {
@@ -975,6 +1055,12 @@ const PLAY = "M3.5 2v8l6.5-4z";
     .nt-stop { height: 34px; }
     .nt-sum, .nt-ov[data-state="done"] .nt-sum { height: 44px; }
   }
+  /* JS off: the finished meeting as a still picture, with no controls that do nothing */
+  :global(html:not(.js)) .svn :is(.nt-start, .nt-player, .nt-again, .nt-ov-ctrl, .svn-echo-tg, .svn-where-opts) { display: none; }
+  :global(html:not(.js)) .svn .nt-people-l, :global(html:not(.js)) .svn .nt-details--post .nt-sep { display: none; }
+  :global(html:not(.js)) .svn .ln-time { pointer-events: none; }
+  :global(html:not(.js)) .svn .ln-time svg { display: none; }
+  :global(html:not(.js)) .svn .nt-ov-notes { padding-right: 0; }
   @media (prefers-reduced-motion: reduce) {
     .nt-ping::after, .nt-nav-dot, .nt-tile i, .nt-dots i, .i-spin { animation: none !important; }
     .nt.is-scanning .ln-name :global(.nm) { animation: none !important; }
@@ -1104,6 +1190,14 @@ const PLAY = "M3.5 2v8l6.5-4z";
       } else p.textContent = d.text;
       setName(d, nameFor(d.who), false);
       ol.insertBefore(d.li, listen);
+      // live lines: keep the newest one (and "Listening") in sight
+      if (animate && nt.dataset.phase === "rec") ol.scrollTo({ top: ol.scrollHeight, behavior: motion ? "smooth" : "auto" });
+    };
+    // scroll only the transcript box (never the page) so a line is fully in it
+    const showInList = (li: HTMLElement) => {
+      const top = li.offsetTop, bottom = top + li.offsetHeight;
+      if (top >= ol.scrollTop && bottom <= ol.scrollTop + ol.clientHeight) return;
+      ol.scrollTo({ top: Math.max(0, top - 6), behavior: motion ? "smooth" : "auto" });
     };
     const clearLines = () => data.forEach((d) => d.li.remove());
     const setLive = (on: boolean) => data.forEach((d) => (d.time.disabled = on));
@@ -1189,6 +1283,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
       people.disabled = !withSplit;
       clearLines();
       data.forEach((_, i) => showLine(i, false));
+      ol.scrollTop = 0;
       applyNames(false);
       setLive(false);
       setOv(summary ? "done" : "ready");
@@ -1224,6 +1319,8 @@ const PLAY = "M3.5 2v8l6.5-4z";
         await sleep(500); if (!alive(g)) return;
       }
       await summarize(g, true); if (!alive(g)) return;
+      // the Overview took its room back: show the end of the call under it
+      ol.scrollTo({ top: ol.scrollHeight, behavior: motion ? "smooth" : "auto" });
       setStory(false);
       setTimeout(() => { if (alive(g)) setChapter(0); }, 900);
     }
@@ -1306,6 +1403,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
       if (idx === current) return;
       current = idx;
       data.forEach((d, i) => d.li.classList.toggle("is-now", i === idx));
+      if (idx >= 0) showInList(data[idx].li);
     };
     const drawPos = () => { pos.textContent = fmt(t); range.value = String(Math.floor(t)); };
     const loop = (now: number) => {
@@ -1341,11 +1439,43 @@ const PLAY = "M3.5 2v8l6.5-4z";
       t = d.t; drawPos(); current = -2; startPlayer(); markNow();
     }));
 
+    // ---- play where it can be seen ----
+    // Before a replay starts, the window (and, when stacked, the Play button right
+    // above it) is scrolled under the nav. Smooth with motion, a jump without.
+    const stacked = matchMedia("(max-width: 1099px)");
+    const reduceMq = matchMedia("(prefers-reduced-motion: reduce)");
+    const NAV = 64;
+    let revealTok = 0;
+    const reveal = () => new Promise<void>((done) => {
+      const target = stacked.matches && !playCall.hidden ? playCall : nt;
+      const tr = target.getBoundingClientRect();
+      const nr = nt.getBoundingClientRect();
+      const inView = tr.top >= NAV && nr.bottom <= innerHeight + 1;
+      if (inView) return done();
+      const y = Math.max(0, scrollY + tr.top - NAV - 12);
+      const lenis = (window as any).lenis;
+      if (reduceMq.matches || !lenis) {
+        window.scrollTo({ top: y, behavior: reduceMq.matches ? "instant" : "smooth" });
+        if (reduceMq.matches) return done();
+        setTimeout(done, 700);
+        return;
+      }
+      let ok = false;
+      const fin = () => { if (!ok) { ok = true; done(); } };
+      lenis.scrollTo(y, { duration: 0.75, force: true, onComplete: fin });
+      setTimeout(fin, 1100);
+    });
+    async function play(from: 1 | 2 | 3) {
+      const tok = ++revealTok;
+      await reveal();
+      if (tok !== revealTok) return;
+      story(from);
+    }
+
     // ---- visitor controls inside the window ----
     startBtn.addEventListener("click", () => {
       if (nt.dataset.phase === "rec" || nt.dataset.phase === "finishing") return;
-      story(1);
-      keepFocus(startBtn, stopBtn);
+      play(1).then(() => keepFocus(startBtn, stopBtn));
     });
     stopBtn.addEventListener("click", () => {
       if (nt.dataset.phase !== "rec") return;
@@ -1379,19 +1509,25 @@ const PLAY = "M3.5 2v8l6.5-4z";
     // ---- steps + play the call ----
     chapters.forEach((c) => {
       c.disabled = false;
-      c.addEventListener("click", () => story(Number(c.dataset.ch) as 1 | 2 | 3));
+      c.addEventListener("click", () => play(Number(c.dataset.ch) as 1 | 2 | 3));
     });
     playCall.hidden = false;
     playCall.addEventListener("click", () => {
-      if (storyOn) { finishNow(); announce("Skipped to the finished meeting."); }
-      else story(1);
+      if (storyOn) { revealTok++; finishNow(); announce("Skipped to the finished meeting."); }
+      else play(1);
     });
 
     // ---- echo ----
     const echo = $(".svn-echo");
     const echoTg = $<HTMLButtonElement>(".svn-echo-tg");
     const setEcho = (on: boolean) => { echo.dataset.echo = on ? "on" : "off"; echoTg.setAttribute("aria-pressed", String(on)); };
-    echoTg.addEventListener("click", () => setEcho(echo.dataset.echo !== "on"));
+    let echoTimer = 0;
+    let echoTouched = false;
+    echoTg.addEventListener("click", () => {
+      clearTimeout(echoTimer);
+      echoTouched = true;
+      setEcho(echo.dataset.echo !== "on");
+    });
 
     // ---- local or cloud (also changes the window's subtitle and the redo prompt) ----
     const opts = $$<HTMLButtonElement>(".svn-opt");
@@ -1425,16 +1561,31 @@ const PLAY = "M3.5 2v8l6.5-4z";
       reset();
       statePost(false, true);
       let flipped = false;
+      let flipCut = false;
+      // the visitor got there first: show the split labels now, no timer overrides them
+      const cancelFlip = () => {
+        flipped = true;
+        io.disconnect();
+        if (flipCut || split || storyOn || nt.dataset.phase !== "post") return;
+        flipCut = true;
+        nt.classList.remove("is-scanning");
+        voices.hidden = true;
+        split = true;
+        people.disabled = false;
+        applyNames(false);
+      };
+      nt.addEventListener("pointerdown", cancelFlip, true);
+      nt.addEventListener("keydown", cancelFlip, true);
       const io = new IntersectionObserver(async ([e]) => {
         if (!e.isIntersecting || flipped) return;
         flipped = true;
         io.disconnect();
         if (storyOn || split || nt.dataset.phase !== "post") return;
         const g = gen;
-        await sleep(450); if (!alive(g) || storyOn) return;
+        await sleep(450); if (!alive(g) || storyOn || flipCut) return;
         voices.hidden = false;
         nt.classList.add("is-scanning");
-        await sleep(1200); if (!alive(g) || storyOn) return;
+        await sleep(1200); if (!alive(g) || storyOn || flipCut) return;
         nt.classList.remove("is-scanning");
         voices.hidden = true;
         split = true;
@@ -1448,7 +1599,8 @@ const PLAY = "M3.5 2v8l6.5-4z";
       const echoIo = new IntersectionObserver(([e]) => {
         if (!e.isIntersecting) return;
         echoIo.disconnect();
-        setTimeout(() => setEcho(true), 1100);
+        if (echoTouched) return;
+        echoTimer = window.setTimeout(() => { if (!echoTouched) setEcho(true); }, 1100);
       }, { threshold: 0.6 });
       echoIo.observe(echo);
 
@@ -1473,6 +1625,9 @@ const PLAY = "M3.5 2v8l6.5-4z";
         motion = false;
         io.disconnect();
         echoIo.disconnect();
+        clearTimeout(echoTimer);
+        nt.removeEventListener("pointerdown", cancelFlip, true);
+        nt.removeEventListener("keydown", cancelFlip, true);
         [lift, cards, bar, fileLines].forEach((a) => a.revert());
         setEcho(true);
         finishNow();

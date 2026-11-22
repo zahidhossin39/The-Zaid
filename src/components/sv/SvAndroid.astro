@@ -1,7 +1,7 @@
 ---
 // "And it's on my phone too": the Android beta. A dark phone mock-up with a
 // chat app, the keyboard up and the Silent Voice bubble floating above it.
-// Tap the bubble (or the button under the phone): it listens with the
+// Tap the bubble (or the button beside, or on phones above, it): it listens with the
 // desktop pill's bars and an orange ring that swells with the voice, tap
 // again and the cleaned words are typed into the field and sent. The bubble
 // can be dragged anywhere between the app bar and the keyboard, like the
@@ -69,38 +69,36 @@ const ICON = {
   free: '<path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4M13.5 5.5l-3 13"/>',
 };
 
-const left = [
+const callouts = [
   {
     key: "device",
     ic: ICON.phone,
     t: "Runs on the phone",
-    d: "Parakeet 110M, an on-device speech model, turns your voice into text right there. One download of about 100 MB, then it works offline.",
+    d: "Parakeet 110M turns speech into text on the phone. One download of about 100 MB, then it works offline.",
   },
   {
     key: "clean",
     ic: ICON.clean,
     t: "Cleaned before it's typed",
-    d: "Drops the ums, fixes stutters and writes numbers as digits. Say “new line” to start a new line.",
+    d: "Drops the ums, fixes stutters and writes numbers as digits. Say “new line” for a new line.",
   },
   {
     key: "words",
     ic: ICON.words,
     t: "Knows your words",
-    d: "Add names and jargon so it spells them right. Shortcuts type longer text: say “my email” and your address appears.",
+    d: "Add names and jargon so they're spelled right. Say “my email” and your address is typed.",
   },
-];
-const right = [
   {
     key: "modes",
     ic: ICON.modes,
-    t: "Writing modes, if you want them",
-    d: "Polish, Message, Email or Notes rewrite your words using your own AI key. Only text is sent, never audio, and the key is encrypted on the phone. By default it types your exact words, and nothing leaves the phone.",
+    t: "Optional writing modes",
+    d: "Polish, Message, Email or Notes, with your own AI key. Only text is sent, never audio. Off by default.",
   },
   {
     key: "history",
     ic: ICON.history,
     t: "History stays with you",
-    d: "Past dictations are kept on the phone only, so you can copy a past dictation again. Password fields are never touched.",
+    d: "Past dictations stay on the phone, ready to copy again. Password fields are never touched.",
   },
   {
     key: "free",
@@ -126,31 +124,33 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
 
 <section class="and" id="android" aria-labelledby="and-title">
   <div class="and-inner">
-    <header class="and-head">
-      <p class="sv-eyebrow">Now on Android · beta</p>
-      <h2 class="h2" id="and-title">Talk into any app on your <em>phone.</em></h2>
-      <p class="and-lead">
-        A mic bubble sits above your keyboard in every app. Tap it, talk, tap again, and the cleaned-up text is typed at
-        your cursor. Your speech is turned into text on the phone itself.
-      </p>
-    </header>
+    <div class="and-top">
+      <div class="and-copy">
+        <header class="and-head">
+          <p class="sv-eyebrow">Now on Android · beta</p>
+          <h2 class="h2" id="and-title">Talk into any app on your <em>phone.</em></h2>
+          <p class="and-lead">
+            A mic bubble sits above your keyboard in every app. Tap it, talk, tap again, and the cleaned-up text is typed at
+            your cursor. Your speech is turned into text on the phone itself.
+          </p>
+        </header>
 
-    <div class="and-stage">
-      <ul class="and-callouts and-callouts--l">
-        {left.map((c) => (
-          <li class="and-co" data-and-co={c.key}>
-            <span class="and-co-ic" aria-hidden="true"><svg viewBox="0 0 24 24" set:html={c.ic} /></span>
-            <span class="and-co-body">
-              <h3>{c.t}</h3>
-              <p>{c.d}</p>
-            </span>
-          </li>
-        ))}
-      </ul>
+        <ul class="and-callouts">
+          {callouts.map((c) => (
+            <li class="and-co" data-and-co={c.key}>
+              <span class="and-co-ic" aria-hidden="true"><svg viewBox="0 0 24 24" set:html={c.ic} /></span>
+              <span class="and-co-body">
+                <h3>{c.t}</h3>
+                <p>{c.d}</p>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
+      <!-- the demo: the control (and what you say) right beside, or above, the phone -->
       <div class="and-demo" data-and-demo data-state="composite" data-scripts={JSON.stringify(scripts)}>
-        <div class="and-aura" aria-hidden="true"></div>
-        <div class="and-figure">
+        <div class="and-ctrl">
           <div class="and-say is-on is-clean" aria-hidden="true" data-and-say>
             <span class="and-say-label"><i></i><i></i><i></i>You say</span>
             <p class="and-say-text" data-and-say-text>
@@ -160,6 +160,20 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
             </p>
           </div>
 
+          <button type="button" class="and-try" data-and-try>
+            <span class="and-try-ic" aria-hidden="true">
+              <svg class="and-try-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" /></svg>
+              <span class="and-try-bars"><i></i><i></i><i></i><i></i><i></i></span>
+            </span>
+            <span data-and-try-label>Try it: start talking</span>
+          </button>
+          <p class="and-hint">Or tap the bubble on the phone. Drag it anywhere above the keyboard.</p>
+          <p class="and-sr">{alt}</p>
+          <p class="and-sr" aria-live="polite" data-and-live></p>
+        </div>
+
+        <div class="and-figure">
+          <div class="and-aura" aria-hidden="true"></div>
           <div class="and-phone" aria-hidden="true">
             <span class="and-key and-key--pwr"></span>
             <span class="and-key and-key--vol"></span>
@@ -235,32 +249,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
             </div>
           </div>
         </div>
-
-        <div class="and-ctrl">
-          <button type="button" class="and-try" data-and-try>
-            <span class="and-try-ic" aria-hidden="true">
-              <svg class="and-try-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" /></svg>
-              <span class="and-try-bars"><i></i><i></i><i></i><i></i><i></i></span>
-            </span>
-            <span data-and-try-label>Try it: start talking</span>
-          </button>
-          <p class="and-hint">Or tap the bubble on the screen. Drag it anywhere above the keyboard.</p>
-          <p class="and-sr">{alt}</p>
-          <p class="and-sr" aria-live="polite" data-and-live></p>
-        </div>
       </div>
-
-      <ul class="and-callouts and-callouts--r">
-        {right.map((c) => (
-          <li class="and-co" data-and-co={c.key}>
-            <span class="and-co-ic" aria-hidden="true"><svg viewBox="0 0 24 24" set:html={c.ic} /></span>
-            <span class="and-co-body">
-              <h3>{c.t}</h3>
-              <p>{c.d}</p>
-            </span>
-          </li>
-        ))}
-      </ul>
     </div>
 
     <div class="and-get">
@@ -275,6 +264,13 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
           </span>
           <span class="and-apk-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v14m0 0-6-6m6 6 6-6" /></svg></span>
         </a>
+        <ul class="and-req" aria-label="Requirements">
+          <li>Android 10 or newer</li>
+          <li>64-bit phones</li>
+          <li>English only for now</li>
+          <li>No iPhone version yet</li>
+        </ul>
+      </div>
         <!-- computers only: the APK is no use on one, so hand it to the phone -->
         <div class="and-qr">
           <svg class="and-qr-code" viewBox={`-4 -4 ${qrSize + 8} ${qrSize + 8}`} role="img" aria-label={`QR code for ${QR_URL}`} shape-rendering="crispEdges">
@@ -286,13 +282,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
             <span>It opens this page on the phone, with the APK ready to install.</span>
           </p>
         </div>
-        <ul class="and-req" aria-label="Requirements">
-          <li>Android 10 or newer</li>
-          <li>64-bit phones</li>
-          <li>English only for now</li>
-        </ul>
-        <p class="and-ios">iPhone is not available yet.</p>
-      </div>
+      <div class="and-how">
       <ol class="and-steps">
         <li>
           <b>Install it from GitHub.</b> It is not on the Play Store, so allow installs from your browser when Android asks.
@@ -303,6 +293,11 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
           app's App info, tap ⋮ and choose Allow restricted settings.
         </li>
       </ol>
+      <p class="and-upd">
+        No in-app updates yet: new versions are installed from <a href="https://github.com/zahidhossin39/Silent-Voice/releases" target="_blank" rel="noopener noreferrer">GitHub releases<span class="and-sr"> (opens in a new tab)</span></a>,
+        so check back now and then.
+      </p>
+      </div>
     </div>
   </div>
 </section>
@@ -310,76 +305,66 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
 <style>
   .and {
     position: relative;
-    padding: clamp(6rem, 12vw, 10rem) 1.25rem;
+    /* outer padding comes from the page (main.sv > section: --sv-space, --sv-gutter) */
   }
-  .and-inner { max-width: 78rem; margin: 0 auto; }
+  .and-inner { max-width: var(--sv-max); margin: 0 auto; }
 
-  .and-head { text-align: center; max-width: 48rem; margin: 0 auto clamp(3rem, 6vw, 4.5rem); }
+  .and-head { max-width: 40rem; }
   .and-head .h2 { margin-top: 0.9rem; font-size: clamp(2.4rem, 5.5vw, 4.2rem); line-height: 1.02; text-wrap: balance; }
   .and-head em { color: var(--sv-orange); }
-  .and-lead { margin: 1.3rem auto 0; max-width: 40rem; color: var(--color-muted); font-size: clamp(1.02rem, 1.5vw, 1.15rem); text-wrap: pretty; }
+  .and-lead { margin: 1.1rem 0 0; max-width: 36rem; color: var(--color-muted); font-size: clamp(1rem, 1.4vw, 1.1rem); line-height: 1.6; text-wrap: pretty; }
 
-  /* ---------- stage: callouts | phone | callouts ---------- */
-  .and-stage {
+  /* ---------- top: words and features | the demo ---------- */
+  .and-top {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    grid-template-areas: "l demo r";
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: clamp(2.5rem, 4.5vw, 4.5rem);
     align-items: center;
-    gap: clamp(1.5rem, 2.6vw, 2.75rem);
   }
-  .and-callouts--l { grid-area: l; }
-  .and-callouts--r { grid-area: r; }
-  .and-demo { grid-area: demo; }
+  .and-copy { min-width: 0; }
 
-  .and-callouts { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(1.75rem, 3vw, 2.6rem); }
-  .and-co { position: relative; display: flex; gap: 0.95rem; align-items: flex-start; }
-  .and-callouts--l .and-co { flex-direction: row-reverse; text-align: right; }
+  .and-callouts {
+    list-style: none;
+    margin: clamp(2rem, 3.5vw, 2.6rem) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.35rem 1.75rem;
+  }
+  .and-co { position: relative; display: flex; gap: 0.8rem; align-items: flex-start; }
   .and-co-ic {
     flex: none;
     display: grid;
     place-items: center;
-    width: 2.6rem;
-    height: 2.6rem;
-    border-radius: 12px;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 11px;
     border: 1px solid rgba(249, 115, 22, 0.28);
     background: rgba(249, 115, 22, 0.08);
     color: var(--sv-orange);
     transition: background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
   }
-  .and-co-ic svg { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-  .and-co h3 { margin: 0.15rem 0 0.35rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.08rem; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25; }
-  .and-co p { margin: 0; font-size: 0.92rem; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
-  /* a short wire from each callout toward the phone */
-  .and-co::after {
-    content: "";
-    position: absolute;
-    top: 1.3rem;
-    width: clamp(1rem, 2vw, 2rem);
-    height: 1px;
-    background: linear-gradient(90deg, rgba(249, 115, 22, 0.5), transparent);
-    transition: opacity 0.4s ease;
-    opacity: 0.6;
-  }
-  .and-callouts--l .and-co::after { left: 100%; margin-left: 0.6rem; }
-  .and-callouts--r .and-co::after { right: 100%; margin-right: 0.6rem; transform: scaleX(-1); }
+  .and-co-ic svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .and-co h3 { margin: 0.1rem 0 0.25rem; font-family: "Inter Tight", var(--font-sans); font-size: 1rem; font-weight: 700; letter-spacing: -0.015em; line-height: 1.25; }
+  .and-co p { margin: 0; font-size: 0.88rem; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
   /* lit while the demo shows that feature working */
   .and-co.is-lit .and-co-ic { background: var(--sv-orange); color: #140a02; border-color: var(--sv-orange); box-shadow: 0 0 28px -4px rgba(249, 115, 22, 0.75); }
-  .and-co.is-lit::after { opacity: 1; background: linear-gradient(90deg, var(--sv-orange), transparent); }
 
-  /* ---------- demo ---------- */
+  /* ---------- demo: control beside the phone ---------- */
   .and-demo {
-    --u: clamp(8.8px, 1.12vh, 10.5px); /* one phone unit; the whole mock scales with it */
+    --u: clamp(8.4px, 1.05vh, 10px); /* one phone unit; the whole mock scales with it */
     position: relative;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 13.5rem auto;
+    gap: clamp(1rem, 1.6vw, 1.5rem);
     align-items: center;
-    padding-inline: calc(var(--u) * 3);
     --lvl: 0.55;
   }
+  .and-figure { position: relative; padding-inline: calc(var(--u) * 1.5); }
   .and-aura {
     position: absolute;
     left: 50%;
-    top: 42%;
+    top: 50%;
     width: calc(var(--u) * 62);
     aspect-ratio: 1;
     translate: -50% -50%;
@@ -390,13 +375,12 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     pointer-events: none;
     filter: blur(8px);
   }
-  .and-figure { position: relative; padding-top: calc(var(--u) * 11); }
 
   /* phone shell */
   .and-phone {
     position: relative;
     width: calc(var(--u) * 30);
-    height: calc(var(--u) * 64);
+    height: calc(var(--u) * 56); /* a shorter phone: chat, field and keyboard, so it fits beside its control */
     padding: calc(var(--u) * 0.85);
     border-radius: calc(var(--u) * 4.7);
     background: linear-gradient(150deg, #2c2f37 0%, #121318 22%, #0b0c0f 60%, #24262d 100%);
@@ -467,7 +451,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     display: flex;
     align-items: center;
     gap: calc(var(--u) * 0.9);
-    height: calc(var(--u) * 5.4);
+    height: calc(var(--u) * 4.8);
     padding: 0 calc(var(--u) * 1.1);
     background: #121621;
     border-bottom: 1px solid #1c2130;
@@ -593,14 +577,14 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     flex: none;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--u) * 0.9);
-    padding: 0 calc(var(--u) * 0.45) calc(var(--u) * 0.9);
+    gap: calc(var(--u) * 0.7);
+    padding: 0 calc(var(--u) * 0.45) calc(var(--u) * 0.7);
     background: #1a1d24;
   }
   .and-strip {
     display: flex;
     align-items: center;
-    height: calc(var(--u) * 3.4);
+    height: calc(var(--u) * 2.8);
     padding: 0 calc(var(--u) * 0.8);
     color: #c5cad6;
     font-size: calc(var(--u) * 1.35);
@@ -613,7 +597,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     flex: 0 0 calc(var(--u) * 2.28);
     display: grid;
     place-items: center;
-    height: calc(var(--u) * 4);
+    height: calc(var(--u) * 3.5);
     border-radius: calc(var(--u) * 0.6);
     background: #2d3039;
     color: #e6e9f0;
@@ -625,7 +609,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
   .k--space { flex: 0 0 calc(var(--u) * 12.6); }
   .k--enter { flex: 0 0 calc(var(--u) * 4); background: #4f7cff; color: #fff; }
 
-  .and-nav { flex: none; display: grid; place-items: center; height: calc(var(--u) * 2.3); background: #1a1d24; }
+  .and-nav { flex: none; display: grid; place-items: center; height: calc(var(--u) * 1.8); background: #1a1d24; }
   .and-nav i { width: calc(var(--u) * 10); height: calc(var(--u) * 0.45); border-radius: 999px; background: rgba(230, 233, 240, 0.55); }
 
   /* the bubble: 56 dp on a ~360 dp screen, 10 dp from the right edge.
@@ -634,7 +618,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     position: absolute;
     z-index: 4;
     right: calc(var(--u) * 0.85);
-    bottom: calc(var(--u) * 33.6);
+    bottom: calc(var(--u) * 29.5);
     width: calc(var(--u) * 5);
     height: calc(var(--u) * 5);
     border-radius: 50%;
@@ -666,11 +650,8 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
 
   /* "You say": what the visitor would be saying, floating over the chat */
   .and-say {
-    position: absolute;
-    z-index: 3;
-    top: 0;
-    left: calc(var(--u) * -2.5);
-    width: calc(var(--u) * 35);
+    position: relative;
+    width: 100%;
     padding: calc(var(--u) * 1.3) calc(var(--u) * 1.6) calc(var(--u) * 1.5);
     border-radius: 18px;
     border: 1px solid rgba(249, 115, 22, 0.35);
@@ -723,10 +704,11 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
   .and-say.is-clean :global(.w.cut),
   .and-say.is-clean :global(.w.sub) { color: rgba(244, 242, 237, 0.42); text-decoration: line-through; text-decoration-color: var(--sv-orange); text-decoration-thickness: 2px; }
   .and-say.is-clean :global(.w.sub b) { margin-left: 0.3em; max-width: 3em; opacity: 1; transform: none; }
-  .is-live .and-say:not(.is-on) { opacity: 0; transform: translateY(10px) scale(0.97); }
+  /* between turns the card rests, dimmed, so its slot never reads as a gap */
+  .is-live .and-say:not(.is-on) { opacity: 0.4; transform: scale(0.985); }
 
-  /* control under the phone */
-  .and-ctrl { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.7rem; margin-top: 2rem; text-align: center; }
+  /* the control, with what you say above it */
+  .and-ctrl { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 0.85rem; }
   .and-try {
     display: inline-flex;
     align-items: center;
@@ -770,26 +752,29 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
   .and-demo[data-state="rec"] .and-try-bars,
   .and-demo[data-state="starting"] .and-try-bars { display: flex; }
   .and-demo[data-state="work"] .and-try { opacity: 0.7; cursor: progress; }
-  .and-hint { margin: 0; max-width: 21rem; font-size: 0.82rem; line-height: 1.5; color: var(--color-muted); }
+  .and-hint { margin: 0; max-width: 13.5rem; font-size: 0.82rem; line-height: 1.5; color: var(--color-muted); }
 
   .and-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
   /* ---------- get it ---------- */
   .and-get {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    gap: clamp(1.75rem, 4vw, 3.5rem);
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.25fr);
+    grid-template-areas: "main qr how";
+    gap: clamp(1.5rem, 3.5vw, 3rem);
     align-items: center;
-    max-width: 62rem;
-    margin: clamp(3.5rem, 7vw, 5.5rem) auto 0;
-    padding: clamp(1.5rem, 3.4vw, 2.6rem);
+    margin: clamp(3rem, 6vw, 4.5rem) 0 0;
+    padding: clamp(1.4rem, 2.6vw, 2rem);
     border-radius: 22px;
     border: 1px solid var(--sv-line);
     background:
       radial-gradient(120% 140% at 0% 0%, rgba(249, 115, 22, 0.1), transparent 55%),
       rgba(17, 17, 20, 0.8);
   }
-  .and-get-main { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; }
+  .and-get-main { grid-area: main; }
+  .and-qr { grid-area: qr; }
+  .and-how { grid-area: how; }
+  .and-get-main { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
   .and-get-title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.7rem, 3vw, 2.2rem); line-height: 1.05; letter-spacing: -0.02em; }
 
   .and-apk {
@@ -827,14 +812,15 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
   .and-apk-arrow svg { width: 0.95rem; height: 0.95rem; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.35s cubic-bezier(.22, 1.4, .36, 1); }
   .and-apk:hover .and-apk-arrow svg { transform: translateY(2px); }
 
-  .and-req { display: flex; flex-wrap: wrap; gap: 0.45rem; margin: 0.2rem 0 0; padding: 0; list-style: none; }
-  .and-req li { padding: 0.32rem 0.75rem; border-radius: 999px; border: 1px solid var(--sv-line); background: rgba(244, 242, 237, 0.03); font-size: 0.8rem; color: var(--color-text); }
+  .and-req { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin: 0; padding: 0; list-style: none; font-size: 0.85rem; color: var(--color-muted); }
+  .and-req li { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .and-req li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--sv-orange); }
   .and-ios { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
 
   /* QR for computer visitors: wide screens without a touch-first pointer, never on a phone or tablet */
-  .and-qr { display: none; align-items: center; gap: 1rem; }
+  .and-qr { display: none; flex-direction: column; align-items: flex-start; gap: 0.8rem; }
   .and-qr-code { flex: none; width: 7.25rem; height: 7.25rem; border-radius: 12px; box-shadow: 0 0 0 1px rgba(244, 242, 237, 0.12), 0 10px 30px -12px rgba(0, 0, 0, 0.8); }
-  .and-qr-text { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; max-width: 15rem; font-size: 0.85rem; line-height: 1.45; color: var(--color-muted); text-wrap: pretty; }
+  .and-qr-text { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; max-width: 12rem; font-size: 0.85rem; line-height: 1.45; color: var(--color-muted); text-wrap: pretty; }
   .and-qr-text b { color: var(--color-text); font-weight: 600; font-size: 0.95rem; }
   @media (min-width: 768px) and (not (pointer: coarse)) {
     .and-qr { display: flex; }
@@ -842,8 +828,8 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     :global(html[data-sv-os="ios"]) .and-qr { display: none; }
   }
 
-  .and-steps { counter-reset: s; display: grid; gap: 1.1rem; margin: 0; padding: 0; list-style: none; }
-  .and-steps li { counter-increment: s; position: relative; padding-left: 2.6rem; font-size: 0.93rem; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+  .and-steps { counter-reset: s; display: grid; gap: 0.85rem; margin: 0; padding: 0; list-style: none; }
+  .and-steps li { counter-increment: s; position: relative; padding-left: 2.6rem; font-size: 0.9rem; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
   .and-steps li::before {
     content: counter(s);
     position: absolute;
@@ -860,31 +846,45 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     font-size: 0.78rem;
   }
   .and-steps b { color: var(--color-text); font-weight: 600; }
+  .and-upd { margin: 1.1rem 0 0; padding: 0.7rem 0.9rem; border-radius: 12px; border: 1px solid var(--sv-line); font-size: 0.86rem; line-height: 1.5; color: var(--color-muted); }
+  .and-upd a { color: var(--color-text); text-decoration: underline; text-decoration-color: rgba(249, 115, 22, 0.6); text-underline-offset: 3px; }
+  .and-upd a:hover { text-decoration-color: var(--sv-orange); }
 
   /* ---------- responsive ---------- */
   @media (max-width: 1180px) {
-    .and-stage { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "demo demo" "l r"; row-gap: clamp(3rem, 7vw, 4.5rem); column-gap: clamp(1.5rem, 4vw, 3rem); }
-    .and-callouts--l .and-co { flex-direction: row; text-align: left; }
-    .and-co::after { display: none; }
-    .and-demo { --u: clamp(8.8px, 1.12vh, 10px); }
+    /* stacked: words, then the demo, then the features */
+    .and-top { grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 5vw, 3rem); }
+    .and-copy { display: contents; }
+    .and-head { order: 1; }
+    .and-demo { order: 2; justify-self: center; --u: clamp(8.4px, 1.05vh, 10px); }
+    .and-callouts { order: 3; margin: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
-  @media (max-width: 900px) {
-    .and-get { grid-template-columns: minmax(0, 1fr); max-width: 36rem; }
+  @media (max-width: 1099px) {
+    .and-get { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-areas: "main how" "qr how"; align-items: start; }
+    .and-qr { flex-direction: row; align-items: center; }
+  }
+  @media (max-width: 860px) {
+    .and-callouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 760px) {
-    .and-demo { --u: 9px; }
+    /* phones: the control sits right above the phone it works */
+    .and-demo { --u: 9px; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 1rem; width: 100%; }
+    .and-ctrl { align-items: center; text-align: center; width: min(100%, 22rem); gap: 0.7rem; }
+    .and-hint { max-width: 20rem; }
+    .and-get { display: flex; flex-direction: column; align-items: stretch; } /* hidden QR leaves no gap */
   }
   @media (max-width: 640px) {
-    .and-stage { grid-template-columns: minmax(0, 1fr); grid-template-areas: "demo" "l" "r"; }
-    .and-callouts { gap: 1.6rem; }
-    .and-callouts--r { margin-top: -1.4rem; } /* one continuous list on phones */
+    .and-callouts { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
   }
   @media (max-width: 420px) {
-    .and-demo { --u: 8.1px; padding-inline: calc(var(--u) * 2.4); }
+    .and-demo { --u: 8.1px; }
     .and-apk { gap: 0.7rem; padding-right: 0.8rem; }
     .and-apk-label { font-size: 1rem; }
     .and-apk-arrow { display: none; }
   }
+  /* JS off: the finished frame, no controls that do nothing */
+  :global(html:not(.js)) .and :is(.and-try, .and-hint) { display: none; }
+  :global(html:not(.js)) .and .and-bubble { cursor: default; }
 
   @media (prefers-reduced-motion: reduce) {
     .and-caret, .and-try-bars i, .and-chat :global(.and-typing i) { animation: none; }
@@ -1390,7 +1390,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       idleFrame();
       const callouts = section.querySelectorAll(".and-co");
-      const tl = gsap.timeline({ scrollTrigger: { trigger: section.querySelector(".and-stage"), start: "top 80%", once: true } });
+      const tl = gsap.timeline({ scrollTrigger: { trigger: section.querySelector(".and-top"), start: "top 80%", once: true } });
       tl.from(section.querySelector(".and-phone"), { y: 90, rotate: -5, opacity: 0, duration: 1.3, ease: "expo.out" })
         .from(callouts, { y: 26, opacity: 0, duration: 0.9, ease: "expo.out", stagger: 0.07 }, 0.25)
         .from(section.querySelector(".and-ctrl"), { y: 16, opacity: 0, duration: 0.8, ease: "expo.out" }, 0.5);
@@ -1401,6 +1401,10 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
 
       // play it once by itself when the phone is well in view, unless the visitor got there first
       let autoTimer = 0;
+      // any touch of the demo (button, bubble, drag) cancels the pending autoplay
+      const userFirst = () => { touched = true; clearTimeout(autoTimer); };
+      demo.addEventListener("pointerdown", userFirst, true);
+      demo.addEventListener("keydown", userFirst, true);
       const io = new IntersectionObserver((es) => {
         if (!es[0].isIntersecting) return;
         io.disconnect();
@@ -1416,6 +1420,8 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
       return () => {
         io.disconnect();
         clearTimeout(autoTimer);
+        demo.removeEventListener("pointerdown", userFirst, true);
+        demo.removeEventListener("keydown", userFirst, true);
         tl.revert();
         getIn.revert();
         auto = false;

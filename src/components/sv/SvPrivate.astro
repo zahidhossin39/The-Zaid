@@ -1,14 +1,14 @@
 ---
-// "Private by default": the key privacy sentence (revealed on a short timed
-// stagger when it enters view) next to a flow diagram (mic → your computer →
-// text). The visitor can flip an example switch to see what changes with a
-// cloud key: an orange path from the computer to the provider they picked.
+// "Private by default": a short statement (its words light up on a short timed
+// stagger when it enters view), the plain explanation under it, and a flow
+// diagram (mic → your computer → text). The visitor can flip an example switch
+// to see what changes with a cloud key: an orange path from the computer to the
+// provider they picked. The switch is pure CSS (:has), so it works with JS off.
 import { REPO } from "../../scripts/sv-release";
 
-const statement =
-  "Your voice becomes text on your own computer. Nothing is uploaded unless you add a cloud service with your own key.";
+const statement = "Your voice stays on your computer.";
 // words that light up orange instead of white
-const HOT = new Set(["computer.", "key."]);
+const HOT = new Set(["computer."]);
 const words = statement.split(" ");
 const facts = [
   { t: "Dictation", d: "works offline once the speech model is downloaded." },
@@ -24,6 +24,7 @@ const facts = [
       <h2 class="svp-statement" id="svp-title" aria-label={statement}>
         {words.map((w, i) => <span class:list={["sw", { hot: HOT.has(w) }]} style={`--i:${i}`} aria-hidden="true">{w} </span>)}
       </h2>
+      <p class="svp-lead">It becomes text right there. Nothing is uploaded unless you add a cloud service with your own key.</p>
       <ul class="svp-facts">
         {facts.map((f) => (
           <li><strong>{f.t}:</strong> {f.d}</li>
@@ -42,7 +43,7 @@ const facts = [
         <span class="svp-ex">Example</span>
       </div>
 
-      <div class="svp-flow" data-cloud="off">
+      <div class="svp-flow">
         <div class="node node--mic">
           <span class="node-ic" aria-hidden="true">
             <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5 11a7 7 0 0 0 14 0M12 18v3" /></svg>
@@ -69,7 +70,7 @@ const facts = [
         </div>
 
         <span class="wire wire--cloud" aria-hidden="true"><b></b></span>
-        <p class="path-lbl" id="svp-path" aria-live="polite">Off: nothing is sent</p>
+        <p class="path-lbl" id="svp-path" aria-live="polite"><span class="lbl-off">Off: nothing is sent</span><span class="lbl-on">On: audio or text, to the provider you picked</span></p>
 
         <div class="node node--cloud">
           <span class="node-ic" aria-hidden="true">
@@ -87,16 +88,16 @@ const facts = [
 <style>
   .svp {
     position: relative;
-    padding: clamp(6rem, 12vw, 10rem) 1.25rem;
+    /* outer padding comes from the page (main.sv > section: --sv-space, --sv-gutter) */
     background:
       radial-gradient(50% 60% at 75% 100%, rgba(249, 115, 22, 0.09), transparent 70%),
       #0d0d0f;
     border-block: 1px solid var(--sv-line);
     overflow: hidden;
   }
-  /* page container: 76rem of content plus the section's 1.25rem gutter */
+  /* the page container: --sv-max of content inside the --sv-gutter */
   .svp-inner {
-    max-width: 76rem;
+    max-width: var(--sv-max);
     margin: 0 auto;
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
@@ -109,19 +110,20 @@ const facts = [
     margin: 1.1rem 0 0;
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: clamp(2rem, 3.5vw, 3.2rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    text-wrap: pretty;
+    font-size: clamp(2.4rem, 4.6vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
   }
+  .svp-lead { margin: 1.1rem 0 0; max-width: 32rem; font-size: clamp(1rem, 1.4vw, 1.1rem); line-height: 1.6; color: var(--color-muted); text-wrap: pretty; }
   .sw.hot { color: var(--sv-orange); }
   /* base: fully lit. With JS the words start at 45% and light up on a short
      stagger once the sentence is in view (never tied to scroll position) */
-  :global(.js) .svp-statement:not(.is-static) .sw { color: rgba(244, 242, 237, 0.45); transition: color 0.45s ease; transition-delay: calc(var(--i) * 36ms); }
+  :global(.js) .svp-statement:not(.is-static) .sw { color: rgba(244, 242, 237, 0.45); transition: color 0.5s ease; transition-delay: calc(var(--i) * 90ms); }
   :global(.js) .svp-statement:not(.is-static).lit .sw { color: var(--color-text); }
   :global(.js) .svp-statement:not(.is-static).lit .sw.hot { color: var(--sv-orange); }
 
-  .svp-facts { margin: clamp(1.6rem, 3vw, 2.2rem) 0 0; padding: 0; list-style: none; display: grid; gap: 0.55rem; }
+  .svp-facts { margin: clamp(1.4rem, 2.6vw, 1.9rem) 0 0; padding: 0; list-style: none; display: grid; gap: 0.55rem; }
   .svp-facts li { position: relative; padding-left: 1.2rem; font-size: 0.95rem; line-height: 1.5; color: var(--color-muted); }
   .svp-facts li::before { content: ""; position: absolute; left: 0; top: 0.6em; width: 7px; height: 7px; border-radius: 50%; background: var(--sv-orange); box-shadow: 0 0 10px rgba(249, 115, 22, 0.6); }
   .svp-facts strong { color: var(--color-text); font-weight: 600; }
@@ -171,9 +173,9 @@ const facts = [
   .node--txt { grid-area: txt; }
   .node--cloud { grid-area: cloud; border-style: dashed; transition: border-color 0.4s ease, background 0.4s ease, box-shadow 0.4s ease; }
   .node--cloud > * { opacity: 0.6; transition: opacity 0.4s ease; }
-  .svp-flow[data-cloud="on"] .node--cloud { border-style: solid; border-color: var(--sv-orange); background: rgba(249, 115, 22, 0.1); box-shadow: 0 0 50px -18px rgba(249, 115, 22, 0.6); }
-  .svp-flow[data-cloud="on"] .node--cloud > * { opacity: 1; }
-  .svp-flow[data-cloud="on"] .node--cloud .node-ic { background: var(--sv-orange); color: #140a02; }
+  .svp-demo:has(.switch-in:checked) .node--cloud { border-style: solid; border-color: var(--sv-orange); background: rgba(249, 115, 22, 0.1); box-shadow: 0 0 50px -18px rgba(249, 115, 22, 0.6); }
+  .svp-demo:has(.switch-in:checked) .node--cloud > * { opacity: 1; }
+  .svp-demo:has(.switch-in:checked) .node--cloud .node-ic { background: var(--sv-orange); color: #140a02; }
 
   .node-ic {
     display: grid;
@@ -240,13 +242,13 @@ const facts = [
   }
   .wire--cloud b::after { rotate: -45deg; }
   /* on: a thick orange path flowing up to the cloud */
-  .svp-flow[data-cloud="on"] .wire--cloud {
+  .svp-demo:has(.switch-in:checked) .wire--cloud {
     width: 3px;
     background: repeating-linear-gradient(0deg, var(--sv-orange) 0 6px, transparent 6px 11px);
     background-size: 3px 11px;
     animation: flow-y 0.5s linear infinite;
   }
-  .svp-flow[data-cloud="on"] .wire--cloud b { transform: scale(0); opacity: 0; }
+  .svp-demo:has(.switch-in:checked) .wire--cloud b { transform: scale(0); opacity: 0; }
   @keyframes flow-y { to { background-position: 0 -11px; } }
 
   /* the path's label sits to the right of the vertical line */
@@ -266,14 +268,18 @@ const facts = [
     background: #111114;
     transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
   }
-  .svp-flow[data-cloud="on"] .path-lbl { color: #fdba74; border-color: rgba(249, 115, 22, 0.6); background: rgba(249, 115, 22, 0.1); }
+  .svp-demo:has(.switch-in:checked) .path-lbl { color: #fdba74; border-color: rgba(249, 115, 22, 0.6); background: rgba(249, 115, 22, 0.1); }
+  .path-lbl .lbl-on, .svp-demo:has(.switch-in:checked) .path-lbl .lbl-off { display: none; }
+  .svp-demo:has(.switch-in:checked) .path-lbl .lbl-on { display: inline; }
   .svp-note { margin: 1.3rem 0 0; font-size: 0.8rem; line-height: 1.45; color: var(--color-muted); }
 
   /* loops pause while the section is off screen or the tab is hidden */
   .svp.is-off :global(*) { animation-play-state: paused !important; }
 
   @media (max-width: 980px) {
-    .svp-inner { grid-template-columns: minmax(0, 1fr); max-width: 40rem; }
+    /* one column on the page's left edge, kept to a readable width */
+    .svp-inner { grid-template-columns: minmax(0, 1fr); }
+    .svp-copy, .svp-demo { max-width: 40rem; }
   }
   @media (max-width: 560px) {
     .svp-flow {
@@ -297,7 +303,7 @@ const facts = [
     }
     @keyframes flow-down { to { background-position: 0 10px; } }
     .wire--cloud { width: 100%; height: 2px; align-self: center; background: repeating-linear-gradient(90deg, rgba(244, 242, 237, 0.22) 0 4px, transparent 4px 10px); }
-    .svp-flow[data-cloud="on"] .wire--cloud {
+    .svp-demo:has(.switch-in:checked) .wire--cloud {
       width: 100%;
       height: 3px;
       background: repeating-linear-gradient(90deg, var(--sv-orange) 0 6px, transparent 6px 11px);
@@ -353,12 +359,5 @@ const facts = [
   new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; syncOff(); }).observe(root);
   document.addEventListener("visibilitychange", syncOff);
 
-  // the example switch: shows the path to the cloud and what travels on it
-  const flow = root.querySelector<HTMLElement>(".svp-flow")!;
-  const sw = root.querySelector<HTMLInputElement>(".switch-in")!;
-  const path = root.querySelector<HTMLElement>(".path-lbl")!;
-  sw.addEventListener("change", () => {
-    flow.dataset.cloud = sw.checked ? "on" : "off";
-    path.textContent = sw.checked ? "On: audio or text, to the provider you picked" : "Off: nothing is sent";
-  });
+  // the example switch is CSS only (:has), so it also works with JS off
 </script>
