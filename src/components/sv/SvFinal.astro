@@ -1,13 +1,32 @@
 ---
 // The closing block: one headline, the download button and its one-line
-// caveat, the Android beta for computer visitors, then the detail most people
-// can skip: install notes per system (the visitor's own open, the rest
-// folded), a short "Recent updates" list and one quiet line about the source.
+// caveat, the Android beta for computer visitors (a QR code to scan, the APK
+// file only as a quiet link), then the detail most people can skip: install
+// notes per system (the visitor's own open, the rest folded, SHA-256 when
+// GitHub gives one), a short "Recent updates" list and one quiet line about
+// the source.
 import SvDownload from "./SvDownload.astro";
 import { siAndroid } from "simple-icons";
-import { ANDROID_RELEASES_URL, ISSUES_URL, LICENSE_URL, SOURCE_URL } from "../../scripts/sv-release";
+// @ts-ignore: no bundled types; used only at build time
+import QRCode from "qrcode";
+import { ANDROID_RELEASES_URL, ISSUES_URL, LICENSE_URL, PAGE_URL, SOURCE_URL } from "../../scripts/sv-release";
 
 const chevron = "M6 9l6 6 6-6";
+
+// The same QR code as the Android section: this page's Android section, on the phone.
+const QR_URL = `${PAGE_URL}#android`;
+const qr = QRCode.create(QR_URL, { errorCorrectionLevel: "M" });
+const qrSize: number = qr.modules.size;
+let qrPath = "";
+for (let y = 0; y < qrSize; y++) {
+  for (let x = 0; x < qrSize; x++) {
+    if (!qr.modules.get(x, y)) continue;
+    let run = 1;
+    while (x + run < qrSize && qr.modules.get(x + run, y)) run++;
+    qrPath += `M${x} ${y}h${run}v1h-${run}z`;
+    x += run - 1;
+  }
+}
 ---
 
 <section class="svx" id="download" aria-labelledby="svx-title">
@@ -19,19 +38,30 @@ const chevron = "M6 9l6 6 6-6";
       <!-- on Android the button below is the APK, so the line says phone (a swap, no layout jump) -->
       <span class="svx-line svx-line--em"><span class="svx-pc">Your computer.</span><span class="svx-phone">Your phone.</span></span>
     </h2>
-    <p class="svx-lead">Free to download, free to keep. No sign-up.</p>
+    <!-- the count: installer downloads from the releases call, shown only from 250 up -->
+    <p class="svx-lead">
+      Free to download, free to keep. <span class="svx-nowrap">No sign-up.</span>{" "}<span class="svx-count" data-sv-downloads hidden></span>
+    </p>
     <div class="svx-cta"><SvDownload size="xl" apk={false} /></div>
 
-    <!-- the Android beta, for someone on a computer (phones get their own links under the button) -->
+    <!-- the Android beta, for someone on a computer: scan it onto the phone; the .apk file is only a quiet link
+         (phones get their own links under the button) -->
     <div class="svx-alt">
-      <a class="svx-alt-link" href={ANDROID_RELEASES_URL} data-sv-apk>
+      <div class="svx-alt-card">
+        <svg class="svx-alt-qr" viewBox={`-4 -4 ${qrSize + 8} ${qrSize + 8}`} role="img" aria-label={`QR code for ${QR_URL}`} shape-rendering="crispEdges">
+          <rect x="-4" y="-4" width={qrSize + 8} height={qrSize + 8} rx="3" fill="#f4f2ed" />
+          <path d={qrPath} fill="#0a0a0b" />
+        </svg>
         <span class="svx-alt-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={siAndroid.path} /></svg></span>
-        <span class="svx-alt-text">
-          <span class="svx-alt-title">Also on Android (beta)</span>
-          <span class="svx-alt-meta" data-sv-apk-meta>Beta · Android 10 and newer</span>
-        </span>
-        <span class="svx-alt-cta">Download APK</span>
-      </a>
+        <div class="svx-alt-text">
+          <p class="svx-alt-title">Also on Android (beta)</p>
+          <p class="svx-alt-scan">Scan with your Android phone to install it there.</p>
+          <p class="svx-alt-file">
+            <a class="svx-alt-link" href={ANDROID_RELEASES_URL} data-sv-apk><span class="svx-alt-or">or download</span><span class="svx-alt-dl">Download</span> the .apk</a>
+            <span class="svx-alt-meta" data-sv-apk-meta>Beta · Android 10 and newer</span>
+          </p>
+        </div>
+      </div>
     </div>
 
     <div class="svx-panel">
@@ -45,8 +75,9 @@ const chevron = "M6 9l6 6 6-6";
               <svg class="svx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d={chevron} /></svg>
             </summary>
             <ul>
-              <li><strong>Windows may say it protected your PC.</strong> Choose More info, then Run anyway: the installer isn't code-signed yet.</li>
+              <li><strong>Not code-signed yet, so Windows may warn you.</strong> Choose More info, then Run anyway.</li>
               <li>After that, updates show up inside the app.</li>
+              <li class="svx-sum" data-sv-sum="windows" hidden></li>
             </ul>
           </details>
           <details class="svx-os-row svx-os--mac" id="install-mac">
@@ -56,10 +87,11 @@ const chevron = "M6 9l6 6 6-6";
               <svg class="svx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d={chevron} /></svg>
             </summary>
             <ul>
+              <li><strong>Early: not fully tested on a real Mac yet.</strong> If something breaks, <a href={ISSUES_URL} target="_blank" rel="noopener noreferrer">tell me on GitHub</a>.</li>
               <li><strong>Not notarized by Apple yet.</strong> On first launch, open System Settings › Privacy &amp; Security and choose Open Anyway. On macOS 14 or older, right-click the app and choose Open.</li>
               <li>For M1 or newer on macOS 12 or newer. Intel Macs aren't supported.</li>
-              <li>Allow Microphone and Accessibility. To record the other side of a call, Notetaker also needs Screen &amp; System Audio Recording (macOS 13 or newer, not yet tested on a real Mac).</li>
-              <li>An early build: if something breaks, <a href={ISSUES_URL} target="_blank" rel="noopener noreferrer">tell me on GitHub</a>.</li>
+              <li>Allow Microphone and Accessibility. To record the other side of a call, Notetaker also needs Screen &amp; System Audio Recording (macOS 13 or newer).</li>
+              <li class="svx-sum" data-sv-sum="mac" hidden></li>
             </ul>
           </details>
           <details class="svx-os-row svx-os--linux" id="install-linux">
@@ -72,6 +104,7 @@ const chevron = "M6 9l6 6 6-6";
               <li><strong>Works on X11, Hyprland and Sway. Not on GNOME or KDE Wayland yet.</strong> On Hyprland and Sway, bind a key to <code>silent-voice --toggle</code> and install <code>wtype</code>.</li>
               <li>Take the .deb on Ubuntu and Debian, the AppImage anywhere else (run <code>chmod +x</code> on it first).</li>
               <li>An early build: if something breaks, <a href={ISSUES_URL} target="_blank" rel="noopener noreferrer">tell me on GitHub</a>.</li>
+              <li class="svx-sum" data-sv-sum="linux" hidden></li>
             </ul>
           </details>
           <details class="svx-os-row svx-os--android" id="install-android">
@@ -83,7 +116,8 @@ const chevron = "M6 9l6 6 6-6";
             <ul>
               <li><strong>A beta you install from GitHub, not Google Play.</strong> English only.</li>
               <li>Allow your browser to install apps, then turn on the "Silent Voice bubble" switch in Accessibility. Android 13 and newer first asks you to "Allow restricted settings" in the app's info page. On Xiaomi phones, also allow Autostart.</li>
-              <li>Updates aren't automatic yet: check this page or the GitHub releases.</li>
+              <li>Updates aren't automatic yet: check this page or the GitHub releases. If an update won't install over the old version, uninstall the old one first (that clears its history and saved words).</li>
+              <li class="svx-sum" data-sv-sum="android" hidden></li>
             </ul>
           </details>
           <details class="svx-os-row svx-os--ios" id="install-ios">
@@ -164,39 +198,61 @@ const chevron = "M6 9l6 6 6-6";
   .svx-phone { display: none; }
   :global(html[data-sv-os="android"]) .svx-line .svx-phone { display: inline; }
   :global(html[data-sv-os="android"]) .svx-line .svx-pc { display: none; }
-  .svx-lead { margin: 1.25rem 0 2.25rem; color: var(--color-muted); font-size: 1.1rem; }
+  .svx-lead { margin: 1.25rem 0 2.25rem; color: var(--color-muted); font-size: 1.1rem; text-wrap: balance; }
+  .svx-nowrap { white-space: nowrap; }
+  .svx-count { white-space: nowrap; color: var(--color-text); }
+  .svx-count[hidden] { display: none; }
 
-  /* ---- Android beta, for computers ---- */
-  .svx-alt { display: flex; justify-content: center; margin-top: 1.5rem; }
+  /* ---- Android beta, for computers: the QR code leads, the file is a quiet link ---- */
+  .svx-alt { display: flex; justify-content: center; margin-top: 1.75rem; }
   :global(html:is([data-sv-os="android"], [data-sv-os="ios"], [data-sv-phone])) .svx-alt { display: none; }
+  .svx-alt-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 100%;
+    padding: 0.6rem 1.25rem 0.6rem 0.6rem;
+    border-radius: 18px;
+    border: 1px solid rgba(244, 242, 237, 0.12);
+    background: rgba(17, 17, 20, 0.7);
+    text-align: left;
+    backdrop-filter: blur(10px);
+  }
+  .svx-alt-qr { flex: none; width: 5.25rem; height: 5.25rem; border-radius: 10px; box-shadow: 0 0 0 1px rgba(244, 242, 237, 0.12); }
+  .svx-alt-icon { display: none; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: 50%; background: rgba(244, 242, 237, 0.08); color: var(--color-text); flex: none; }
+  .svx-alt-icon svg { width: 52%; height: 52%; fill: currentColor; }
+  .svx-alt-text { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; line-height: 1.35; }
+  .svx-alt-text p { margin: 0; }
+  .svx-alt-title { font-size: 0.95rem; font-weight: 600; color: var(--color-text); }
+  .svx-alt-scan { font-size: 0.85rem; color: var(--color-muted); }
+  .svx-alt-file { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.5rem; font-size: 0.82rem; color: var(--color-muted); }
   .svx-alt-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.85rem;
-    min-height: 44px;
-    max-width: 100%;
-    padding: 0.5rem 0.55rem;
-    border-radius: 999px;
-    border: 1px solid rgba(244, 242, 237, 0.14);
-    background: rgba(17, 17, 20, 0.7);
+    min-height: 32px;
     color: var(--color-text);
-    text-decoration: none;
-    text-align: left;
-    backdrop-filter: blur(10px);
-    transition: border-color 0.25s ease, background 0.25s ease;
+    text-decoration: underline;
+    text-decoration-color: rgba(244, 242, 237, 0.3);
+    text-underline-offset: 3px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
   }
-  .svx-alt-link:hover { border-color: rgba(249, 115, 22, 0.55); background: rgba(249, 115, 22, 0.07); }
-  .svx-alt-link:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 4px; }
-  .svx-alt-icon { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: rgba(244, 242, 237, 0.08); color: var(--color-text); flex: none; }
-  .svx-alt-icon svg { width: 52%; height: 52%; fill: currentColor; }
-  .svx-alt-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
-  .svx-alt-title { font-size: 0.92rem; font-weight: 600; white-space: nowrap; }
-  .svx-alt-meta { margin-top: 0.1rem; font-size: 0.8rem; color: var(--color-muted); }
-  .svx-alt-cta { margin-left: 0.4rem; padding: 0.55rem 0.95rem; border-radius: 999px; background: rgba(244, 242, 237, 0.92); color: #140a02; font-size: 0.85rem; font-weight: 600; white-space: nowrap; transition: background 0.25s ease; }
-  .svx-alt-link:hover .svx-alt-cta { background: var(--sv-orange); }
+  .svx-alt-link:hover { color: var(--sv-orange); text-decoration-color: currentColor; }
+  .svx-alt-link:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; border-radius: 3px; }
+  .svx-alt-or { margin-right: 0.25em; }
+  .svx-alt-dl { display: none; margin-right: 0.25em; }
+  .svx-alt-meta { font-family: var(--font-mono); font-size: 0.75rem; }
+  /* no QR where it can't be scanned (a phone without JS, a small touch screen): the file link leads */
+  @media (max-width: 767px), (pointer: coarse) {
+    :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"])) .svx-alt .svx-alt-qr,
+    :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"])) .svx-alt .svx-alt-scan,
+    :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"])) .svx-alt .svx-alt-or { display: none; }
+    :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"])) .svx-alt .svx-alt-icon { display: grid; }
+    :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"])) .svx-alt .svx-alt-dl { display: inline; }
+    :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"])) .svx-alt .svx-alt-link { min-height: 44px; }
+  }
   @media (max-width: 400px) {
-    .svx-alt-link { gap: 0.6rem; }
-    .svx-alt-cta { margin-left: 0; padding: 0.5rem 0.75rem; }
+    .svx-alt-card { gap: 0.75rem; padding-right: 0.9rem; }
+    .svx-alt-qr { width: 4.5rem; height: 4.5rem; }
   }
 
   /* ---- the detail: install notes beside recent updates, in one panel ---- */
@@ -250,6 +306,31 @@ const chevron = "M6 9l6 6 6-6";
   .svx-os-row code, .svx-up-text :global(code) { font-family: var(--font-mono); font-size: 0.85em; padding: 0.05rem 0.3rem; border-radius: 4px; background: rgba(244, 242, 237, 0.08); color: var(--color-text); }
   .svx-os-row a, .svx-up-text :global(a) { color: var(--color-text); text-decoration: underline; text-decoration-color: rgba(244, 242, 237, 0.35); text-underline-offset: 3px; }
   .svx-os-row a:hover { color: var(--sv-orange); text-decoration-color: currentColor; }
+
+  /* SHA-256 of each file, when the releases call carries a digest (filled by the release script) */
+  .svx-os-row li.svx-sum { display: grid; gap: 0.25rem; }
+  .svx-os-row li.svx-sum[hidden] { display: none; }
+  .svx-sum :global(.svx-sum-h) { color: var(--color-text); font-weight: 600; font-size: 0.85rem; }
+  .svx-sum :global(.svx-sum-row) { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem 0.6rem; }
+  .svx-sum :global(.svx-sum-k) { min-width: 6.5rem; font-size: 0.85rem; }
+  .svx-sum :global(code) { font-family: var(--font-mono); font-size: 0.78rem; padding: 0.1rem 0.35rem; border-radius: 4px; background: rgba(244, 242, 237, 0.08); color: var(--color-text); overflow-wrap: anywhere; }
+  .svx-sum :global(.svx-sum-copy) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(244, 242, 237, 0.16);
+    background: none;
+    color: var(--color-text);
+    font: 500 0.78rem/1 var(--font-sans);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .svx-sum :global(.svx-sum-copy:hover) { border-color: var(--sv-orange); color: var(--sv-orange); }
+  .svx-sum :global(.svx-sum-copy:focus-visible) { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
+  @media (pointer: coarse) { .svx-sum :global(.svx-sum-copy) { min-height: 44px; } }
+  .svx-os-row li.svx-sum::before { display: none; }
 
   /* recent updates: one line per version */
   .svx-ups { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }

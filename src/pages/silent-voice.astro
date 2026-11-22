@@ -20,7 +20,7 @@ const ld = {
   operatingSystem: "Windows, macOS, Linux, Android",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   license: "https://opensource.org/licenses/MIT",
-  url: "https://zaidhossain.com/silent-voice",
+  url: "https://zaidhossain.com/silent-voice/",
   downloadUrl: "https://github.com/zahidhossin39/Silent-Voice/releases",
   author: { "@type": "Person", name: "Zaid Hossain", url: "https://zaidhossain.com" },
 };
@@ -57,7 +57,7 @@ const ld = {
     --sv-max: 76rem;
     --sv-gutter: clamp(1.25rem, 4vw, 2.5rem);
     /* vertical padding of every section after the hero */
-    --sv-space: clamp(4.5rem, 8vw, 7rem);
+    --sv-space: clamp(3.75rem, 5.8vw, 5.25rem);
   }
   .sv { overflow-x: clip; }
   /* Android visitors: the phone app comes straight after the hero */
@@ -73,6 +73,14 @@ const ld = {
      scoped padding on purpose: one place to tune the rhythm.) */
   main.sv > section:is(.svd, .svn, .svf, .svp, .and, .svx) {
     padding: var(--sv-space) var(--sv-gutter);
+  }
+  /* Phones: the "On your computer" divider (SvDemo) opens the desktop part of
+     the page, so the first desktop section sits close under it */
+  html:is([data-sv-phone], [data-sv-os="android"], [data-sv-os="ios"]) main.sv > .sv-desk + section {
+    padding-top: clamp(2.25rem, 6vw, 3rem);
+  }
+  @media (hover: none) and (pointer: coarse) and (max-width: 760px) {
+    html:not(.js) main.sv > .sv-desk + section { padding-top: clamp(2.25rem, 6vw, 3rem); }
   }
   .sv ::selection { background: var(--sv-orange); color: #140a02; }
   .sv :focus-visible { outline-color: var(--sv-orange); }
@@ -133,7 +141,8 @@ const ld = {
   progress();
 
   // Download buttons stay put (a moving target is harder to hit); the light
-  // inside follows the pointer, and a click sends out one soft ring.
+  // inside follows the pointer, and a click sends out one soft, small ring
+  // (the "Your download has started" panel under the button is the real answer).
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   document.querySelectorAll<HTMLElement>("[data-magnetic]").forEach((el) => {
     el.addEventListener("pointermove", (e) => {
@@ -148,10 +157,10 @@ const ld = {
       Object.assign(ring.style, {
         position: "fixed", left: `${e.clientX || r.left + r.width / 2}px`, top: `${e.clientY || r.top + r.height / 2}px`,
         width: "20px", height: "20px", margin: "-10px 0 0 -10px", borderRadius: "50%",
-        border: "1.5px solid #f97316", pointerEvents: "none", zIndex: "70",
+        border: "1.5px solid #f97316", pointerEvents: "none", zIndex: "70", opacity: "0.7",
       });
       document.body.appendChild(ring);
-      gsap.to(ring, { scale: 7, opacity: 0, duration: 0.9, ease: "power2.out", onComplete: () => ring.remove() });
+      gsap.to(ring, { scale: 4.5, opacity: 0, duration: 0.7, ease: "power2.out", onComplete: () => ring.remove() });
     });
   });
 </script>

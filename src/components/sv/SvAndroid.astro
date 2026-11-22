@@ -10,10 +10,13 @@
 import { siAndroid } from "simple-icons";
 // @ts-ignore: no bundled types; used only here, at build time
 import QRCode from "qrcode";
-import { PAGE_URL } from "../../scripts/sv-release";
+import { ANDROID_RELEASES_URL, PAGE_URL } from "../../scripts/sv-release";
 
 // A QR code for computer visitors, made at build time as inline SVG. It points
 // at this section's stable address, where the phone is then offered the APK.
+// Who gets what in "Get the beta": a computer scans the QR code (the .apk file
+// is only a quiet link), an Android phone gets the orange APK button, an
+// iPhone gets no download at all, just a way to send the page on.
 const QR_URL = `${PAGE_URL}#android`;
 const qr = QRCode.create(QR_URL, { errorCorrectionLevel: "M" });
 const qrSize: number = qr.modules.size;
@@ -28,7 +31,7 @@ for (let y = 0; y < qrSize; y++) {
   }
 }
 
-const APK_URL = "https://github.com/zahidhossin39/Silent-Voice/releases";
+const APK_URL = ANDROID_RELEASES_URL;
 
 type Tok = { w: string; cut?: boolean; to?: string };
 type Script = { say: Tok[]; text: string; reply: string };
@@ -128,10 +131,10 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
       <div class="and-copy">
         <header class="and-head">
           <p class="sv-eyebrow">Now on Android · beta</p>
-          <h2 class="h2" id="and-title">Talk into any app on your <em>phone.</em></h2>
+          <h2 class="h2" id="and-title">Talk into almost any app on your <em>phone.</em></h2>
           <p class="and-lead">
-            A mic bubble sits above your keyboard in every app. Tap it, talk, tap again, and the cleaned-up text is typed at
-            your cursor. Your speech is turned into text on the phone itself.
+            A mic bubble sits above your keyboard in almost any app. Tap it, talk, tap again, and the cleaned-up text is
+            typed at your cursor. Your speech is turned into text on the phone itself.
           </p>
         </header>
 
@@ -253,9 +256,10 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     </div>
 
     <div class="and-get">
-      <div class="and-get-main">
+      <div class="and-get-main" data-sv-scope>
         <h3 class="and-get-title">Get the beta</h3>
-        <a class="and-apk" href={APK_URL} data-sv-apk data-magnetic>
+        <!-- Android (and a phone the page can't name): the APK is the main action -->
+        <a class="and-apk" href={APK_URL} data-sv-apk data-sv-apk-main data-magnetic>
           <span class="and-apk-glow" aria-hidden="true"></span>
           <span class="and-apk-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={siAndroid.path} /></svg></span>
           <span class="and-apk-text">
@@ -264,24 +268,42 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
           </span>
           <span class="and-apk-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v14m0 0-6-6m6 6 6-6" /></svg></span>
         </a>
-        <ul class="and-req" aria-label="Requirements">
-          <li>Android 10 or newer</li>
-          <li>64-bit phones</li>
-          <li>English only for now</li>
-          <li>No iPhone version yet</li>
-        </ul>
-      </div>
-        <!-- computers only: the APK is no use on one, so hand it to the phone -->
+        <!-- after the APK starts downloading on Android: the next steps (filled by the release script) -->
+        <div class="and-done" data-sv-done hidden></div>
+
+        <!-- computers: the APK is no use on one, so the QR code hands it to the phone; the file is a quiet link -->
         <div class="and-qr">
           <svg class="and-qr-code" viewBox={`-4 -4 ${qrSize + 8} ${qrSize + 8}`} role="img" aria-label={`QR code for ${QR_URL}`} shape-rendering="crispEdges">
             <rect x="-4" y="-4" width={qrSize + 8} height={qrSize + 8} rx="3" fill="#f4f2ed" />
             <path d={qrPath} fill="#0a0a0b" />
           </svg>
-          <p class="and-qr-text">
-            <b>Scan with your Android phone</b>
-            <span>It opens this page on the phone, with the APK ready to install.</span>
-          </p>
+          <div class="and-qr-text">
+            <p class="and-qr-lead">Scan with your Android phone</p>
+            <p>It opens this page on the phone, with the APK ready to install.</p>
+            <p class="and-qr-file">
+              <a class="and-apk-link" href={APK_URL} data-sv-apk>or download the .apk</a>
+              <span class="and-qr-meta" data-sv-apk-meta>Beta · Android 10 and newer</span>
+            </p>
+          </div>
         </div>
+
+        <!-- iPhone: nothing to download; send the page to a phone or computer that can run it -->
+        <div class="and-ios">
+          <p><b>There's no iPhone version yet.</b> Send this page to an Android phone or a computer and install it there.</p>
+          <button type="button" class="and-ios-send" data-sv-send>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m0 0L8 7m4-4 4 4M8 11H6.5A1.5 1.5 0 0 0 5 12.5v7A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-7a1.5 1.5 0 0 0-1.5-1.5H16" /></svg>
+            <span data-sv-label>Send me the link</span>
+          </button>
+        </div>
+        <p class="and-sr" data-sv-status role="status"></p>
+
+        <ul class="and-req" aria-label="Requirements">
+          <li>Android 10 or newer</li>
+          <li>64-bit phones</li>
+          <li>English only for now</li>
+          <li class="and-req-ios">No iPhone version yet</li>
+        </ul>
+      </div>
       <div class="and-how">
       <ol class="and-steps">
         <li>
@@ -294,8 +316,8 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
         </li>
       </ol>
       <p class="and-upd">
-        No in-app updates yet: new versions are installed from <a href="https://github.com/zahidhossin39/Silent-Voice/releases" target="_blank" rel="noopener noreferrer">GitHub releases<span class="and-sr"> (opens in a new tab)</span></a>,
-        so check back now and then.
+        No in-app updates yet: new versions are installed from <a href={ANDROID_RELEASES_URL} target="_blank" rel="noopener noreferrer">GitHub releases<span class="and-sr"> (opens in a new tab)</span></a>,
+        so check back now and then. If an update won't install, uninstall the old version first.
       </p>
       </div>
     </div>
@@ -720,6 +742,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     background: rgba(244, 242, 237, 0.04);
     color: var(--color-text);
     font: 600 0.95rem/1.2 var(--font-sans);
+    white-space: nowrap;
     cursor: pointer;
     transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
   }
@@ -759,9 +782,8 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
   /* ---------- get it ---------- */
   .and-get {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.25fr);
-    grid-template-areas: "main qr how";
-    gap: clamp(1.5rem, 3.5vw, 3rem);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
     align-items: center;
     margin: clamp(3rem, 6vw, 4.5rem) 0 0;
     padding: clamp(1.4rem, 2.6vw, 2rem);
@@ -771,11 +793,10 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
       radial-gradient(120% 140% at 0% 0%, rgba(249, 115, 22, 0.1), transparent 55%),
       rgba(17, 17, 20, 0.8);
   }
-  .and-get-main { grid-area: main; }
-  .and-qr { grid-area: qr; }
-  .and-how { grid-area: how; }
-  .and-get-main { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .and-get-title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.7rem, 3vw, 2.2rem); line-height: 1.05; letter-spacing: -0.02em; }
+  .and-get-main { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; min-width: 0; }
+  /* a card title like every other card's (sans); the serif is for section headings */
+  .and-get-title { margin: 0; font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: clamp(1.25rem, 2vw, 1.45rem); line-height: 1.2; letter-spacing: -0.015em; }
+  .and-done { width: 100%; }
 
   .and-apk {
     --mx: 50%;
@@ -815,18 +836,61 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
   .and-req { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin: 0; padding: 0; list-style: none; font-size: 0.85rem; color: var(--color-muted); }
   .and-req li { display: inline-flex; align-items: center; gap: 0.45rem; }
   .and-req li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--sv-orange); }
-  .and-ios { margin: 0; font-size: 0.85rem; color: var(--color-muted); }
 
-  /* QR for computer visitors: wide screens without a touch-first pointer, never on a phone or tablet */
-  .and-qr { display: none; flex-direction: column; align-items: flex-start; gap: 0.8rem; }
-  .and-qr-code { flex: none; width: 7.25rem; height: 7.25rem; border-radius: 12px; box-shadow: 0 0 0 1px rgba(244, 242, 237, 0.12), 0 10px 30px -12px rgba(0, 0, 0, 0.8); }
-  .and-qr-text { display: flex; flex-direction: column; gap: 0.3rem; margin: 0; max-width: 12rem; font-size: 0.85rem; line-height: 1.45; color: var(--color-muted); text-wrap: pretty; }
-  .and-qr-text b { color: var(--color-text); font-weight: 600; font-size: 0.95rem; }
+  /* Who gets which action. Default (an Android phone, or a phone or small touch
+     screen the page can't name, JS off included): the APK button. A computer:
+     the QR code, with the file as a quiet link. An iPhone: no download. */
+  .and-qr { display: none; align-items: center; gap: 1.1rem; }
+  .and-ios { display: none; }
   @media (min-width: 768px) and (not (pointer: coarse)) {
-    .and-qr { display: flex; }
-    :global(html[data-sv-os="android"]) .and-qr,
-    :global(html[data-sv-os="ios"]) .and-qr { display: none; }
+    :global(html:not([data-sv-os="android"]):not([data-sv-os="ios"]):not([data-sv-phone])) .and-get .and-qr { display: flex; }
+    :global(html:not([data-sv-os="android"]):not([data-sv-os="ios"]):not([data-sv-phone])) .and-get .and-apk { display: none; }
   }
+  :global(html:is([data-sv-os="windows"], [data-sv-os="mac"], [data-sv-os="linux"])) .and-get .and-qr { display: flex; }
+  :global(html:is([data-sv-os="windows"], [data-sv-os="mac"], [data-sv-os="linux"])) .and-get .and-apk { display: none; }
+  :global(html[data-sv-os="ios"]) .and-get .and-ios { display: flex; }
+  :global(html[data-sv-os="ios"]) .and-get :is(.and-apk, .and-qr, .and-req-ios) { display: none; }
+
+  .and-qr-code { flex: none; width: 7.25rem; height: 7.25rem; border-radius: 12px; box-shadow: 0 0 0 1px rgba(244, 242, 237, 0.12), 0 10px 30px -12px rgba(0, 0, 0, 0.8); }
+  .and-qr-text { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; max-width: 17rem; font-size: 0.85rem; line-height: 1.45; color: var(--color-muted); text-wrap: pretty; }
+  .and-qr-text p { margin: 0; }
+  .and-qr-text .and-qr-lead { color: var(--color-text); font-weight: 600; font-size: 1rem; }
+  .and-qr-text .and-qr-file { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.5rem; margin-top: 0.15rem; }
+  .and-apk-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--color-text);
+    text-decoration: underline;
+    text-decoration-color: rgba(244, 242, 237, 0.3);
+    text-underline-offset: 3px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+  }
+  .and-apk-link:hover { color: var(--sv-orange); text-decoration-color: currentColor; }
+  .and-apk-link:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; border-radius: 3px; }
+  .and-qr-meta { font-family: var(--font-mono); font-size: 0.72rem; }
+
+  .and-ios { flex-direction: column; align-items: flex-start; gap: 0.85rem; }
+  .and-ios p { margin: 0; max-width: 26rem; font-size: 0.92rem; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+  .and-ios b { color: var(--color-text); font-weight: 600; }
+  .and-ios-send {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 48px;
+    padding: 0.4rem 1.2rem 0.4rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(244, 242, 237, 0.2);
+    background: rgba(244, 242, 237, 0.05);
+    color: var(--color-text);
+    font: 600 0.95rem/1.25 var(--font-sans);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  .and-ios-send svg { flex: none; width: 1.15rem; height: 1.15rem; fill: none; stroke: var(--sv-orange); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .and-ios-send:hover { border-color: rgba(249, 115, 22, 0.6); background: rgba(249, 115, 22, 0.07); }
+  .and-ios-send:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 4px; }
 
   .and-steps { counter-reset: s; display: grid; gap: 0.85rem; margin: 0; padding: 0; list-style: none; }
   .and-steps li { counter-increment: s; position: relative; padding-left: 2.6rem; font-size: 0.9rem; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
@@ -851,27 +915,29 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
   .and-upd a:hover { text-decoration-color: var(--sv-orange); }
 
   /* ---------- responsive ---------- */
-  @media (max-width: 1180px) {
+  @media (min-width: 900px) and (max-width: 1180px) {
+    /* still two columns (no lopsided stack): words and features | the control above the phone */
+    .and-callouts { grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+    .and-demo { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 1rem; }
+    .and-ctrl { align-items: center; text-align: center; width: min(100%, 22rem); gap: 0.7rem; }
+    .and-hint { max-width: 20rem; }
+  }
+  @media (max-width: 899px) {
     /* stacked: words, then the demo, then the features */
     .and-top { grid-template-columns: minmax(0, 1fr); gap: clamp(2rem, 5vw, 3rem); }
     .and-copy { display: contents; }
     .and-head { order: 1; }
     .and-demo { order: 2; justify-self: center; --u: clamp(8.4px, 1.05vh, 10px); }
-    .and-callouts { order: 3; margin: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  }
-  @media (max-width: 1099px) {
-    .and-get { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); grid-template-areas: "main how" "qr how"; align-items: start; }
-    .and-qr { flex-direction: row; align-items: center; }
+    .and-callouts { order: 3; margin: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 860px) {
-    .and-callouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .and-get { grid-template-columns: minmax(0, 1fr); align-items: start; }
   }
   @media (max-width: 760px) {
     /* phones: the control sits right above the phone it works */
     .and-demo { --u: 9px; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 1rem; width: 100%; }
     .and-ctrl { align-items: center; text-align: center; width: min(100%, 22rem); gap: 0.7rem; }
     .and-hint { max-width: 20rem; }
-    .and-get { display: flex; flex-direction: column; align-items: stretch; } /* hidden QR leaves no gap */
   }
   @media (max-width: 640px) {
     .and-callouts { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
@@ -1122,7 +1188,7 @@ const alt = `Phone mock-up: a chat app with the keyboard open and the Silent Voi
     const LABEL: Record<State, string> = {
       composite: "Try it: start talking",
       idle: "Start talking",
-      typed: "Say something else",
+      typed: "Talk again",
       starting: "Done talking",
       rec: "Done talking",
       work: "Writing it down…",

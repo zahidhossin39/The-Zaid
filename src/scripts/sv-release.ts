@@ -12,20 +12,22 @@ export const ISSUES_URL = `https://github.com/${REPO}/issues`;
 export const PRIVACY_URL = `https://github.com/${REPO}/blob/main/PRIVACY.md`;
 export const LICENSE_URL = `https://github.com/${REPO}/blob/main/LICENSE`;
 export const SOURCE_URL = `https://github.com/${REPO}`;
-/** The stable address phones are sent to (QR code, "Send me the link"). */
-export const PAGE_URL = "https://zaidhossain.com/silent-voice";
+/** The stable address phones are sent to (QR code, "Send me the link"): the canonical URL, trailing slash included. */
+export const PAGE_URL = "https://zaidhossain.com/silent-voice/";
+const PAGE_SHORT = PAGE_URL.replace(/^https:\/\//, "").replace(/\/$/, "");
 const API_URL = `https://api.github.com/repos/${REPO}/releases?per_page=40`;
 const CHANGELOG_URL = `https://raw.githubusercontent.com/${REPO}/main/CHANGELOG.md`;
-const CACHE_KEY = "sv-release-v2";
+const CACHE_KEY = "sv-release-v3";
 const CACHE_MS = 10 * 60 * 1000; // unauthenticated API: 60 requests/hour per IP
 const TIMEOUT_MS = 8000;
 
 type Desktop = "windows" | "mac" | "linux";
 export type OS = Desktop | "android" | "ios";
-type Asset = { name: string; url: string; size: number };
+type Asset = { name: string; url: string; size: number; sha256?: string };
 type Pick = { tag: string; published_at: string; html_url: string; assets: Asset[] };
-type Picks = { desktop: Pick | null; android: Pick | null };
-type GhAsset = { name: string; size: number; browser_download_url: string };
+/** downloads: installer downloads summed over every release in the response */
+type Picks = { desktop: Pick | null; android: Pick | null; downloads: number };
+type GhAsset = { name: string; size: number; browser_download_url: string; download_count?: number; digest?: string | null };
 type GhRelease = {
   tag_name: string; published_at: string | null; html_url: string;
   draft?: boolean; prerelease?: boolean; assets?: GhAsset[];
@@ -57,6 +59,9 @@ const isAppImage = (n: string) => /\.AppImage$/i.test(n);
 const isDeb = (n: string) => /\.deb$/i.test(n);
 const isApk = (n: string) => /\.apk$/i.test(n);
 const isDesktopAsset = (n: string) => isExe(n) || isDmg(n) || isAppImage(n) || isDeb(n);
+const isInstaller = (n: string) => isDesktopAsset(n) || isApk(n);
+/** show the download count only once it means something */
+export const DOWNLOADS_MIN = 250;
 
 // v0.2.0 names the Mac build "_macOS_Apple-Silicon.dmg"; older Tauri builds
 // used "_aarch64.dmg" / "_x64.dmg".
@@ -120,8 +125,22 @@ function trim(r: GhRelease, keep: (name: string) => boolean): Pick {
     html_url: r.html_url,
     assets: (r.assets || [])
       .filter((x) => keep(x.name))
-      .map((x) => ({ name: x.name, url: x.browser_download_url, size: x.size })),
+      .map((x) => {
+        // GitHub gives each asset a "sha256:<hex>" digest; anything else is ignored
+        const m = /^sha256:([0-9a-f]{64})$/i.exec(x.digest || "");
+        return { name: x.name, url: x.browser_download_url, size: x.size, ...(m ? { sha256: m[1].toLowerCase() } : {}) };
+      }),
   };
+}
+
+/** Installer downloads (exe, dmg, AppImage, deb, apk) across every release listed; signatures, update bundles and latest.json don't count. */
+export function countDownloads(list: GhRelease[]): number {
+  let n = 0;
+  for (const r of list) {
+    if (!r || r.draft) continue;
+    for (const x of r.assets || []) if (isInstaller(x.name) && Number.isFinite(x.download_count)) n += Math.max(0, x.download_count!);
+  }
+  return n;
 }
 
 export function choose(list: GhRelease[]): Picks {
@@ -135,6 +154,7 @@ export function choose(list: GhRelease[]): Picks {
   return {
     desktop: desktop ? trim(desktop, isDesktopAsset) : null,
     android: android ? trim(android, isApk) : null,
+    downloads: countDownloads(list),
   };
 }
 
@@ -253,14 +273,52 @@ function fillOthers(os: OS | null, d: Pick | null) {
   else if (os === "linux") list = [...desk.linux.slice(1), ...desk.windows, ...desk.mac];
   else list = [...desk.windows, ...desk.mac, ...desk.linux];
 
+  // The hero keeps its row short: Android, one jump to the full list in the
+  // download section, and all files. Linux keeps the .deb (most Linux visitors
+  // are on Ubuntu or Debian). A computer the page can't name gets every file.
+  const rest: Record<Desktop, Link> = {
+    windows: { label: "Mac and Linux", href: "#download" },
+    mac: { label: "Windows and Linux", href: "#download" },
+    linux: { label: "Windows and Mac", href: "#download" },
+  };
+  const short: Link[] = os === "windows" || os === "mac" || os === "linux"
+    ? [...(os === "linux" ? desk.linux.slice(1) : []), ...(os === "mac" ? macOthers.map(macLink) : []), rest[os]]
+    : list;
+
   const all = `<li><a href="${esc(page)}" target="_blank" rel="noopener noreferrer">All files</a></li>`;
   const li = (o: Link) => `<li><a href="${esc(o.href)}">${esc(o.label)}</a></li>`;
   $$("[data-sv-others]").forEach((ul) => {
-    // data-sv-others="desktop": the section offers the APK elsewhere.
-    // Android comes first: for someone on a computer it is the newer news.
-    const withApk = ul.dataset.svOthers !== "desktop";
-    ul.innerHTML = [...(withApk ? [android] : []), ...list].map(li).join("") + all;
+    // data-sv-others="desktop": the download section, full list, the APK is offered beside it.
+    // Android comes first in the hero: for someone on a computer it is the newer news.
+    const hero = ul.dataset.svOthers !== "desktop";
+    ul.innerHTML = (hero ? [android, ...short] : list).map(li).join("") + all;
   });
+}
+
+// ---- status line: one polite announcement per download block ----
+// The status element is visually hidden (it never takes space); what the
+// visitor sees changes in place: the button's own line, or the link's text.
+function announce(scope: Element | null, msg: string) {
+  const status = scope?.querySelector<HTMLElement>("[data-sv-status]");
+  if (!status) return;
+  status.textContent = msg;
+  window.clearTimeout(Number(status.dataset.t || 0));
+  status.dataset.t = String(window.setTimeout(() => (status.textContent = ""), 6000));
+}
+
+function tell(a: HTMLElement, msg: string) {
+  announce(a.closest("[data-sv-scope]"), msg);
+  // the button's own second line, a marked label (icon kept), or the link's text
+  const shown = a.querySelector<HTMLElement>("[data-sv-meta], [data-sv-label]") ?? a;
+  if (shown.dataset.svWas === undefined) shown.dataset.svWas = shown.textContent || "";
+  shown.textContent = msg;
+  shown.classList.add("is-told");
+  window.clearTimeout(Number(shown.dataset.svT || 0));
+  shown.dataset.svT = String(window.setTimeout(() => {
+    shown.textContent = shown.dataset.svWas || "";
+    delete shown.dataset.svWas;
+    shown.classList.remove("is-told");
+  }, 6000));
 }
 
 // ---- phones that can't run the app: "Send me the link" ----
@@ -273,14 +331,6 @@ function isOtherPhone(os: OS | null) {
   return os === null && (!!nav.userAgentData?.mobile || /Mobi|IEMobile|Opera Mini/i.test(navigator.userAgent));
 }
 
-function tell(a: HTMLElement, msg: string) {
-  const status = a.closest(".svdl")?.querySelector<HTMLElement>("[data-sv-status]");
-  if (!status) return;
-  status.textContent = msg;
-  window.clearTimeout(Number(status.dataset.t || 0));
-  status.dataset.t = String(window.setTimeout(() => (status.textContent = ""), 6000));
-}
-
 async function shareLink(e: MouseEvent) {
   const a = e.currentTarget as HTMLElement;
   const data = { title: "Silent Voice", url: PAGE_URL };
@@ -288,7 +338,7 @@ async function shareLink(e: MouseEvent) {
   const canCopy = !!navigator.clipboard?.writeText;
   if (!canShare && !canCopy) {
     // the main button's link goes to the releases page instead; a plain button says where to go
-    if (a.tagName === "BUTTON") tell(a, `Open ${PAGE_URL.replace(/^https:\/\//, "")} on your computer.`);
+    if (a.tagName === "BUTTON") tell(a, `Open ${PAGE_SHORT} on your computer.`);
     return;
   }
   e.preventDefault();
@@ -304,7 +354,7 @@ async function shareLink(e: MouseEvent) {
     await navigator.clipboard.writeText(PAGE_URL);
     tell(a, "Link copied. Send it to yourself.");
   } catch {
-    tell(a, `Open ${PAGE_URL.replace(/^https:\/\//, "")} on your computer.`);
+    tell(a, `Open ${PAGE_SHORT} on your computer.`);
   }
 }
 
@@ -316,6 +366,179 @@ function shareMode() {
   $$<HTMLAnchorElement>("[data-sv-main]").forEach((a) => a.addEventListener("click", shareLink));
 }
 
+// ---- after the click: "Your download has started" ----
+// A real file download (the link carries `download`) leaves the page where it
+// is, so the block under the button turns into the three steps that matter
+// next, the warning screen included. It replaces the caveat line, keeps focus
+// on the button and is announced once.
+type DoneOS = Desktop | "android";
+const ICON_CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>';
+const ICON_X = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+const KEYS = "<kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Space</kbd>";
+
+export function doneSteps(os: DoneOS, file: string): { steps: string[]; note?: string } {
+  const f = `<b class="svdone-file">${esc(file)}</b>`;
+  const issues = `<a href="${ISSUES_URL}" target="_blank" rel="noopener noreferrer">Tell me what breaks</a>`;
+  switch (os) {
+    case "windows": return { steps: [
+      `Open ${f} from your Downloads folder.`,
+      `If Windows says it protected your PC (the installer isn't code-signed yet), choose <b>More info</b>, then <b>Run anyway</b>.`,
+      `Once it's installed, hold ${KEYS}, talk, and let go.`,
+    ] };
+    case "mac": return { steps: [
+      `Open ${f} and drag Silent Voice into Applications.`,
+      `On first launch, open <b>System Settings › Privacy &amp; Security</b> and choose <b>Open Anyway</b>.`,
+      `Allow <b>Microphone</b> and <b>Accessibility</b> when it asks.`,
+    ], note: `Early: not fully tested on a real Mac yet. ${issues}.` };
+    case "linux": return { steps: [
+      `Run <code>chmod +x</code> on ${f}, then open it. On Ubuntu or Debian you can install the .deb instead.`,
+      `Works on X11, Hyprland and Sway. On Hyprland or Sway, bind a key to <code>silent-voice --toggle</code> and install <code>wtype</code>.`,
+      `On X11, hold ${KEYS}, talk, and let go.`,
+    ] };
+    case "android": return { steps: [
+      `Open ${f} from the download notification or your Downloads.`,
+      `Allow installs from your browser when Android asks.`,
+      `Open Silent Voice, let it get the voice model (about 100 MB), then turn on <b>Silent Voice bubble</b> in Accessibility.`,
+    ] };
+  }
+}
+
+const OS_NAME: Record<DoneOS, string> = { windows: "Windows", mac: "Mac", linux: "Linux", android: "Android" };
+let doneId = 0;
+
+/**
+ * A section that centres its content vertically (the hero: min-height 100svh,
+ * place-items: center) would re-centre when the panel opens, and everything
+ * above the button would jump up. Pin the content where it is instead, so the
+ * section grows downwards; unpinning puts it back exactly where it was.
+ */
+function pinSection(scope: HTMLElement) {
+  const sec = scope.closest<HTMLElement>("section");
+  if (!sec || sec.dataset.svPinned !== undefined) return;
+  const cs = getComputedStyle(sec);
+  const grid = cs.display.includes("grid") && cs.alignItems === "center";
+  const flexCol = cs.display.includes("flex") && cs.flexDirection.startsWith("column") && cs.justifyContent === "center";
+  if (!grid && !flexCol) return;
+  const child = [...sec.children].find((el) => el.contains(scope)) as HTMLElement | undefined;
+  if (!child) return;
+  const top = child.getBoundingClientRect().top - sec.getBoundingClientRect().top - parseFloat(getComputedStyle(child).marginTop || "0");
+  sec.dataset.svPinned = "";
+  sec.style.paddingTop = `${top}px`;
+  if (grid) { sec.style.alignItems = "start"; sec.style.alignContent = "start"; }
+  else sec.style.justifyContent = "flex-start";
+}
+function unpinSection(scope: HTMLElement) {
+  const sec = scope.closest<HTMLElement>("section");
+  if (!sec || sec.dataset.svPinned === undefined) return;
+  delete sec.dataset.svPinned;
+  for (const k of ["paddingTop", "alignItems", "alignContent", "justifyContent"] as const) sec.style[k] = "";
+}
+
+function showDone(trigger: HTMLAnchorElement, os: DoneOS) {
+  const scope = trigger.closest<HTMLElement>("[data-sv-scope]");
+  const slot = scope?.querySelector<HTMLElement>("[data-sv-done]");
+  if (!scope || !slot) return;
+  const file = decodeURIComponent(trigger.href.split("/").pop() || "the file");
+  const href = trigger.href;
+  if (slot.dataset.href === href && !slot.hidden) return; // already showing for this file
+  slot.dataset.href = href;
+
+  const { steps, note } = doneSteps(os, file);
+  const id = `svdone-${++doneId}`;
+  slot.innerHTML = `<div class="svdone" role="group" aria-labelledby="${id}">
+    <div class="svdone-head">
+      <span class="svdone-check">${ICON_CHECK}</span>
+      <p class="svdone-title" id="${id}">Your download has started</p>
+      <button type="button" class="svdone-x" aria-label="Close the install steps">${ICON_X}</button>
+    </div>
+    <ol class="svdone-steps">${steps.map((s) => `<li>${s}</li>`).join("")}</ol>
+    ${note ? `<p class="svdone-note">${note}</p>` : ""}
+    <p class="svdone-foot"><span>Download didn't start? <a href="${esc(href)}" download>Try again</a></span><a href="${ISSUES_URL}" target="_blank" rel="noopener noreferrer">Report a problem</a></p>
+  </div>`;
+
+  // reveal in place of the caveat, with everything above the button held still
+  pinSection(scope);
+  scope.querySelectorAll<HTMLElement>("[data-sv-done-hide]").forEach((el) => (el.hidden = true));
+  slot.hidden = false;
+  scope.classList.add("is-done");
+
+  slot.querySelector(".svdone-x")?.addEventListener("click", () => hideDone(scope, trigger));
+  if (!slot.dataset.told) {
+    slot.dataset.told = "1";
+    announce(scope, `Your download has started. Next steps for ${OS_NAME[os]} are below the button.`);
+  }
+}
+
+function hideDone(scope: HTMLElement, trigger: HTMLElement) {
+  const slot = scope.querySelector<HTMLElement>("[data-sv-done]");
+  if (slot) { slot.hidden = true; slot.innerHTML = ""; delete slot.dataset.href; }
+  scope.querySelectorAll<HTMLElement>("[data-sv-done-hide]").forEach((el) => (el.hidden = false));
+  scope.classList.remove("is-done");
+  unpinSection(scope);
+  trigger.focus({ preventScroll: true });
+}
+
+function armDone(os: OS | null) {
+  if (os !== "windows" && os !== "mac" && os !== "linux" && os !== "android") return;
+  // the main buttons everywhere, and the APK button where it is the primary one (Android)
+  const triggers = $$<HTMLAnchorElement>(os === "android" ? "[data-sv-main], [data-sv-apk-main]" : "[data-sv-main]");
+  triggers.forEach((a) => a.addEventListener("click", (e) => {
+    if (e.defaultPrevented || !a.hasAttribute("download")) return; // a releases page, not a file
+    showDone(a, os);
+  }));
+  // a new window size: let the section lay itself out again (the panel stays)
+  addEventListener("resize", () => $$<HTMLElement>("[data-sv-scope].is-done").forEach(unpinSection), { passive: true });
+}
+
+// ---- checksums in the install notes, and the download count ----
+const SUM_KIND = (n: string) =>
+  isExe(n) ? "Installer" : isDmg(n) ? (macArch(n) ? `${macArch(n)} .dmg` : ".dmg") : isAppImage(n) ? "AppImage" : isDeb(n) ? ".deb" : isApk(n) ? "APK" : n;
+
+function fillSums(d: Pick | null, an: Pick | null) {
+  const a = d?.assets ?? [];
+  const files: Record<DoneOS, (Asset | undefined)[]> = {
+    windows: [pick.windows(a)],
+    mac: a.filter((x) => isDmg(x.name)),
+    linux: [pick.linux(a), pick.deb(a)],
+    android: [an ? pick.apk(an.assets) : undefined],
+  };
+  $$("[data-sv-sum]").forEach((li) => {
+    const list = (files[li.dataset.svSum as DoneOS] ?? []).filter((x): x is Asset => !!x?.sha256);
+    if (!list.length) return; // no digest from GitHub: say nothing
+    li.innerHTML = `<span class="svx-sum-h">SHA-256</span>` + list.map((x) =>
+      `<span class="svx-sum-row"><span class="svx-sum-k">${esc(SUM_KIND(x.name))}</span>` +
+      `<code title="${x.sha256}">${x.sha256!.slice(0, 12)}…${x.sha256!.slice(-12)}</code>` +
+      `<button type="button" class="svx-sum-copy" data-sv-copy="${x.sha256}" aria-label="Copy the SHA-256 of ${esc(x.name)}"><span aria-live="polite">Copy</span></button></span>`).join("");
+    li.hidden = false;
+  });
+}
+
+function armCopy() {
+  document.addEventListener("click", async (e) => {
+    const b = (e.target as Element).closest?.<HTMLButtonElement>("[data-sv-copy]");
+    if (!b) return;
+    const label = b.querySelector("span") ?? b;
+    try {
+      await navigator.clipboard.writeText(b.dataset.svCopy || "");
+      label.textContent = "Copied";
+    } catch {
+      // no clipboard: show the whole checksum so it can be selected by hand
+      const code = b.previousElementSibling;
+      if (code?.tagName === "CODE") code.textContent = b.dataset.svCopy || "";
+      label.textContent = "Select it";
+    }
+    window.setTimeout(() => (label.textContent = "Copy"), 2000);
+  });
+}
+
+function fillDownloads(n: number) {
+  if (!(n >= DOWNLOADS_MIN)) return; // a small number reads worse than none
+  $$("[data-sv-downloads]").forEach((el) => {
+    el.textContent = `${n.toLocaleString("en-US")} downloads so far.`;
+    el.hidden = false;
+  });
+}
+
 export async function initRelease(): Promise<ReleaseState> {
   const os = detectOS();
   const root = document.documentElement;
@@ -325,9 +548,10 @@ export async function initRelease(): Promise<ReleaseState> {
   // "all downloads", never installer files a phone can't run.
   if (share || os === "android") {
     root.dataset.svPhone = "";
-    $$("[data-sv-status]").forEach((el) => el.removeAttribute("hidden"));
     $$<HTMLElement>("[data-sv-send]").forEach((b) => b.addEventListener("click", shareLink));
   }
+  armDone(os);
+  armCopy();
 
   // Label the buttons for the visitor's OS straight away; the link itself
   // stays on a releases page until the API answers.
@@ -392,6 +616,8 @@ export async function initRelease(): Promise<ReleaseState> {
   }
 
   if (d) fillOthers(os, d);
+  fillSums(d, an);
+  fillDownloads(picks.downloads);
   if (version) loadNotes(version, d?.published_at);
 
   root.dataset.svRelease = d && version ? "ok" : "failed";
