@@ -101,7 +101,8 @@ for (let y = 0; y < qrSize; y++) {
               <svg class="svx-chev" viewBox="0 0 24 24" aria-hidden="true"><path d={chevron} /></svg>
             </summary>
             <ul>
-              <li><strong>Works on X11, Hyprland and Sway. Not on GNOME or KDE Wayland yet.</strong> On Hyprland and Sway, bind a key to <code>silent-voice --toggle</code> and install <code>wtype</code>.</li>
+              <li><strong>Works on X11, Hyprland and Sway. Not on GNOME or KDE Wayland yet.</strong> That's the default on Ubuntu and Fedora, and there the hotkey and paste don't work. If your login screen offers an Xorg session (the gear icon, then Ubuntu on Xorg), choose it and they do.</li>
+              <li>On Hyprland and Sway, bind a key to <code>silent-voice --toggle</code> and install <code>wtype</code>.</li>
               <li>Take the .deb on Ubuntu and Debian, the AppImage anywhere else (run <code>chmod +x</code> on it first).</li>
               <li>An early build: if something breaks, <a href={ISSUES_URL} target="_blank" rel="noopener noreferrer">tell me on GitHub</a>.</li>
               <li class="svx-sum" data-sv-sum="linux" hidden></li>
@@ -115,7 +116,7 @@ for (let y = 0; y < qrSize; y++) {
             </summary>
             <ul>
               <li><strong>A beta you install from GitHub, not Google Play.</strong> English only.</li>
-              <li>Allow your browser to install apps, then turn on the "Silent Voice bubble" switch in Accessibility. Android 13 and newer first asks you to "Allow restricted settings" in the app's info page. On Xiaomi phones, also allow Autostart.</li>
+              <li>Allow your browser to install apps, then turn on the "Silent Voice bubble" switch in Accessibility. If the switch is greyed out (Android 13 and newer), open the app's App info, tap ⋮, choose Allow restricted settings, then turn it on. On Xiaomi phones, also allow Autostart.</li>
               <li>Updates aren't automatic yet: check this page or the GitHub releases. If an update won't install over the old version, uninstall the old one first (that clears its history and saved words).</li>
               <li class="svx-sum" data-sv-sum="android" hidden></li>
             </ul>

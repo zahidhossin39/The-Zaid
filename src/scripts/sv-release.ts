@@ -97,11 +97,20 @@ export function detectOS(): OS | null {
   // iPadOS reports itself as a Mac; touch gives it away
   if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return "ios";
   if (nav.userAgentData?.mobile) return null; // some other phone: show everything
+  // ChromeOS reports "Linux" as its platform, but a Chromebook can't run the
+  // AppImage as it is: no main file, the page offers every download instead
+  if (/\bCrOS\b/.test(ua) || /chrome ?os/.test(hint)) return null;
   const p = (hint || navigator.platform || ua).toLowerCase();
   if (p.includes("win")) return "windows";
   if (p.includes("mac")) return "mac";
-  if (p.includes("linux") || p.includes("x11") || p.includes("cros")) return "linux";
+  if (p.includes("linux") || p.includes("x11")) return "linux";
   return null;
+}
+
+/** A Chromebook: no build for it yet, so the button offers every download and says why. */
+export function isChromeOS(): boolean {
+  const nav = navigator as Navigator & { userAgentData?: { platform?: string } };
+  return /\bCrOS\b/.test(navigator.userAgent) || /chrome ?os/i.test(nav.userAgentData?.platform || "");
 }
 
 // ---- fetching ----
@@ -383,22 +392,22 @@ export function doneSteps(os: DoneOS, file: string): { steps: string[]; note?: s
     case "windows": return { steps: [
       `Open ${f} from your Downloads folder.`,
       `If Windows says it protected your PC (the installer isn't code-signed yet), choose <b>More info</b>, then <b>Run anyway</b>.`,
-      `Once it's installed, hold ${KEYS}, talk, and let go.`,
+      `Once it's installed, let it get a speech model (up to about 750 MB), then hold ${KEYS}, talk, and let go.`,
     ] };
     case "mac": return { steps: [
       `Open ${f} and drag Silent Voice into Applications.`,
-      `On first launch, open <b>System Settings › Privacy &amp; Security</b> and choose <b>Open Anyway</b>.`,
-      `Allow <b>Microphone</b> and <b>Accessibility</b> when it asks.`,
+      `On first launch, open <b>System Settings › Privacy &amp; Security</b> and choose <b>Open Anyway</b>. On macOS 14 or older, right-click the app and choose <b>Open</b>.`,
+      `Allow <b>Microphone</b> and <b>Accessibility</b> when it asks, then let it get a speech model (up to about 750 MB).`,
     ], note: `Early: not fully tested on a real Mac yet. ${issues}.` };
     case "linux": return { steps: [
       `Run <code>chmod +x</code> on ${f}, then open it. On Ubuntu or Debian you can install the .deb instead.`,
-      `Works on X11, Hyprland and Sway. On Hyprland or Sway, bind a key to <code>silent-voice --toggle</code> and install <code>wtype</code>.`,
-      `On X11, hold ${KEYS}, talk, and let go.`,
+      `On GNOME or KDE Wayland (the Ubuntu and Fedora default) the hotkey and paste don't work yet. If your login screen offers an Xorg session (gear icon › <b>Ubuntu on Xorg</b>), choose it.`,
+      `On X11, hold ${KEYS}, talk, and let go. On Hyprland or Sway, bind a key to <code>silent-voice --toggle</code> and install <code>wtype</code>.`,
     ] };
     case "android": return { steps: [
-      `Open ${f} from the download notification or your Downloads.`,
-      `Allow installs from your browser when Android asks.`,
-      `Open Silent Voice, let it get the voice model (about 100 MB), then turn on <b>Silent Voice bubble</b> in Accessibility.`,
+      `Open ${f} from the download notification or your Downloads, and allow installs from your browser when Android asks.`,
+      `Open Silent Voice and let it get the voice model (about 100 MB).`,
+      `Turn on <b>Silent Voice bubble</b> in Accessibility. Greyed out (Android 13+)? Open its <b>App info</b>, tap <b>⋮</b>, choose <b>Allow restricted settings</b>, then turn it on.`,
     ] };
   }
 }
@@ -534,7 +543,8 @@ function armCopy() {
 function fillDownloads(n: number) {
   if (!(n >= DOWNLOADS_MIN)) return; // a small number reads worse than none
   $$("[data-sv-downloads]").forEach((el) => {
-    el.textContent = `${n.toLocaleString("en-US")} downloads so far.`;
+    // GitHub counts every download of the file, the app's own updates included
+    el.textContent = `${n.toLocaleString("en-US")} downloads so far, updates included.`;
     el.hidden = false;
   });
 }
@@ -543,6 +553,8 @@ export async function initRelease(): Promise<ReleaseState> {
   const os = detectOS();
   const root = document.documentElement;
   root.dataset.svOs = os ?? "unknown";
+  const cros = os === null && isChromeOS();
+  if (cros) root.dataset.svCros = "";
   const share = os === "ios" || isOtherPhone(os);
   // On any phone the links under the button are "send it to my computer" and
   // "all downloads", never installer files a phone can't run.
@@ -564,6 +576,9 @@ export async function initRelease(): Promise<ReleaseState> {
   } else if (os) {
     setText("[data-sv-os-label]", `Download for ${OS_LABEL[os]}`);
     setText("[data-sv-meta]", INTERIM[os]);
+  } else if (cros) {
+    setText("[data-sv-os-label]", "See all downloads");
+    setText("[data-sv-meta]", "Windows, Mac, Linux and Android");
   }
 
   let picks: Picks;

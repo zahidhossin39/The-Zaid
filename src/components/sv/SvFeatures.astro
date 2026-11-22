@@ -56,7 +56,7 @@ const cats = [
 
 // also in the box: one line each, no widgets
 const box = [
-  { t: "Works in any app", d: "Email, docs, chat, code: if you can type there, you can talk there.", i: "M3.5 5.5h17v13h-17zM3.5 9h17M12 11.5v4.5M10.5 11.5h3M10.5 16h3" },
+  { t: "Works in almost any app", d: "Email, docs, chat, code: if you can type there, you can talk there.", i: "M3.5 5.5h17v13h-17zM3.5 9h17M12 11.5v4.5M10.5 11.5h3M10.5 16h3" },
   { t: "Catches typos where you type", d: "Optional spelling and grammar underlines in your other apps. English only.", i: "M5 7h14M5 11h9M4 17c1.4-1.6 2.8-1.6 4.2 0s2.8 1.6 4.2 0 2.8-1.6 4.2 0 2.8 1.6 3.4 0.6" },
   { t: "Reads text out loud", d: "Select text and press Ctrl + Alt + S. Natural voices that run on your computer.", i: "M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" },
   { t: "Watch the minutes add up", d: "Time saved against typing, speaking speed and streaks, worked out on your computer.", i: "M5 20v-6M12 20V8M19 20V4" },
@@ -161,6 +161,8 @@ const box = [
           ))}
         </div>
         <p class="ms-read" data-ms-read>The app reads your processor, memory and graphics card. This shows a typical laptop with no graphics card.</p>
+        <!-- "does it understand my language?", answered once (src/services/catalog.ts) -->
+        <p class="ms-lang"><b>Languages.</b> Every general model understands English. The multilingual Whisper models and Parakeet v3 cover many more, and Qwen3-ASR knows 52 (not Bengali). Some models are made for one language: Bangla, Chinese, Japanese, Korean and more. The Android beta is English only.</p>
       </div>
     </article>
 
@@ -238,6 +240,16 @@ const box = [
   /* the copy block is the same height in every card, so the demos share a top line */
   .card-copy { min-height: 4.6rem; }
   .card--box { grid-column: 1 / -1; }
+  /* wide screens: the Model Store (the tallest card) runs down the right, and
+     "Also in the box" fills the space under the two shorter cards, so no card
+     is stretched into an empty box */
+  @media (min-width: 1101px) {
+    .card--styles { grid-column: 1; grid-row: 1; }
+    .card--words { grid-column: 2; grid-row: 1; }
+    .card--models { grid-column: 3; grid-row: 1 / span 2; }
+    .card--box { grid-column: 1 / span 2; grid-row: 2; }
+    .card--box .box { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
 
   :global(html:not(.js)) .svf :is(.styles-chips, .words-legend, .ms-pick) { display: none; }
 
@@ -347,6 +359,8 @@ const box = [
   .ms-empty { margin: 0 !important; padding: 0.35rem 0.7rem; border-radius: 12px; border: 1px dashed #262c3d; font-size: 0.75rem !important; color: #9aa2b5 !important; }
   .ms-empty[hidden] { display: none; }
   .ms-read { font-size: 0.8rem !important; }
+  .ms-lang { margin-top: auto !important; padding-top: 0.8rem; border-top: 1px solid var(--sv-line); font-size: 0.8rem !important; }
+  .ms-lang b { color: var(--color-text); font-weight: 600; }
 
   /* ---- also in the box ---- */
   .box-h { margin: 0 !important; font-size: 1rem !important; }

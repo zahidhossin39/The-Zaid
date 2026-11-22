@@ -36,7 +36,7 @@ const NAV = [
 const STEPS = [
   { n: 1, t: "Who said what, live", d: "You and Others, line by line." },
   { n: 2, t: "Every voice told apart", d: "Others becomes Speaker 1, Speaker 2." },
-  { n: 3, t: "Action items, per person", d: "One click on Summarize." },
+  { n: 3, t: "Action items, per person", d: "One click on Summarize, with a summary model or your key." },
 ];
 
 // Echo picture: the mic hears your voice (orange) plus the call from your
@@ -335,7 +335,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
             <p><span>0:00</span>Thanks for making the time. Let's start with how the shop began.</p>
           </div>
         </div>
-        <p class="svn-file-fmt">mp3 · m4a · aac · mp4 · mov · wav · flac · ogg · mkv</p>
+        <p class="svn-file-fmt">mp3 · m4a · aac · mp4 · mov · wav · flac · ogg · mkv <span class="svn-file-not">(not .opus voice notes yet)</span></p>
       </article>
     </div>
 
@@ -376,7 +376,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
         <section class="svn-mi">
           <h3>What it needs</h3>
           <dl class="svn-tools">
-            <div><dt>Telling voices apart</dt><dd>A one-time download of about 30 MB. It takes about 15 s per minute of meeting, on a typical laptop.</dd></div>
+            <div><dt>Telling voices apart</dt><dd>A one-time download of about 47 MB. It takes about 15 s per minute of meeting, on a typical laptop.</dd></div>
             <div><dt>Summaries</dt><dd>A summary model: a local AI model from the Model Store (about 0.8 to 4.9 GB) or your own cloud key.</dd></div>
           </dl>
         </section>
@@ -692,6 +692,10 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .ov-tasks li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; }
   .ov-tag { display: inline-block; margin-right: 8px; padding: 0 6px; border-radius: 4px; background: var(--a-s2); color: var(--a-mu); font-size: 11px; font-weight: 600; line-height: 18px; vertical-align: 1px; }
   .ov-tag--you { background: rgba(249, 115, 22, 0.14); color: var(--a-ac); }
+  .ov-tag[hidden] { display: none; }
+  .ov-tag.is-in { animation: ov-tag-in 0.45s ease both; }
+  @keyframes ov-tag-in { from { opacity: 0; transform: translateX(-4px); } }
+  @media (prefers-reduced-motion: reduce) { .ov-tag.is-in { animation: none; } }
   .nt-ov.is-reveal .ov-sec { animation: nt-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
   /* the payoff: a soft glow on the Overview when the story writes it */
   .nt-ov::before { content: ""; position: absolute; inset: -8px -10px 2px; border-radius: 12px; background: radial-gradient(70% 90% at 30% 60%, rgba(249, 115, 22, 0.13), transparent 75%); box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.8s ease; }
@@ -836,10 +840,10 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .svn-wave line { stroke: #262c3d; stroke-width: 1; }
   .svn-wave .vb { fill: var(--sv-orange); }
   .svn-wave .eg { fill: none; stroke: #64748b; stroke-width: 1; stroke-dasharray: 2 2; opacity: 0; transition: opacity 0.6s ease 0.3s; }
-  .svn-echo[data-echo="on"] .eg { opacity: 0.45; }
+  .svn-echo[data-echo="on"] .eg { opacity: 0.1; }
   .svn-wave .eb { fill: #64748b; transform-box: fill-box; transform-origin: center; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease; transition-delay: calc(var(--i) * 9ms); }
-  .svn-echo[data-echo="on"] .eb--sub { transform: scaleY(0.4); opacity: 0.55; }
-  .svn-echo[data-echo="on"] .eb--gate { transform: scaleY(0.04); opacity: 0.2; }
+  .svn-echo[data-echo="on"] .eb--sub { transform: scaleY(0.4); opacity: 0.35; }
+  .svn-echo[data-echo="on"] .eb--gate { transform: scaleY(0.04); opacity: 0.15; }
   .svn-echo-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; flex-wrap: wrap; }
   .svn-echo-k { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin: 0; font-size: 0.8rem; color: #8b93a7; }
   .svn-echo-k > span { display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
@@ -1118,7 +1122,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
       name: $(".ln-name", li),
     }));
     const DURATION = Number(range.max);
-    const REC_SECONDS = 5.5; // the whole call "records" in about 5.5 s
+    const REC_SECONDS = 5.2; // the whole call "records" in about 5 s (the whole story: about 10 s)
     const RATE = DURATION / REC_SECONDS;
     const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
@@ -1169,7 +1173,14 @@ const PLAY = "M3.5 2v8l6.5-4z";
         if (animate) setTimeout(() => setName(d, n, true), (k++) * 110);
         else setName(d, n, false);
       });
-      tags.forEach((tg) => (tg.textContent = nameFor(tg.dataset.who!)));
+      // "Others" never shows in the summary: until the voices are told apart,
+      // the other side's action items carry no name tag
+      tags.forEach((tg) => {
+        const was = tg.hidden;
+        tg.textContent = nameFor(tg.dataset.who!);
+        tg.hidden = !split;
+        if (was && split && animate) { tg.classList.remove("is-in"); void tg.offsetWidth; tg.classList.add("is-in"); }
+      });
     };
 
     // ---- transcript ----
@@ -1305,7 +1316,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
       setStory(true);
       if (from === 1) {
         stateIdle();
-        await sleep(350); if (!alive(g)) return;
+        await sleep(250); if (!alive(g)) return;
         press(startBtn);
         await sleep(200); if (!alive(g)) return;
         await record(g); if (!alive(g)) return;
@@ -1316,7 +1327,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
       if (from <= 2) {
         await sleep(from === 2 ? 400 : 150); if (!alive(g)) return;
         await tellApart(g); if (!alive(g)) return;
-        await sleep(500); if (!alive(g)) return;
+        await sleep(350); if (!alive(g)) return;
       }
       await summarize(g, true); if (!alive(g)) return;
       // the Overview took its room back: show the end of the call under it
@@ -1362,7 +1373,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
       setPhase("finishing");
       listenT.textContent = "Finishing the last words…";
       setChapter(1, 1);
-      await sleep(650); if (!alive(g)) return;
+      await sleep(500); if (!alive(g)) return;
       setPhase("post");
       setLive(false);
       setOv("ready");
@@ -1370,11 +1381,11 @@ const PLAY = "M3.5 2v8l6.5-4z";
     }
 
     async function tellApart(g: number) {
-      setChapter(2, 1, 1.3);
+      setChapter(2, 1, 1.15);
       voices.hidden = false;
       nt.classList.add("is-scanning");
       announce("Telling the voices apart.");
-      await sleep(1300); if (!alive(g)) return;
+      await sleep(1150); if (!alive(g)) return;
       nt.classList.remove("is-scanning");
       voices.hidden = true;
       split = true;
@@ -1388,8 +1399,8 @@ const PLAY = "M3.5 2v8l6.5-4z";
       if (auto) { press(sumBtn); await sleep(220); if (!alive(g)) return; }
       ov.classList.remove("is-reveal");
       setOv("busy");
-      setChapter(3, 1, 1.4);
-      await sleep(1400); if (!alive(g)) return;
+      setChapter(3, 1, 1.15);
+      await sleep(1150); if (!alive(g)) return;
       setOv("done");
       if (motion) ov.classList.add("is-reveal");
       ov.classList.add("is-glow");

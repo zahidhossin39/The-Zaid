@@ -295,7 +295,7 @@
     0% { opacity: 0.7; transform: scale(1); }
     70%, 100% { opacity: 0; transform: scale(1.12); }
   }
-  .svd-hint { margin: 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-muted); min-height: 1.2em; }
+  .svd-hint { margin: 0; max-width: 100%; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-muted); min-height: 1.2em; text-align: center; text-wrap: balance; }
   .svd-hint.warn { color: var(--sv-orange); animation: svd-shake 0.4s ease; }
   .svd-hint.free { color: var(--sv-orange); }
   .svd.is-free .svd-rec { background: #fff; }
@@ -342,6 +342,7 @@
   const FREE_MAX = 20000; // a forgotten hands-free run stops by itself
 
   let next = 0;
+  let quickTap = false; // the line now typing came from a lone quick tap
   let state: "idle" | "rec" | "busy" = "idle";
   // while recording: held down, waiting for a second tap, or hands-free
   let mode: "hold" | "pending" | "free" = "hold";
@@ -390,7 +391,8 @@
     endRec();
     state = "busy";
     overlay.dataset.state = "busy";
-    say(quick ? "Hold while you talk, or tap twice for hands-free" : "Turning speech into text");
+    quickTap = quick;
+    say(quick ? "Quick tap: a sample anyway" : "Turning speech into text");
     setTimeout(type, still ? 50 : 650);
   };
 
@@ -462,7 +464,9 @@
     announce.textContent = `Typed: ${line}`;
     state = "idle";
     mode = "hold";
-    say(used ? "Hold again for another line" : "Press and hold, or tap twice");
+    // a lone quick tap still types a sample here; the hint says why, and what the app does
+    if (quickTap) { quickTap = false; say("In the app, a tap types nothing"); }
+    else say(used ? "Hold again for another line" : "Press and hold, or tap twice");
   };
 
   // Reduced motion: no ghost run, so the note starts with a finished line

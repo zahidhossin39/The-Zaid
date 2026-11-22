@@ -8,7 +8,7 @@
 // After a click on a real file, the release script puts "Your download has
 // started" and three steps for that OS in [data-sv-done], in place of the caveat.
 import { siAndroid, siApple, siLinux } from "simple-icons";
-import { ANDROID_RELEASES_URL, ISSUES_URL, RELEASES_URL, detectOS } from "../../scripts/sv-release";
+import { ANDROID_RELEASES_URL, ISSUES_URL, RELEASES_URL, SOURCE_URL, detectOS, isChromeOS } from "../../scripts/sv-release";
 
 interface Props {
   size?: "xl" | "md";
@@ -21,7 +21,7 @@ const WIN = "M3 5.1 10.4 4v7.3H3V5.1Zm8.3-1.2L21 2.5v8.8h-9.7V3.9ZM3 12.6h7.4v7.
 // Mark the visitor's OS before first paint, so the caveat under the button
 // is there from the start instead of pushing the page down a moment later.
 // It is the same detectOS() the release script runs (that one sets it again).
-const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try{r.dataset.svOs=(${detectOS.toString()})()||"unknown"}catch(e){}})()`;
+const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try{r.dataset.svOs=(${detectOS.toString()})()||"unknown";if(r.dataset.svOs==="unknown"&&(${isChromeOS.toString()})())r.dataset.svCros=""}catch(e){}})()`;
 ---
 
 <script is:inline set:html={early}></script>
@@ -33,12 +33,13 @@ const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try
       <svg class="os os-mac" viewBox="0 0 24 24"><path d={siApple.path} /></svg>
       <svg class="os os-linux" viewBox="0 0 24 24"><path d={siLinux.path} /></svg>
       <svg class="os os-android" viewBox="0 0 24 24"><path d={siAndroid.path} /></svg>
-      <svg class="os os-any" viewBox="0 0 24 24"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" /></svg>
+      <!-- no OS known (JS off, a Chromebook): the app's own mark, so the button doesn't show two download arrows -->
+      <svg class="os os-any" viewBox="222 232 612 560"><rect x="232" y="432" width="80" height="160" rx="40" /><rect x="360" y="352" width="80" height="320" rx="40" /><rect class="mid" x="488" y="252" width="80" height="520" rx="40" /><rect x="616" y="352" width="80" height="320" rx="40" /><rect x="744" y="432" width="80" height="160" rx="40" /></svg>
       <svg class="os os-share" viewBox="0 0 24 24"><path d="M12 15V3m0 0L8 7m4-4 4 4M8 11H6.5A1.5 1.5 0 0 0 5 12.5v7A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-7a1.5 1.5 0 0 0-1.5-1.5H16" /></svg>
     </span>
     <span class="svdl-text">
       <span class="svdl-label" data-sv-os-label>Download Silent Voice</span>
-      <span class="svdl-meta" data-sv-meta>Free · Windows, Mac and Linux</span>
+      <span class="svdl-meta" data-sv-meta>Windows, Mac and Linux</span>
     </span>
     <span class="svdl-arrow" aria-hidden="true">
       <svg viewBox="0 0 24 24"><path d="M12 4v14m0 0-6-6m6 6 6-6" /></svg>
@@ -51,28 +52,25 @@ const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try
   <!-- announcements ("Link copied", "Your download has started"): heard, never in the way (no reserved gap) -->
   <p class="svdl-status" data-sv-status role="status"></p>
 
-  <!-- the one thing to know before installing, for the visitor's OS -->
-  <div class="svdl-caveats" data-sv-done-hide>
-    <p class="svdl-caveat svdl-caveat--windows">
-      Not code-signed yet, so Windows may warn
-      you. Choose <b>More info</b>, then <b>Run anyway</b>. <a href="#install-windows">Install notes</a>
-    </p>
-    <p class="svdl-caveat svdl-caveat--mac">
-      <span class="svdl-early">Early</span> Not fully tested on a real Mac yet: <a href={ISSUES_URL} target="_blank"
-      rel="noopener noreferrer">tell me what breaks</a>. Apple Silicon only. Not notarized, so on first launch
-      open <b>System Settings › Privacy &amp; Security › Open Anyway</b>. <a href="#install-mac">Install notes</a>
-    </p>
-    <p class="svdl-caveat svdl-caveat--linux">
-      <span class="svdl-early">Early</span> Works on X11, Hyprland and Sway. Not on GNOME or KDE Wayland yet. <a
-      href="#install-linux">Install notes</a>
-    </p>
-    <p class="svdl-caveat svdl-caveat--android">
-      Beta for Android 10+, installed from GitHub. <a href="#install-android">How to install</a>
-    </p>
-    <p class="svdl-caveat svdl-caveat--any">
-      Before you install, read <a href="#install">the notes for your system</a>.
-    </p>
-  </div>
+  <!-- under the button, one paragraph: why an unsigned installer is a fair trade (free and open
+       source, linked), then the one thing to know before installing on the visitor's OS -->
+  <p class="svdl-caveats" data-sv-done-hide>
+    <span class="svdl-oss">Free and <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer">open source (MIT)</a>.</span>{" "}
+    <span class="svdl-caveat svdl-caveat--windows">Not code-signed yet, so Windows may warn
+      you. Choose <b>More info</b>, then <b>Run anyway</b>. <a href="#install-windows">Install notes</a></span>
+    <span class="svdl-caveat svdl-caveat--mac"><b>Apple Silicon only</b> (M1 or newer). <span
+      class="svdl-early">Early</span> Not fully tested on a real Mac yet: <a href={ISSUES_URL} target="_blank"
+      rel="noopener noreferrer">tell me what breaks</a>. Not notarized, so on first launch open <b>System Settings ›
+      Privacy &amp; Security › Open Anyway</b>. <a href="#install-mac">Install notes</a></span>
+    <span class="svdl-caveat svdl-caveat--linux"><span class="svdl-early">Early</span> Works on X11, Hyprland and
+      Sway. On GNOME or KDE Wayland, the Ubuntu and Fedora default, the hotkey and paste don't work yet: choose an
+      Xorg session at login where it's offered. <a href="#install-linux">Install notes</a></span>
+    <span class="svdl-caveat svdl-caveat--android">Beta for Android 10+, installed from GitHub. <a
+      href="#install-android">How to install</a></span>
+    <span class="svdl-caveat svdl-caveat--cros">There's no ChromeOS build yet, so here is every download.</span>
+    <span class="svdl-caveat svdl-caveat--any">Before you install, read <a href="#install">the notes for your
+      system</a>.</span>
+  </p>
 
   {others && (
     <div class="svdl-others">
@@ -153,7 +151,8 @@ const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try
   }
   .svdl--xl .svdl-icon { width: 3.1rem; height: 3.1rem; }
   .svdl-icon svg { width: 46%; height: 46%; fill: currentColor; }
-  .svdl-icon .os-any { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .svdl-icon .os-any { width: 52%; height: 52%; }
+  .svdl-icon .os-any .mid { fill: #f4f2ed; }
   .svdl-icon .os { display: none; }
   :global(html[data-sv-os="windows"]) .svdl-icon .os-windows,
   :global(html[data-sv-os="mac"]) .svdl-icon .os-mac,
@@ -164,6 +163,8 @@ const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try
   :global(html[data-sv-share]) .svdl-icon .os-share { display: block; }
   /* "Send me the link" doesn't download anything, so no down arrow */
   :global(html[data-sv-share]) .svdl-btn .svdl-arrow { display: none; }
+  /* a Chromebook's "See all downloads" opens the releases page: no down arrow either */
+  :global(html[data-sv-cros]) .svdl-btn .svdl-arrow { display: none; }
 
   .svdl-text { display: flex; flex-direction: column; text-align: left; line-height: 1.15; }
   .svdl-label { font-family: "Inter Tight", var(--font-sans); font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
@@ -207,10 +208,7 @@ const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try
   /* "Link copied. Send it to yourself." replaces the button's own line for a few seconds */
   .svdl-meta:global(.is-told) { white-space: normal; }
 
-  .svdl-caveats { display: contents; }
-  .svdl-caveats[hidden] { display: none; }
-  .svdl-caveat {
-    display: none;
+  .svdl-caveats {
     max-width: 35rem;
     margin: -0.2rem auto 0;
     font-size: 0.85rem;
@@ -219,8 +217,14 @@ const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try
     text-align: center;
     text-wrap: balance;
   }
-  .svdl-caveat b { font-weight: 500; color: var(--color-text); }
-  .svdl-caveat a {
+  .svdl-caveats[hidden] { display: none; }
+  /* an iPhone gets "Send me the link" and its own note instead */
+  :global(html:is([data-sv-os="ios"], [data-sv-share])) .svdl-caveats { display: none; }
+  .svdl-caveat { display: none; }
+  /* "Free and open source (MIT)" reads first, in the text colour */
+  .svdl-oss { color: var(--color-text); }
+  .svdl-caveats b { font-weight: 500; color: var(--color-text); }
+  .svdl-caveats a {
     color: var(--color-text);
     white-space: nowrap;
     text-decoration: underline;
@@ -228,8 +232,8 @@ const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try
     text-underline-offset: 3px;
     transition: color 0.2s ease, text-decoration-color 0.2s ease;
   }
-  .svdl-caveat a:hover { color: var(--sv-orange); text-decoration-color: currentColor; }
-  .svdl-caveat a:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; border-radius: 3px; }
+  .svdl-caveats a:hover { color: var(--sv-orange); text-decoration-color: currentColor; }
+  .svdl-caveats a:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; border-radius: 3px; }
   /* "Early" for the Mac and Linux builds: a quiet tag, not a shout */
   .svdl-early {
     display: inline-block;
@@ -247,11 +251,13 @@ const early = `(function(){var r=document.documentElement;if(!r.dataset.svOs)try
   :global(html[data-sv-os="windows"]) .svdl-caveat--windows,
   :global(html[data-sv-os="mac"]) .svdl-caveat--mac,
   :global(html[data-sv-os="linux"]) .svdl-caveat--linux,
-  :global(html[data-sv-os="android"]) .svdl-caveat--android { display: block; }
+  :global(html[data-sv-os="android"]) .svdl-caveat--android { display: inline; }
   /* no JS, or a computer the page can't name: point at the notes for every system */
-  :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"]):not([data-sv-os="android"]):not([data-sv-os="ios"]):not([data-sv-share])) .svdl-caveat--any { display: block; }
+  :global(html:not([data-sv-os="windows"]):not([data-sv-os="mac"]):not([data-sv-os="linux"]):not([data-sv-os="android"]):not([data-sv-os="ios"]):not([data-sv-share]):not([data-sv-cros])) .svdl-caveat--any { display: inline; }
+  /* a Chromebook: no build for it, so say so instead */
+  :global(html[data-sv-cros]) .svdl-caveat--cros { display: inline; }
   @media (pointer: coarse) {
-    .svdl-caveat a { display: inline-block; padding: 0.55rem 0.15rem; margin: -0.55rem 0; }
+    .svdl-caveats a { display: inline-block; padding: 0.55rem 0.15rem; margin: -0.55rem 0; }
   }
 
   .svdl-others {
