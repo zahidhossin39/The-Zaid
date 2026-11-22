@@ -11,18 +11,10 @@
       <p class="sv-eyebrow">Try it here</p>
       <h2 class="h2" id="svd-title">Hold. Speak. <em>Let go.</em></h2>
       <p class="svd-lead">
-        In the app you hold <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Space</kbd>, say what you want to write,
-        and let go. The text appears where your cursor is, in any app.
-        Tap the keys twice to keep it listening hands-free, and <kbd>Esc</kbd> cancels.
+        Hold <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Space</kbd>, talk, let go: the text lands at your cursor.
+        Tap twice for hands-free. <kbd>Esc</kbd> cancels.
       </p>
-      <p class="svd-lead svd-lead--muted">
-        This page can't hear you, so it fills in a sample line instead. Press and hold the keys to see how it feels.
-      </p>
-      <ol class="svd-steps" aria-hidden="true">
-        <li data-step="hold"><span>01</span> Hold the keys</li>
-        <li data-step="speak"><span>02</span> Speak</li>
-        <li data-step="let"><span>03</span> Let go, the text is typed</li>
-      </ol>
+      <p class="svd-lead svd-lead--muted svd-js-only">This page can't hear you, so it types a sample line. Hold the keys to try it.</p>
     </div>
 
     <div class="svd-stage">
@@ -35,6 +27,8 @@
         <div class="svd-doc">
           <p class="svd-doc-h">Friday</p>
           <div class="svd-text"><span class="svd-typed"></span><span class="svd-caret"></span></div>
+          <!-- JS off: show the finished result instead of an empty note -->
+          <p class="svd-text svd-nojs">Hi Maya, thanks for the photos. Friday at ten works for me, and I'll bring the signed copy.</p>
         </div>
 
         <div class="svd-overlay" data-state="idle">
@@ -45,7 +39,7 @@
         </div>
       </div>
 
-      <button class="svd-hold" type="button" aria-label="Try dictation: hold Ctrl + Shift + Space" aria-describedby="svd-hint">
+      <button class="svd-hold svd-js-only" type="button" aria-label="Try dictation: hold Ctrl + Shift + Space" aria-describedby="svd-hint">
         <span class="key">Ctrl</span>
         <span class="plus" aria-hidden="true">+</span>
         <span class="key">Shift</span>
@@ -53,16 +47,17 @@
         <span class="key key--space">Space</span>
         <span class="svd-ring" aria-hidden="true"></span>
       </button>
-      <p class="svd-hint" id="svd-hint">Press and hold</p>
+      <p class="svd-hint svd-js-only" id="svd-hint">Press and hold</p>
       <p class="sr-only" aria-live="polite" data-svd-announce></p>
     </div>
   </div>
 </section>
 
 <style>
-  .svd { position: relative; padding: clamp(6rem, 12vw, 10rem) 1.25rem; }
+  /* vertical rhythm and side gutter come from the page (silent-voice.astro) */
+  .svd { position: relative; }
   .svd-inner {
-    max-width: 76rem;
+    max-width: var(--sv-max);
     margin: 0 auto;
     display: grid;
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
@@ -71,8 +66,13 @@
   }
   .svd-copy .h2 { margin: 0.9rem 0 1.4rem; font-size: clamp(2.6rem, 6vw, 4.5rem); line-height: 1; }
   .svd-copy em { color: var(--sv-orange); }
-  .svd-lead { color: var(--color-text); max-width: 30rem; margin: 0 0 1rem; }
-  .svd-lead--muted { color: var(--color-muted); font-size: 0.95rem; }
+  .svd-lead { color: var(--color-text); max-width: 28rem; margin: 0 0 1rem; line-height: 1.7; }
+  .svd-lead--muted { color: var(--color-muted); font-size: 0.95rem; line-height: 1.6; }
+  /* without JS the keys can't do anything: hide them, show a finished note */
+  .svd-nojs { display: none; margin: 0; }
+  :global(html:not(.js)) .svd .svd-js-only { display: none; }
+  :global(html:not(.js)) .svd .svd-nojs { display: block; }
+  :global(html:not(.js)) .svd .svd-text:has(.svd-typed) { display: none; }
   kbd {
     display: inline-block;
     padding: 0.05rem 0.45rem;
@@ -83,22 +83,6 @@
     font-size: 0.8em;
     background: rgba(244, 242, 237, 0.05);
   }
-
-  .svd-steps { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: 0.5rem; }
-  .svd-steps li {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    padding: 0.7rem 1rem;
-    border-radius: 12px;
-    border: 1px solid var(--sv-line);
-    color: var(--color-muted);
-    font-size: 0.95rem;
-    transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
-  }
-  .svd-steps li span { font-family: var(--font-mono); font-size: 0.72rem; color: rgba(244, 242, 237, 0.4); transition: color 0.3s ease; }
-  .svd-steps li.on { color: var(--color-text); border-color: rgba(249, 115, 22, 0.5); background: rgba(249, 115, 22, 0.07); transform: translateX(6px); }
-  .svd-steps li.on span { color: var(--sv-orange); }
 
   /* ---- stage ---- */
   .svd-stage { display: flex; flex-direction: column; align-items: center; gap: 1.4rem; }
@@ -261,10 +245,9 @@
 
   @media (max-width: 900px) {
     .svd-inner { grid-template-columns: minmax(0, 1fr); }
-    .svd-steps { display: none; }
   }
   @media (max-width: 520px) {
-    .svd-doc { min-height: 18rem; padding-bottom: 5.5rem; }
+    .svd-doc { min-height: 15rem; padding-bottom: 5rem; }
     .svd-hold { gap: 0.35rem; padding: 0.6rem; }
     .key { min-width: 0; height: 3.1rem; padding: 0 0.7rem; font-size: 0.75rem; }
     .key--space { min-width: 6.5rem; }
@@ -281,7 +264,6 @@
   const typed = section.querySelector<HTMLElement>(".svd-typed")!;
   const hint = section.querySelector<HTMLElement>(".svd-hint")!;
   const announce = section.querySelector<HTMLElement>("[data-svd-announce]")!;
-  const steps = [...section.querySelectorAll<HTMLElement>(".svd-steps li")];
   const win = section.querySelector<HTMLElement>(".svd-window")!;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -294,8 +276,6 @@
   let next = 0;
   let state: "idle" | "rec" | "busy" = "idle";
   let started = 0, raf = 0, used = false, autoplayed = false;
-
-  const setStep = (k: string | null) => steps.forEach((s) => s.classList.toggle("on", s.dataset.step === k));
 
   const animateBars = () => {
     const t = performance.now() / 1000;
@@ -318,7 +298,6 @@
     overlay.dataset.state = "rec";
     hint.classList.remove("warn");
     hint.textContent = "Listening. Let go when you're done";
-    setStep("speak");
     raf = requestAnimationFrame(animateBars);
   };
 
@@ -332,7 +311,6 @@
     state = "busy";
     overlay.dataset.state = "busy";
     hint.textContent = quick ? "In the app you hold the keys while you talk" : "Turning speech into text";
-    setStep("let");
     setTimeout(type, still ? 50 : 650);
   };
 
@@ -363,7 +341,6 @@
     announce.textContent = `Typed: ${line}`;
     state = "idle";
     hint.textContent = used ? "Hold again for another line" : "Press and hold";
-    setTimeout(() => setStep(null), 1400);
   };
 
   // pointer: hold anywhere on the keys
@@ -418,13 +395,9 @@
       io.disconnect();
       setTimeout(() => {
         if (used || state !== "idle") return;
-        setStep("hold");
-        setTimeout(() => {
-          if (used || state !== "idle") return;
-          start(false);
-          setTimeout(() => { if (!used) stop(); }, 1700);
-        }, 500);
-      }, 700);
+        start(false);
+        setTimeout(() => { if (!used) stop(); }, 1700);
+      }, 1000);
     }, { threshold: 0.55 }).observe(win);
   }
 

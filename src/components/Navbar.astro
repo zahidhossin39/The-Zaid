@@ -10,7 +10,14 @@ const at = (hash: string) => (home ? hash : `/${hash}`);
 
 <header class:list={["navbar", { "navbar--app": variant === "app" }]}>
   <div class="navbar-inner">
-    <a href={home ? "#" : "/"} class="logo">Zaid Hossain</a>
+    {variant === "app" ? (
+      <p class="nav-brand">
+        <a href="/" class="logo">Zaid Hossain</a>
+        <span class="nav-crumb"><span class="nav-crumb-sep" aria-hidden="true">/</span> Silent Voice</span>
+      </p>
+    ) : (
+      <a href={home ? "#" : "/"} class="logo">Zaid Hossain</a>
+    )}
     {variant === "app" ? (
       <nav class="nav-links">
         <a href="#notetaker" class="nav-link nav-extra">Notetaker</a>
@@ -59,6 +66,24 @@ const at = (hash: string) => (home ? hash : `/${hash}`);
     border-bottom-color: rgba(244, 242, 237, 0.08);
   }
   .navbar--app.is-solid .nav-cta { color: #f97316; }
+  /* line the bar up with the page's content container */
+  .navbar--app .navbar-inner {
+    max-width: calc(var(--sv-max, 76rem) + 2 * var(--sv-gutter, 2rem));
+    padding: 0 var(--sv-gutter, 2rem);
+  }
+  /* "Zaid Hossain / Silent Voice": whose site, and which product */
+  .nav-brand { display: flex; align-items: center; gap: 0.5rem; margin: 0; min-width: 0; }
+  .nav-crumb {
+    font-family: var(--font-display, serif);
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: #ffffff;
+  }
+  .nav-crumb-sep { margin-right: 0.35rem; opacity: 0.4; font-family: "Inter Tight", system-ui, sans-serif; font-size: 1rem; }
+  @media (max-width: 419px) {
+    .nav-crumb { display: none; }
+  }
 
   .navbar-inner {
     max-width: 76rem;
@@ -133,11 +158,13 @@ const at = (hash: string) => (home ? hash : `/${hash}`);
     /* Headroom: fade out everything except the "Book a call" pill. Hidden
        items can't be clicked or focused (visibility flips after the fade). */
     .logo,
+    .nav-crumb,
     .nav-link:not(.nav-cta) {
       transition: opacity 0.3s ease, visibility 0s;
     }
 
     .navbar.is-hidden .logo,
+    .navbar.is-hidden .nav-crumb,
     .navbar.is-hidden .nav-link:not(.nav-cta) {
       opacity: 0;
       visibility: hidden;
