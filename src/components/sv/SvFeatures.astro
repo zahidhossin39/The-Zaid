@@ -1,10 +1,9 @@
 ---
 // Feature bento (v0.2.0). Every card shows its feature working instead of
 // describing it. Base markup is the finished frame; scripts only add motion.
-// Four full cards (any app, writing styles, your words, Model Store), one
-// compact card with three smaller tools, and a slim open-source strip.
-import { siGithub } from "simple-icons";
-import { REPO } from "../../scripts/sv-release";
+// Four full cards (any app, writing styles, your words, Model Store) and one
+// compact card with three smaller tools. (The open-source line lives in the
+// download section and the footer, so it isn't repeated here.)
 
 // 1. any app: one pasted line per app
 const apps = [
@@ -14,18 +13,19 @@ const apps = [
   { id: "code", tab: "Code", title: "cart.ts", meta: "", text: "// add up the prices and skip anything that's out of stock" },
 ];
 
-// 2. writing styles: the app's own preview sample, run through all nine
-// built-in styles, in the app's order (src/services/modes.ts)
+// 2. writing styles: the app's own preview sample, run through eight of the
+// nine built-in styles, in the app's order (src/services/modes.ts). The ninth,
+// "Whisper Flow Style", reads like jargon here and comes out like Clean Up, so
+// it is left to "plus more".
 const sample = "um so i think we should like push the release to friday you know cause the uh login thing is still broken";
 const styles = [
   { id: "raw", label: "Raw Transcription", ai: false, text: "So I think we should like push the release to Friday, you know, cause the login thing is still broken." },
   { id: "clean", label: "Clean Up", ai: true, text: "So I think we should push the release to Friday, because the login thing is still broken." },
-  { id: "flow", label: "Whisper Flow Style", ai: true, text: "I think we should push the release to Friday, because the login thing is still broken." },
   { id: "formal", label: "Formal", ai: true, text: "I recommend moving the release to Friday, as the login issue has not been resolved yet." },
   { id: "casual", label: "Casual", ai: true, text: "Let's push the release to Friday. The login thing is still broken." },
   { id: "email", label: "Email", ai: true, text: "Hi team,\nI think we should move the release to Friday, since the login issue is still broken.\nThanks" },
   { id: "summary", label: "Summary", ai: true, text: "• Push the release to Friday\n• Login is still broken" },
-  { id: "translate", label: "Translate", ai: true, text: "Creo que deberíamos pasar el lanzamiento al viernes, porque el inicio de sesión sigue fallando." },
+  { id: "translate", label: "Translate (Spanish)", ai: true, text: "Creo que deberíamos pasar el lanzamiento al viernes, porque el inicio de sesión sigue fallando." },
   { id: "code", label: "Code Comment", ai: true, text: "// Release moved to Friday: login is still broken." },
 ];
 const startStyle = 1;
@@ -65,8 +65,8 @@ const segs: Seg[] = [
 const cats = [
   { id: "words", label: "Your words" },
   { id: "short", label: "Shortcuts" },
-  { id: "format", label: "Spoken formatting" },
-  { id: "filler", label: "Fillers removed" },
+  { id: "format", label: "Formatting" },
+  { id: "filler", label: "Fillers dropped" },
 ];
 
 // progress: 12 weeks of example activity (seeded, so it never changes)
@@ -90,24 +90,23 @@ for (let i = days.length - 1; i >= 0 && days[i] > 0; i--) streak++;
 const savedMin = Math.round(totalWords / 40 - totalWords / 150); // typing at 40 wpm vs speaking at ~150
 const saved = savedMin % 60 ? `${Math.floor(savedMin / 60)} h ${savedMin % 60} min` : `${savedMin / 60} hours`;
 const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-const clone = `git clone https://github.com/${REPO}`;
 ---
 
 <section class="svf" id="features" aria-labelledby="svf-title">
   <div class="svf-head">
-    <p class="sv-eyebrow">What it does</p>
-    <h2 class="h2" id="svf-title">Dictation that works in <em>every app.</em></h2>
-    <p class="svf-lead">The text lands where your cursor is. The tools around it run on your computer by default.</p>
+    <div class="svf-head-t">
+      <p class="sv-eyebrow">What it does</p>
+      <h2 class="h2" id="svf-title">The tools around <em>the words.</em></h2>
+    </div>
+    <p class="svf-lead">Styles that reshape what you said, your own words, a model picked for your PC and a few small helpers. All on your computer by default.</p>
   </div>
 
   <div class="bento">
     <!-- 1. any app ---------------------------------------------------------->
     <article class="card card--apps">
       <div class="card-copy">
-        <p class="card-tag">Dictation</p>
-        <h3>If you can type there, you can talk there</h3>
-        <p>Email, documents, chat, even your code editor. Pick one to see a line dictated into it.</p>
+        <h3>Works in any app</h3>
+        <p>If you can type there, you can talk there. Pick one.</p>
       </div>
       <div class="apps" data-apps>
         <div class="apps-bar">
@@ -157,9 +156,8 @@ const clone = `git clone https://github.com/${REPO}`;
     <!-- 2. writing styles ---------------------------------------------------->
     <article class="card card--styles">
       <div class="card-copy">
-        <p class="card-tag">Writing styles</p>
         <h3>Say it once, shape it after</h3>
-        <p>All nine built-in styles, each one editable, plus your own. A local AI rewrites it on your computer, or a cloud model with your own key.</p>
+        <p>A local AI rewrites it for the job, or a cloud model with your key.</p>
       </div>
       <div class="styles" data-styles>
         <div class="styles-chips" role="radiogroup" aria-label="Writing style">
@@ -168,11 +166,12 @@ const clone = `git clone https://github.com/${REPO}`;
               {s.label}{i === 0 && <span class="style-def"> (default)</span>}
             </button>
           ))}
+          <span class="styles-more">plus more, and your own</span>
         </div>
         <div class="styles-box">
           <p class="styles-said"><span class="styles-k">You said</span>{sample.split(" ").map((w, i) => <Fragment>{i > 0 && " "}{["um", "uh"].includes(w) ? <s>{w}</s> : w}</Fragment>)}</p>
           <div class="styles-outwrap">
-            <span class="styles-k"><span data-styles-badge>Local AI</span> · pasted</span>
+            <span class="styles-k"><span data-styles-name>{styles[startStyle].label}</span> · <span data-styles-badge>Local AI</span></span>
             <p class="styles-out" aria-live="polite">{styles[startStyle].text}</p>
           </div>
         </div>
@@ -182,7 +181,6 @@ const clone = `git clone https://github.com/${REPO}`;
     <!-- 3. your words + spoken formatting ------------------------------------>
     <article class="card card--words">
       <div class="card-copy">
-        <p class="card-tag">Words and Shortcuts</p>
         <h3>Gets your words right</h3>
         <p>Teach it names and jargon. Say “my email” and it types your address. Numbers and web addresses come out formatted.</p>
       </div>
@@ -207,7 +205,6 @@ const clone = `git clone https://github.com/${REPO}`;
     <!-- 4. Model Store -------------------------------------------------------->
     <article class="card card--models">
       <div class="card-copy">
-        <p class="card-tag">Model Store</p>
         <h3>Picks a model that fits your computer</h3>
         <p>22 voice models, grouped by how well they run on your PC, with one picked for you.</p>
       </div>
@@ -241,7 +238,7 @@ const clone = `git clone https://github.com/${REPO}`;
             </section>
           ))}
         </div>
-        <p class="ms-read" data-ms-read>The app reads your processor, memory and graphics card. This preview shows a typical laptop.</p>
+        <p class="ms-read" data-ms-read>The app reads your processor, memory and graphics card. This shows a typical laptop.</p>
       </div>
     </article>
 
@@ -249,7 +246,6 @@ const clone = `git clone https://github.com/${REPO}`;
     <div class="card card--more">
       <!-- proofreading -->
       <article class="mini mini--proof">
-        <p class="card-tag">Writing help</p>
         <h3>Catches typos where you type</h3>
         <p>Red for spelling, blue for grammar, in the apps you write in. Optional, English only, and it skips code editors.</p>
         <div class="proof-wrap">
@@ -265,7 +261,6 @@ const clone = `git clone https://github.com/${REPO}`;
 
       <!-- read aloud -->
       <article class="mini mini--read">
-        <p class="card-tag">Read aloud</p>
         <h3>Reads text out loud</h3>
         <p>The other direction. Natural voices from Piper and Kokoro, downloaded once, running on your computer.</p>
         <div class="read" data-read>
@@ -284,7 +279,6 @@ const clone = `git clone https://github.com/${REPO}`;
 
       <!-- progress -->
       <article class="mini mini--progress">
-        <p class="card-tag">Progress</p>
         <h3>Watch the minutes add up</h3>
         <p>Time saved against typing, speaking speed, streaks and your last 12 weeks, worked out on your computer.</p>
         <div class="pg" data-pg>
@@ -308,18 +302,6 @@ const clone = `git clone https://github.com/${REPO}`;
       </article>
     </div>
 
-    <!-- 6. open source strip --------------------------------------------------->
-    <div class="card card--oss">
-      <p class="oss-t">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d={siGithub.path} /></svg>
-        <span><strong>Free and open source.</strong> MIT licensed, every line on GitHub.</span>
-      </p>
-      <div class="term">
-        <code><span class="term-p" aria-hidden="true">$ </span>{clone}</code>
-        <button type="button" class="term-copy" data-copy={clone} aria-label="Copy the git clone command">Copy</button>
-      </div>
-      <a class="oss-link" href={`https://github.com/${REPO}`} target="_blank" rel="noopener noreferrer">View the code<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
-    </div>
   </div>
 </section>
 
@@ -329,15 +311,16 @@ const clone = `git clone https://github.com/${REPO}`;
     --c-words: #fb923c;
     --c-short: #2dd4bf;
     --c-format: #38bdf8;
-    /* page container: 76rem of content plus a 1.25rem gutter */
-    max-width: calc(76rem + 2.5rem);
+    /* the page container: --sv-max of content inside the --sv-gutter */
+    max-width: calc(var(--sv-max) + 2 * var(--sv-gutter));
     margin: 0 auto;
-    padding: clamp(6rem, 12vw, 10rem) 1.25rem;
+    /* padding comes from the page (--sv-space / --sv-gutter) */
   }
-  .svf-head { text-align: center; margin-bottom: clamp(2rem, 4vw, 2.5rem); }
+  /* heading left, lead beside it on wide screens: same left edge as every section */
+  .svf-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); align-items: end; gap: 1rem 3rem; margin-bottom: clamp(1.75rem, 3.4vw, 2.5rem); }
   .svf-head .h2 { margin: 0.9rem 0 0; font-size: clamp(2.3rem, 5.2vw, 4rem); line-height: 1.04; letter-spacing: -0.03em; text-wrap: balance; }
   .svf-head em { color: var(--sv-orange); }
-  .svf-lead { margin: 1rem auto 0; max-width: 44rem; color: var(--color-muted); font-size: 1.05rem; line-height: 1.55; text-wrap: balance; }
+  .svf-lead { margin: 0; max-width: 40rem; color: var(--color-muted); font-size: 1.05rem; line-height: 1.55; text-wrap: pretty; }
 
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
@@ -350,7 +333,7 @@ const clone = `git clone https://github.com/${REPO}`;
     display: flex;
     flex-direction: column;
     gap: 1.1rem;
-    padding: clamp(1.2rem, 2vw, 1.6rem);
+    padding: clamp(1.2rem, 2vw, 1.45rem);
     border-radius: 22px;
     background: rgba(17, 17, 20, 0.8);
     overflow: hidden;
@@ -377,7 +360,6 @@ const clone = `git clone https://github.com/${REPO}`;
     background: radial-gradient(500px circle at var(--mx) var(--my), rgba(249, 115, 22, 0.07), transparent 50%);
     pointer-events: none;
   }
-  .card-tag { margin: 0 0 0.6rem !important; font-family: var(--font-mono); font-size: 0.68rem !important; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sv-orange) !important; }
   .card h3 { margin: 0 0 0.4rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; text-wrap: balance; }
   .card p { margin: 0; color: var(--color-muted); font-size: 0.93rem; line-height: 1.5; }
   .card-copy p:last-child { max-width: 42rem; }
@@ -389,7 +371,6 @@ const clone = `git clone https://github.com/${REPO}`;
   .card--words { grid-column: span 5; }
   .card--models { grid-column: span 7; }
   .card--more { grid-column: span 12; }
-  .card--oss { grid-column: span 12; }
 
   /* shared bits */
   .dots { display: flex; gap: 5px; }
@@ -409,6 +390,12 @@ const clone = `git clone https://github.com/${REPO}`;
   .apps-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
   .apps-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
   :global(html:not(.js)) .apps-tabs { visibility: hidden; }
+  :global(html:not(.js)) .styles-chips,
+  :global(html:not(.js)) .words-legend,
+  :global(html:not(.js)) .ms-pick,
+  :global(html:not(.js)) .proof-foot,
+  :global(html:not(.js)) .read-row { display: none; }
+  :global(html:not(.js)) .typo { pointer-events: none; }
   .apps-tab, .apps-pause {
     min-height: 40px;
     padding: 0.35rem 0.95rem;
@@ -430,8 +417,10 @@ const clone = `git clone https://github.com/${REPO}`;
 
   .apps-screen {
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     flex: 1;
-    min-height: 14rem;
+    min-height: 12rem;
     border-radius: 14px;
     background: #0b0e14;
     border: 1px solid #262c3d;
@@ -439,8 +428,7 @@ const clone = `git clone https://github.com/${REPO}`;
     font-family: var(--app-font);
   }
   .apps-pane {
-    position: absolute;
-    inset: 0;
+    grid-area: 1 / 1;
     display: flex;
     flex-direction: column;
     opacity: 0;
@@ -451,7 +439,8 @@ const clone = `git clone https://github.com/${REPO}`;
   .apps-pane.on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
   .apps-pane:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: -2px; border-radius: 14px; }
   .win-bar { display: flex; align-items: center; gap: 0.8rem; padding: 0.55rem 0.9rem; border-bottom: 1px solid #1b2030; background: #131722; font-size: 0.75rem; color: #8b93a7; }
-  .win-body { padding: 1.1rem 1.3rem 3.4rem; }
+  /* bottom padding = the pill (28px) + its 0.9rem offset + 12px of air */
+  .win-body { padding: 1.1rem 1.3rem calc(28px + 0.9rem + 12px); }
   .apps-meta { font-size: 0.8rem !important; color: #8b93a7 !important; padding-bottom: 0.7rem; margin-bottom: 0.9rem !important; border-bottom: 1px solid #1b2030; }
   .apps-doc { font-size: 1.3rem !important; font-weight: 600; color: #e6e9f0 !important; margin-bottom: 0.7rem !important; letter-spacing: -0.01em; }
   .apps-line { color: #e6e9f0 !important; font-size: 1rem !important; line-height: 1.55 !important; min-height: 1.6em; }
@@ -478,6 +467,7 @@ const clone = `git clone https://github.com/${REPO}`;
   /* the real recording pill, scaled up: idle line, bars, processing, check */
   .apps-pill {
     position: absolute;
+    z-index: 1;
     left: 50%;
     bottom: 0.9rem;
     translate: -50% 0;
@@ -534,8 +524,9 @@ const clone = `git clone https://github.com/${REPO}`;
   .style:hover { color: var(--color-text); border-color: rgba(249, 115, 22, 0.5); }
   .style[aria-checked="true"] { background: var(--sv-orange); border-color: var(--sv-orange); color: #1a1200; font-weight: 600; }
   .style-def { opacity: 0.75; font-weight: 400; }
+  .styles-more { display: inline-flex; align-items: center; min-height: 36px; padding: 0 0.3rem; font-size: 0.8rem; color: var(--color-muted); }
   .styles-box { flex: 1; display: flex; flex-direction: column; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.07); overflow: hidden; }
-  .styles-k { display: block; margin-bottom: 0.35rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
+  .styles-k { display: block; margin-bottom: 0.3rem; font-family: var(--font-sans); font-size: 0.75rem; color: var(--color-muted); }
   .styles-said { padding: 0.8rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.78rem !important; line-height: 1.55 !important; }
   .styles-said s { color: rgba(244, 242, 237, 0.4); text-decoration-color: rgba(249, 115, 22, 0.8); }
   .styles-outwrap { flex: 1; padding: 0.8rem 1rem 1rem; min-height: 6.5rem; }
@@ -545,7 +536,7 @@ const clone = `git clone https://github.com/${REPO}`;
   /* ---- 3. words ---- */
   .words { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; }
   .words-lines { flex: 1; display: flex; flex-direction: column; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.07); }
-  .words-k { display: block; margin-bottom: 0.35rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
+  .words-k { display: block; margin-bottom: 0.3rem; font-family: var(--font-sans); font-size: 0.75rem; color: var(--color-muted); }
   .words-said { padding: 0.8rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.78rem !important; line-height: 1.7 !important; color: rgba(244, 242, 237, 0.62) !important; }
   .words-said .seg[data-cat] { color: var(--c); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--c) 55%, transparent); text-underline-offset: 3px; }
   .words-said .c-filler { --c: rgba(244, 242, 237, 0.5); text-decoration: line-through !important; }
@@ -562,13 +553,13 @@ const clone = `git clone https://github.com/${REPO}`;
   .words[data-focus="short"] .seg.c-short,
   .words[data-focus="format"] .seg.c-format,
   .words[data-focus="filler"] .seg.c-filler { opacity: 1; }
-  .words-legend { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .words-legend { display: flex; flex-wrap: wrap; gap: 0.35rem; }
   .wl {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.4rem;
     min-height: 36px;
-    padding: 0.3rem 0.75rem;
+    padding: 0.3rem 0.6rem;
     border-radius: 999px;
     border: 1px solid var(--sv-line);
     background: transparent;
@@ -599,7 +590,7 @@ const clone = `git clone https://github.com/${REPO}`;
   }
   .ms-btn:hover { color: var(--color-text); border-color: rgba(244, 242, 237, 0.25); }
   .ms-btn[aria-pressed="true"] { background: var(--color-text); color: #0a0a0b; border-color: var(--color-text); }
-  .ms-app { display: grid; gap: 0.2rem; padding: 0.8rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); color: #e6e9f0; }
+  .ms-app { display: grid; gap: 0.2rem; padding: 0.65rem 0.8rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); color: #e6e9f0; }
   .ms-group + .ms-group { margin-top: 0.35rem; }
   .ms-h { display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.35rem; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.02em; color: #8b93a7; }
   .ms-group[data-group="well"] .ms-h { color: #4ade80; }
@@ -607,7 +598,7 @@ const clone = `git clone https://github.com/${REPO}`;
   .ms-group[data-group="heavy"] .ms-h { color: #f87171; }
   .ms-n { display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; padding: 0 0.3rem; border-radius: 999px; background: #1b2030; color: #8b93a7; font-size: 0.68rem; font-variant-numeric: tabular-nums; }
   .ms-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
-  .ms-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 12px; background: #131722; border: 1px solid #262c3d; }
+  .ms-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 0.75rem; padding: 0.22rem 0.75rem; border-radius: 12px; background: #131722; border: 1px solid #262c3d; }
   .ms-group[data-group="heavy"] .ms-row { opacity: 0.6; }
   .ms-logo { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #1b2030; }
   .ms-logo svg { width: 15px; height: 15px; fill: none; stroke: #8b93a7; stroke-width: 1.8; stroke-linecap: round; }
@@ -626,11 +617,11 @@ const clone = `git clone https://github.com/${REPO}`;
 
   /* ---- 5. the compact card: three smaller tools side by side ---- */
   .card--more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 0; }
-  .mini { display: flex; flex-direction: column; padding: clamp(1.2rem, 2vw, 1.6rem); min-width: 0; }
+  .mini { display: flex; flex-direction: column; padding: clamp(1.2rem, 2vw, 1.45rem); min-width: 0; }
   .mini + .mini { border-left: 1px solid var(--sv-line); }
   .mini h3 { font-size: 1.08rem; }
-  .mini > p:not(.card-tag) { font-size: 0.86rem; }
-  .mini > :last-child { margin-top: auto; padding-top: 1rem; }
+  .mini > p { font-size: 0.86rem; }
+  .mini > :last-child { margin-top: auto; padding-top: 0.75rem; }
 
   /* proofreading */
   .proof-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -712,8 +703,8 @@ const clone = `git clone https://github.com/${REPO}`;
   .pg-big b { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.7rem, 2.3vw, 2rem); line-height: 1; color: var(--sv-orange); letter-spacing: -0.02em; }
   .pg-big span { max-width: 7.5rem; margin-top: 0.3rem; }
   .pg-map { padding: 0.8rem 0.9rem 0.7rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); }
-  .pg-k { display: block; margin-bottom: 0.5rem; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: #8b93a7; }
-  .pg-grid { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 3px; max-width: 14rem; }
+  .pg-k { display: block; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #8b93a7; }
+  .pg-grid { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 3px; max-width: 11.5rem; }
   .pg-grid i { aspect-ratio: 1; border-radius: 2px; }
   .l0 { background: rgba(38, 44, 61, 0.6); }
   .l1 { background: rgba(249, 115, 22, 0.25); }
@@ -722,7 +713,7 @@ const clone = `git clone https://github.com/${REPO}`;
   .l4 { background: #f97316; }
   .pg-grid i.today { box-shadow: 0 0 0 1.5px #0b0e14, 0 0 0 3px rgba(249, 115, 22, 0.9); }
   .pg-grid i:hover { outline: 1.5px solid #e6e9f0; outline-offset: 1px; }
-  .pg-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.3rem 0.6rem; margin-top: 0.6rem; font-size: 0.66rem; color: #8b93a7; }
+  .pg-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.3rem 0.6rem; margin-top: 0.6rem; font-size: 0.75rem; color: #8b93a7; }
   .pg-readout { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pg-legend { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
   .pg-legend i { width: 9px; height: 9px; border-radius: 2px; }
@@ -731,36 +722,9 @@ const clone = `git clone https://github.com/${REPO}`;
   }
   @keyframes today { 50% { box-shadow: 0 0 0 1.5px #0b0e14, 0 0 0 5px rgba(249, 115, 22, 0.35); } }
 
-  /* ---- 6. open-source strip ---- */
-  .card--oss { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.4rem; padding-block: 0.9rem; }
-  .oss-t { display: flex; align-items: center; gap: 0.75rem; flex: 1 1 18rem; color: var(--color-muted) !important; font-size: 0.93rem !important; }
-  .oss-t strong { color: var(--color-text); font-weight: 600; }
-  .oss-t svg { flex: none; width: 1.3rem; height: 1.3rem; fill: var(--color-text); }
-  .term { display: flex; align-items: center; gap: 0.6rem; flex: 0 1 auto; min-width: 0; padding: 0.25rem 0.3rem 0.25rem 0.9rem; border-radius: 12px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.08); }
-  .term code { min-width: 0; font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text); overflow-wrap: anywhere; }
-  .term-p { color: var(--sv-orange); }
-  .term-copy { flex: none; min-height: 36px; padding: 0 0.85rem; border-radius: 8px; border: 1px solid var(--sv-line); background: rgba(244, 242, 237, 0.04); color: var(--color-text); font-size: 0.8rem !important; cursor: pointer; }
-  .term-copy:hover { border-color: var(--sv-orange); }
-  .term-copy.ok { color: #4ade80; border-color: #4ade80; }
-  .oss-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    padding: 0 1.1rem;
-    border-radius: 999px;
-    border: 1px solid rgba(244, 242, 237, 0.25);
-    color: var(--color-text);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    white-space: nowrap;
-    transition: background 0.25s ease, color 0.25s ease;
-  }
-  .oss-link:hover { background: var(--color-text); color: #0a0a0b; }
-
   /* touch: every control is at least 44px tall */
   @media (pointer: coarse) {
-    .apps-tab, .apps-pause, .style, .wl, .ms-btn, .proof-reset, .term-copy { min-height: 44px; }
+    .apps-tab, .apps-pause, .style, .wl, .ms-btn, .proof-reset { min-height: 44px; }
     .apps-pause { min-width: 44px; }
   }
 
@@ -769,12 +733,11 @@ const clone = `git clone https://github.com/${REPO}`;
 
   @media (max-width: 1100px) {
     .ms-name { flex-direction: column; align-items: stretch; gap: 0; }
-    .term { order: 3; flex: 1 1 100%; justify-content: space-between; }
   }
   @media (max-width: 1000px) {
+    .svf-head { grid-template-columns: minmax(0, 1fr); }
     .card--apps, .card--styles { grid-column: span 12; }
     .card--words, .card--models { grid-column: span 6; }
-    .apps-screen { min-height: 13rem; }
   }
   @media (max-width: 860px) {
     .bento { grid-template-columns: minmax(0, 1fr); }
@@ -784,7 +747,6 @@ const clone = `git clone https://github.com/${REPO}`;
     .mini > :last-child { margin-top: 0; }
   }
   @media (max-width: 680px) {
-    .apps-screen { min-height: 15rem; }
     .apps-pause-t { display: none; }
     .apps-pause { padding-inline: 0; width: 44px; justify-content: center; }
     .apps-tab { padding-inline: 0.75rem; }
@@ -792,15 +754,11 @@ const clone = `git clone https://github.com/${REPO}`;
     .ms-badge { display: none; }
     .ms-name { flex-direction: column; align-items: stretch; gap: 0; }
     .ms-name b, .ms-name small { white-space: normal; }
-    .card--oss { flex-direction: column; align-items: stretch; padding-block: 1.2rem; }
-    .oss-t { flex: none; }
-    .oss-link { align-self: flex-start; }
   }
   @media (max-width: 420px) {
     .apps-tab { padding-inline: 0.6rem; font-size: 0.8rem !important; }
     .ms-logo { display: none; }
     .ms-row { grid-template-columns: minmax(0, 1fr) auto; }
-    .term code { font-size: 0.74rem; }
   }
 </style>
 
@@ -932,6 +890,7 @@ const clone = `git clone https://github.com/${REPO}`;
     const chips = [...box.querySelectorAll<HTMLButtonElement>(".style")];
     const out = box.querySelector<HTMLElement>(".styles-out")!;
     const badge = box.querySelector<HTMLElement>("[data-styles-badge]")!;
+    const name = box.querySelector<HTMLElement>("[data-styles-name]")!;
     const select = (c: HTMLButtonElement, focus = false) => {
       chips.forEach((x) => { const on = x === c; x.setAttribute("aria-checked", String(on)); x.tabIndex = on ? 0 : -1; });
       if (focus) c.focus();
@@ -939,6 +898,7 @@ const clone = `git clone https://github.com/${REPO}`;
         out.textContent = c.dataset.text!;
         out.classList.toggle("raw", c.dataset.ai === "0");
         badge.textContent = c.dataset.ai === "0" ? "No AI" : "Local AI";
+        name.textContent = c.firstChild?.textContent?.trim() || "";
       };
       if (!motion.matches) return swap();
       gsap.timeline()
@@ -1013,7 +973,7 @@ const clone = `git clone https://github.com/${REPO}`;
       rows.parakeet.querySelector<HTMLElement>(".ms-badge")!.hidden = !(p.cores >= 4 && !p.gpu);
       if (key === "this") {
         const mem = nav.deviceMemory ? (nav.deviceMemory >= 8 ? "8 GB or more of memory" : `about ${nav.deviceMemory} GB of memory`) : "memory it won't say";
-        read.textContent = `Your browser reports ${navigator.hardwareConcurrency || "an unknown number of"} threads and ${mem}. It can't see your graphics card, so this is a rough guess. Nothing is sent.`;
+        read.textContent = `A rough guess from what your browser reports: ${navigator.hardwareConcurrency || "an unknown number of"} threads, ${mem}. Nothing is sent.`;
       } else {
         read.textContent = key === "old" ? "An older laptop: 2 cores, 4 GB of memory, no graphics card." : "A desktop with a strong graphics card. The app turns on the graphics card by itself when it has 4 GB or more of its own memory.";
       }
@@ -1139,16 +1099,4 @@ const clone = `git clone https://github.com/${REPO}`;
     box.querySelector(".pg-grid")!.addEventListener("pointerleave", () => (readout.textContent = base));
   }
 
-  // ---- 6. copy the clone command --------------------------------------------
-  root.querySelector<HTMLButtonElement>(".term-copy")?.addEventListener("click", async (e) => {
-    const b = e.currentTarget as HTMLButtonElement;
-    try {
-      await navigator.clipboard.writeText(b.dataset.copy!);
-      b.textContent = "Copied";
-      b.classList.add("ok");
-    } catch {
-      b.textContent = "Select it";
-    }
-    setTimeout(() => { b.textContent = "Copy"; b.classList.remove("ok"); }, 1800);
-  });
 </script>

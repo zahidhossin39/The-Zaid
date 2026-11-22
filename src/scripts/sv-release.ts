@@ -186,22 +186,31 @@ export function parseChangelog(md: string, version: string, max = 5): string[] {
   return items.slice(0, max);
 }
 
-async function loadNotes(version: string) {
-  const slots = $$("[data-sv-notes]");
-  if (!slots.length) return;
+// "Recent updates" is a short list, one line per version. When CHANGELOG.md
+// has an entry for the current release, its items replace that version's
+// line (or become a new line on top, for a release newer than the page).
+async function loadNotes(version: string, published?: string) {
+  const lists = $$("[data-sv-notes]");
+  if (!lists.length) return;
   try {
     const res = await fetchWithTimeout(CHANGELOG_URL);
     if (!res.ok) return;
-    const items = parseChangelog(await res.text(), version);
-    // No entry for this version: the card keeps its static notes.
+    const items = parseChangelog(await res.text(), version, 4);
+    // No entry for this version: the list keeps its static lines.
     if (!items.length) return;
     const html = `<ul>${items.map((i) => `<li>${inline(i)}</li>`).join("")}</ul>`;
-    slots.forEach((el) => {
-      el.innerHTML = html;
-      const card = el.closest<HTMLElement>("[data-sv-notes-card]");
-      card?.removeAttribute("hidden");
-      card?.querySelectorAll("[data-sv-notes-title]").forEach((t) => (t.textContent = `What's new in v${version}`));
-      card?.setAttribute("data-sv-notes-source", "changelog");
+    lists.forEach((list) => {
+      let line = list.querySelector<HTMLElement>(`[data-sv-notes-v="${version}"]`);
+      if (!line) {
+        line = document.createElement("li");
+        line.dataset.svNotesV = version;
+        const when = published ? ` <time datetime="${esc(published.slice(0, 10))}">${esc(date(published))}</time>` : "";
+        line.innerHTML = `<span class="svx-up-v">v${esc(version)}${when}</span><div class="svx-up-text"></div>`;
+        list.insertBefore(line, list.firstChild);
+      }
+      const text = line.querySelector<HTMLElement>(".svx-up-text");
+      if (text) text.innerHTML = html;
+      list.closest<HTMLElement>("[data-sv-notes-card]")?.setAttribute("data-sv-notes-source", "changelog");
     });
   } catch { /* the static notes stay */ }
 }
@@ -218,26 +227,25 @@ function setMain(href: string, file: boolean) {
   });
 }
 
-function fillOthers(os: OS | null, d: Pick | null, apk: Asset | undefined, apkPage: string) {
+function fillOthers(os: OS | null, d: Pick | null) {
   const a = d?.assets ?? [];
   const page = d?.html_url ?? RELEASES_URL;
   const win = pick.windows(a), mac = pick.mac(a), img = pick.linux(a), deb = pick.deb(a);
   const macOthers = a.filter((x) => isDmg(x.name) && x !== mac);
-  // Mac and Linux builds are new in 0.2.0 and still early: the labels say so
-  const macLink = (x: Asset): Link => ({ label: `Mac (new, ${macArch(x.name) || x.name})`, href: x.url });
+  // Mac and Linux builds have shipped since v0.1.11 and are still early: the labels say so
+  const macLink = (x: Asset): Link => ({ label: macArch(x.name) ? `Mac (${macArch(x.name)}, early)` : "Mac (early)", href: x.url });
 
   const desk: Record<Desktop, Link[]> = {
     windows: [{ label: "Windows", href: win?.url ?? page }],
-    mac: [
-      { label: macArch(mac?.name ?? "") ? `Mac (new, ${macArch(mac!.name)})` : "Mac (new)", href: mac?.url ?? page },
-      ...macOthers.map(macLink),
-    ],
+    mac: [mac ? macLink(mac) : { label: "Mac (early)", href: page }, ...macOthers.map(macLink)],
     linux: [
-      { label: "Linux (new, .AppImage)", href: img?.url ?? page },
-      ...(deb ? [{ label: "Ubuntu / Debian (new, .deb)", href: deb.url }] : []),
+      { label: "Linux (.AppImage, early)", href: img?.url ?? page },
+      ...(deb ? [{ label: "Ubuntu / Debian (.deb, early)", href: deb.url }] : []),
     ],
   };
-  const android: Link = { label: "Android (beta)", href: apk?.url ?? apkPage };
+  // On a computer the APK is no use as a file: this goes to the Android
+  // section, where the QR code puts it on the phone.
+  const android: Link = { label: "Android (beta)", href: "#android" };
 
   let list: Link[];
   if (os === "windows") list = [...desk.mac, ...desk.linux];
@@ -248,9 +256,10 @@ function fillOthers(os: OS | null, d: Pick | null, apk: Asset | undefined, apkPa
   const all = `<li><a href="${esc(page)}" target="_blank" rel="noopener noreferrer">All files</a></li>`;
   const li = (o: Link) => `<li><a href="${esc(o.href)}">${esc(o.label)}</a></li>`;
   $$("[data-sv-others]").forEach((ul) => {
-    // data-sv-others="desktop": the section offers the APK elsewhere
-    const withApk = os !== "android" && ul.dataset.svOthers !== "desktop";
-    ul.innerHTML = [...list, ...(withApk ? [android] : [])].map(li).join("") + all;
+    // data-sv-others="desktop": the section offers the APK elsewhere.
+    // Android comes first: for someone on a computer it is the newer news.
+    const withApk = ul.dataset.svOthers !== "desktop";
+    ul.innerHTML = [...(withApk ? [android] : []), ...list].map(li).join("") + all;
   });
 }
 
@@ -264,28 +273,24 @@ function isOtherPhone(os: OS | null) {
   return os === null && (!!nav.userAgentData?.mobile || /Mobi|IEMobile|Opera Mini/i.test(navigator.userAgent));
 }
 
-function tell(a: HTMLAnchorElement, msg: string, short: string) {
-  const bar = a.querySelector<HTMLElement>("[data-sv-bar-label]");
-  if (bar) {
-    // the floating pill has no room for a sentence: its button says it
-    bar.textContent = short;
-    window.clearTimeout(Number(bar.dataset.t || 0));
-    bar.dataset.t = String(window.setTimeout(() => (bar.textContent = "Send link"), 2600));
-  }
+function tell(a: HTMLElement, msg: string) {
   const status = a.closest(".svdl")?.querySelector<HTMLElement>("[data-sv-status]");
-  if (status) {
-    status.textContent = msg;
-    window.clearTimeout(Number(status.dataset.t || 0));
-    status.dataset.t = String(window.setTimeout(() => (status.textContent = ""), 6000));
-  }
+  if (!status) return;
+  status.textContent = msg;
+  window.clearTimeout(Number(status.dataset.t || 0));
+  status.dataset.t = String(window.setTimeout(() => (status.textContent = ""), 6000));
 }
 
 async function shareLink(e: MouseEvent) {
-  const a = e.currentTarget as HTMLAnchorElement;
+  const a = e.currentTarget as HTMLElement;
   const data = { title: "Silent Voice", url: PAGE_URL };
   const canShare = typeof navigator.share === "function" && (!navigator.canShare || navigator.canShare(data));
   const canCopy = !!navigator.clipboard?.writeText;
-  if (!canShare && !canCopy) return; // the link goes to the releases page instead
+  if (!canShare && !canCopy) {
+    // the main button's link goes to the releases page instead; a plain button says where to go
+    if (a.tagName === "BUTTON") tell(a, `Open ${PAGE_URL.replace(/^https:\/\//, "")} on your computer.`);
+    return;
+  }
   e.preventDefault();
   if (canShare) {
     try {
@@ -297,9 +302,9 @@ async function shareLink(e: MouseEvent) {
   }
   try {
     await navigator.clipboard.writeText(PAGE_URL);
-    tell(a, "Link copied. Send it to yourself.", "Link copied");
+    tell(a, "Link copied. Send it to yourself.");
   } catch {
-    tell(a, `Open ${PAGE_URL.replace(/^https:\/\//, "")} on your computer.`, "Copy failed");
+    tell(a, `Open ${PAGE_URL.replace(/^https:\/\//, "")} on your computer.`);
   }
 }
 
@@ -307,8 +312,6 @@ function shareMode() {
   document.documentElement.dataset.svShare = "";
   setText("[data-sv-os-label]", "Send me the link");
   setText("[data-sv-meta]", "Open it later on your computer");
-  setText("[data-sv-bar-label]", "Send link");
-  $$("[data-sv-status]").forEach((s) => s.removeAttribute("hidden"));
   setMain(ANDROID_RELEASES_URL, false);
   $$<HTMLAnchorElement>("[data-sv-main]").forEach((a) => a.addEventListener("click", shareLink));
 }
@@ -318,6 +321,13 @@ export async function initRelease(): Promise<ReleaseState> {
   const root = document.documentElement;
   root.dataset.svOs = os ?? "unknown";
   const share = os === "ios" || isOtherPhone(os);
+  // On any phone the links under the button are "send it to my computer" and
+  // "all downloads", never installer files a phone can't run.
+  if (share || os === "android") {
+    root.dataset.svPhone = "";
+    $$("[data-sv-status]").forEach((el) => el.removeAttribute("hidden"));
+    $$<HTMLElement>("[data-sv-send]").forEach((b) => b.addEventListener("click", shareLink));
+  }
 
   // Label the buttons for the visitor's OS straight away; the link itself
   // stays on a releases page until the API answers.
@@ -381,8 +391,8 @@ export async function initRelease(): Promise<ReleaseState> {
     else setText("[data-sv-meta]", `v${version} · all files on GitHub`);
   }
 
-  if (d) fillOthers(os, d, apk, apkPage);
-  if (version) loadNotes(version);
+  if (d) fillOthers(os, d);
+  if (version) loadNotes(version, d?.published_at);
 
   root.dataset.svRelease = d && version ? "ok" : "failed";
   return { version, apkVersion, os };
