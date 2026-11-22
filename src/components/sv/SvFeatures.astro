@@ -1,6 +1,8 @@
 ---
 // Feature bento (v0.2.0). Every card shows its feature working instead of
 // describing it. Base markup is the finished frame; scripts only add motion.
+// Four full cards (any app, writing styles, your words, Model Store), one
+// compact card with three smaller tools, and a slim open-source strip.
 import { siGithub } from "simple-icons";
 import { REPO } from "../../scripts/sv-release";
 
@@ -12,11 +14,13 @@ const apps = [
   { id: "code", tab: "Code", title: "cart.ts", meta: "", text: "// add up the prices and skip anything that's out of stock" },
 ];
 
-// 2. writing styles: the app's own preview sample, run through each built-in style
+// 2. writing styles: the app's own preview sample, run through all nine
+// built-in styles, in the app's order (src/services/modes.ts)
 const sample = "um so i think we should like push the release to friday you know cause the uh login thing is still broken";
 const styles = [
   { id: "raw", label: "Raw Transcription", ai: false, text: "So I think we should like push the release to Friday, you know, cause the login thing is still broken." },
   { id: "clean", label: "Clean Up", ai: true, text: "So I think we should push the release to Friday, because the login thing is still broken." },
+  { id: "flow", label: "Whisper Flow Style", ai: true, text: "I think we should push the release to Friday, because the login thing is still broken." },
   { id: "formal", label: "Formal", ai: true, text: "I recommend moving the release to Friday, as the login issue has not been resolved yet." },
   { id: "casual", label: "Casual", ai: true, text: "Let's push the release to Friday. The login thing is still broken." },
   { id: "email", label: "Email", ai: true, text: "Hi team,\nI think we should move the release to Friday, since the login issue is still broken.\nThanks" },
@@ -26,11 +30,11 @@ const styles = [
 ];
 const startStyle = 1;
 
-// 4. read aloud
+// read aloud
 const readWords = "Select any text, press Ctrl + Alt + S, and Silent Voice reads it out loud.".split(" ");
 
-// 5. Model Store: real catalogue rows. `fit` is the frame for an average
-// 8-thread laptop with no graphics card; the script regroups for the visitor.
+// Model Store: real catalogue rows. The base frame is an average 8-thread
+// laptop with no graphics card; the script regroups for the visitor.
 const models = [
   { id: "moonshine", name: "Moonshine Base", lang: "English", by: "Useful Sensors", size: "251 MB", note: "" },
   { id: "parakeet", name: "Parakeet TDT 0.6B v2", lang: "English", by: "NVIDIA", size: "640 MB", note: "" },
@@ -44,7 +48,7 @@ const groups = [
 ];
 const byId = Object.fromEntries(models.map((m) => [m.id, m]));
 
-// 6. your words, shortcuts and spoken formatting
+// your words, shortcuts and spoken formatting
 type Seg = { say: string; type: string; cat?: "words" | "short" | "format" | "filler"; br?: boolean };
 const segs: Seg[] = [
   { say: "um", type: "", cat: "filler" },
@@ -65,7 +69,7 @@ const cats = [
   { id: "filler", label: "Fillers removed" },
 ];
 
-// 7. progress: 12 weeks of example activity (seeded, so it never changes)
+// progress: 12 weeks of example activity (seeded, so it never changes)
 let seed = 7;
 const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 const days = Array.from({ length: 84 }, (_, i) => {
@@ -93,8 +97,8 @@ const clone = `git clone https://github.com/${REPO}`;
 <section class="svf" id="features" aria-labelledby="svf-title">
   <div class="svf-head">
     <p class="sv-eyebrow">What it does</p>
-    <h2 class="h2" id="svf-title">Everything you'd type, <em>said.</em></h2>
-    <p class="svf-lead">Dictation in any app, and the tools around it. It all runs on your computer unless you add a cloud key.</p>
+    <h2 class="h2" id="svf-title">Dictation that works in <em>every app.</em></h2>
+    <p class="svf-lead">The text lands where your cursor is. The tools around it run on your computer by default.</p>
   </div>
 
   <div class="bento">
@@ -102,8 +106,8 @@ const clone = `git clone https://github.com/${REPO}`;
     <article class="card card--apps">
       <div class="card-copy">
         <p class="card-tag">Dictation</p>
-        <h3>Works in any app</h3>
-        <p>Email, documents, chat, even your code editor. If you can type there, you can talk there.</p>
+        <h3>If you can type there, you can talk there</h3>
+        <p>Email, documents, chat, even your code editor. Pick one to see a line dictated into it.</p>
       </div>
       <div class="apps" data-apps>
         <div class="apps-bar">
@@ -155,7 +159,7 @@ const clone = `git clone https://github.com/${REPO}`;
       <div class="card-copy">
         <p class="card-tag">Writing styles</p>
         <h3>Say it once, shape it after</h3>
-        <p>Nine built-in styles you can edit, plus your own. A local AI on your computer does the rewriting, or a cloud model with your own key.</p>
+        <p>All nine built-in styles, each one editable, plus your own. A local AI rewrites it on your computer, or a cloud model with your own key.</p>
       </div>
       <div class="styles" data-styles>
         <div class="styles-chips" role="radiogroup" aria-label="Writing style">
@@ -175,38 +179,17 @@ const clone = `git clone https://github.com/${REPO}`;
       </div>
     </article>
 
-    <!-- 3. proofreading ------------------------------------------------------>
-    <article class="card card--proof">
-      <div class="card-copy">
-        <p class="card-tag">Writing help</p>
-        <h3>Catches typos where you type</h3>
-        <p>Red for spelling, blue for grammar, in the apps you write in. Optional: turn it on in Settings. English only, and it skips code editors and terminals.</p>
-      </div>
-      <div class="proof-wrap">
-        <p class="proof" data-proof>
-          I{" "}<button type="button" class="typo" data-fix="received" aria-label="recieved: spelling mistake, fix it">recieved</button>{" "}the notes from{" "}<button type="button" class="typo typo--g" data-fix="their" aria-label="there: grammar mistake, fix it">there</button>{" "}meeting and will reply{" "}<button type="button" class="typo" data-fix="tomorrow" aria-label="tomorow: spelling mistake, fix it">tomorow</button>.
-        </p>
-        <div class="gi" aria-hidden="true">
-          <p class="gi-t">Grammar Insights</p>
-          <p class="gi-s" data-gi-s>This word looks misspelled</p>
-          <button type="button" class="gi-fix" tabindex="-1"><span data-gi-fix>received</span><kbd>↵</kbd></button>
-          <p class="gi-foot"><span>Add to dictionary</span><span>Dismiss</span></p>
-        </div>
-        <div class="proof-foot">
-          <span class="proof-hint">Tap a marked word to fix it.</span>
-          <button type="button" class="proof-reset" hidden>Mark them again</button>
-        </div>
-      </div>
-    </article>
-
-    <!-- 4. your words + spoken formatting ------------------------------------>
+    <!-- 3. your words + spoken formatting ------------------------------------>
     <article class="card card--words">
       <div class="card-copy">
         <p class="card-tag">Words and Shortcuts</p>
         <h3>Gets your words right</h3>
-        <p>Teach it names and jargon. Add Shortcuts: say “my email” and it types your address. Numbers and web addresses come out formatted.</p>
+        <p>Teach it names and jargon. Say “my email” and it types your address. Numbers and web addresses come out formatted.</p>
       </div>
       <div class="words" data-words>
+        <div class="words-legend" role="group" aria-label="Highlight one kind of fix">
+          {cats.map((c) => <button type="button" class:list={["wl", `c-${c.id}`]} aria-pressed="false" data-cat={c.id}><i aria-hidden="true"></i>{c.label}</button>)}
+        </div>
         <div class="words-lines">
           <p class="words-said"><span class="words-k">You say</span>
             {segs.map((s, i) => <Fragment>{i > 0 && " "}<span class:list={["seg", s.cat && `c-${s.cat}`]} data-cat={s.cat}>{s.say}</span></Fragment>)}
@@ -218,41 +201,15 @@ const clone = `git clone https://github.com/${REPO}`;
             )}
           </p>
         </div>
-        <div class="words-legend" role="group" aria-label="Highlight one kind of fix">
-          {cats.map((c) => <button type="button" class:list={["wl", `c-${c.id}`]} aria-pressed="false" data-cat={c.id}><i aria-hidden="true"></i>{c.label}</button>)}
-        </div>
       </div>
     </article>
 
-    <!-- 5. read aloud --------------------------------------------------------->
-    <article class="card card--read">
-      <div class="card-copy">
-        <p class="card-tag">Read aloud</p>
-        <h3>Reads text out loud</h3>
-        <p>The other direction. Natural voices from Piper and Kokoro, downloaded once, running on your computer.</p>
-      </div>
-      <div class="read" data-read>
-        <div class="read-doc">
-          <p class="read-text">{readWords.map((w) => <span>{w} </span>)}</p>
-        </div>
-        <div class="read-row">
-          <button type="button" class="read-play" aria-pressed="false">
-            <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" /></svg>
-            <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z" /></svg>
-            <span class="read-label">Show the example</span>
-          </button>
-          <span class="read-pill" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-        </div>
-        <p class="read-note" hidden>This uses your browser's voice. The app's voices sound more natural.</p>
-      </div>
-    </article>
-
-    <!-- 6. Model Store -------------------------------------------------------->
+    <!-- 4. Model Store -------------------------------------------------------->
     <article class="card card--models">
       <div class="card-copy">
         <p class="card-tag">Model Store</p>
         <h3>Picks a model that fits your computer</h3>
-        <p>22 voice models, grouped by how well they run on your PC. It suggests one for you and checks before a heavy download.</p>
+        <p>22 voice models, grouped by how well they run on your PC, with one picked for you.</p>
       </div>
       <div class="ms" data-ms>
         <div class="ms-pick" role="group" aria-label="Show the grouping for">
@@ -288,21 +245,55 @@ const clone = `git clone https://github.com/${REPO}`;
       </div>
     </article>
 
-    <!-- 7. progress ----------------------------------------------------------->
-    <article class="card card--progress">
-      <div class="card-copy">
+    <!-- 5. three smaller tools in one card ------------------------------------>
+    <div class="card card--more">
+      <!-- proofreading -->
+      <article class="mini mini--proof">
+        <p class="card-tag">Writing help</p>
+        <h3>Catches typos where you type</h3>
+        <p>Red for spelling, blue for grammar, in the apps you write in. Optional, English only, and it skips code editors.</p>
+        <div class="proof-wrap">
+          <p class="proof" data-proof>
+            I{" "}<button type="button" class="typo" data-fix="received" aria-label="recieved: spelling mistake, fix it">recieved</button>{" "}the notes from{" "}<button type="button" class="typo typo--g" data-fix="their" aria-label="there: grammar mistake, fix it">there</button>{" "}meeting and will reply{" "}<button type="button" class="typo" data-fix="tomorrow" aria-label="tomorow: spelling mistake, fix it">tomorow</button>.
+          </p>
+          <div class="proof-foot">
+            <span class="proof-hint">Tap a marked word to fix it.</span>
+            <button type="button" class="proof-reset" hidden>Mark them again</button>
+          </div>
+        </div>
+      </article>
+
+      <!-- read aloud -->
+      <article class="mini mini--read">
+        <p class="card-tag">Read aloud</p>
+        <h3>Reads text out loud</h3>
+        <p>The other direction. Natural voices from Piper and Kokoro, downloaded once, running on your computer.</p>
+        <div class="read" data-read>
+          <p class="read-text">{readWords.map((w) => <span>{w} </span>)}</p>
+          <div class="read-row">
+            <button type="button" class="read-play" aria-pressed="false">
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" /></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z" /></svg>
+              <span class="read-label">Show the example</span>
+            </button>
+            <span class="read-pill" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+          </div>
+          <p class="read-note" hidden>This uses your browser's voice. The app's voices sound more natural.</p>
+        </div>
+      </article>
+
+      <!-- progress -->
+      <article class="mini mini--progress">
         <p class="card-tag">Progress</p>
         <h3>Watch the minutes add up</h3>
-        <p>Time saved against typing, your speaking speed, streaks and a heatmap of the year. Worked out on your computer.</p>
-      </div>
-      <div class="pg" data-pg>
-        <div class="pg-stats">
-          <div class="pg-big"><b>{saved}</b><span>saved against typing at 40 words a minute</span></div>
-          <div><b>{streak} days</b><span>streak</span></div>
-          <div><b>{totalWords.toLocaleString("en-US")}</b><span>words</span></div>
-        </div>
-        <div class="pg-heat" aria-hidden="true">
-          <div class="pg-map">
+        <p>Time saved against typing, speaking speed, streaks and your last 12 weeks, worked out on your computer.</p>
+        <div class="pg" data-pg>
+          <div class="pg-stats">
+            <div class="pg-big"><b>{saved}</b><span>saved against typing at 40 words a minute</span></div>
+            <div class="pg-small"><b>{streak} days</b><span>streak</span></div>
+            <div class="pg-small"><b>142</b><span>words a minute</span></div>
+          </div>
+          <div class="pg-map" aria-hidden="true">
             <span class="pg-k">Last 12 weeks</span>
             <div class="pg-grid">
               {days.map((w, i) => <i class:list={[`l${level(w)}`, { today: i === days.length - 1 }]} data-w={w} data-d={dayNames[i % 7]}></i>)}
@@ -312,35 +303,23 @@ const clone = `git clone https://github.com/${REPO}`;
               <span class="pg-legend">Fewer <i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> More</span>
             </div>
           </div>
-          <div class="pg-speed">
-            <span class="pg-k">Words a minute</span>
-            <div class="pg-bar"><span>Speaking</span><b>142</b><i style="--w: 89%" data-w="89%"></i></div>
-            <div class="pg-bar pg-bar--type"><span>Typing</span><b>40</b><i style="--w: 25%" data-w="25%"></i></div>
-          </div>
+          <p class="sr-only">Example numbers: {saved} saved, a {streak}-day streak, 142 words a minute when speaking, and a map of the last 12 weeks with one square per day, darker on days with more words dictated.</p>
         </div>
-        <p class="sr-only">Example numbers: a heatmap of the last 12 weeks, one square per day, darker on days with more words dictated, and a speaking speed of 142 words a minute against 40 for typing.</p>
-      </div>
-    </article>
+      </article>
+    </div>
 
-    <!-- 8. open source -------------------------------------------------------->
-    <article class="card card--oss">
-      <div class="oss-copy">
-        <p class="card-tag">Open source</p>
-        <h3>Free and open source</h3>
-        <p>MIT licensed. Every line is on GitHub to read, check and build yourself. No trial, no paid tier, no catch.</p>
-        <a class="oss-link" href={`https://github.com/${REPO}`} target="_blank" rel="noopener noreferrer">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d={siGithub.path} /></svg>
-          View the code
-        </a>
-      </div>
+    <!-- 6. open source strip --------------------------------------------------->
+    <div class="card card--oss">
+      <p class="oss-t">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d={siGithub.path} /></svg>
+        <span><strong>Free and open source.</strong> MIT licensed, every line on GitHub.</span>
+      </p>
       <div class="term">
-        <div class="term-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span><span>Terminal</span></div>
-        <div class="term-body">
-          <code><span class="term-p" aria-hidden="true">$ </span>{clone}</code>
-          <button type="button" class="term-copy" data-copy={clone}>Copy</button>
-        </div>
+        <code><span class="term-p" aria-hidden="true">$ </span>{clone}</code>
+        <button type="button" class="term-copy" data-copy={clone} aria-label="Copy the git clone command">Copy</button>
       </div>
-    </article>
+      <a class="oss-link" href={`https://github.com/${REPO}`} target="_blank" rel="noopener noreferrer">View the code<span class="sr-only"> on GitHub (opens in a new tab)</span></a>
+    </div>
   </div>
 </section>
 
@@ -350,14 +329,15 @@ const clone = `git clone https://github.com/${REPO}`;
     --c-words: #fb923c;
     --c-short: #2dd4bf;
     --c-format: #38bdf8;
-    padding: clamp(6rem, 12vw, 10rem) 1.25rem;
-    max-width: 78rem;
+    /* page container: 76rem of content plus a 1.25rem gutter */
+    max-width: calc(76rem + 2.5rem);
     margin: 0 auto;
+    padding: clamp(6rem, 12vw, 10rem) 1.25rem;
   }
-  .svf-head { text-align: center; margin-bottom: clamp(2.5rem, 6vw, 4rem); }
-  .svf-head .h2 { margin: 0.9rem 0 0; font-size: clamp(2.4rem, 5.5vw, 4.2rem); line-height: 1.02; letter-spacing: -0.03em; }
+  .svf-head { text-align: center; margin-bottom: clamp(2rem, 4vw, 2.5rem); }
+  .svf-head .h2 { margin: 0.9rem 0 0; font-size: clamp(2.3rem, 5.2vw, 4rem); line-height: 1.04; letter-spacing: -0.03em; text-wrap: balance; }
   .svf-head em { color: var(--sv-orange); }
-  .svf-lead { margin: 1.1rem auto 0; max-width: 34rem; color: var(--color-muted); font-size: 1.05rem; line-height: 1.55; text-wrap: balance; }
+  .svf-lead { margin: 1rem auto 0; max-width: 44rem; color: var(--color-muted); font-size: 1.05rem; line-height: 1.55; text-wrap: balance; }
 
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
@@ -369,8 +349,8 @@ const clone = `git clone https://github.com/${REPO}`;
     isolation: isolate;
     display: flex;
     flex-direction: column;
-    gap: 1.4rem;
-    padding: clamp(1.3rem, 2.4vw, 1.9rem);
+    gap: 1.1rem;
+    padding: clamp(1.2rem, 2vw, 1.6rem);
     border-radius: 22px;
     background: rgba(17, 17, 20, 0.8);
     overflow: hidden;
@@ -397,22 +377,32 @@ const clone = `git clone https://github.com/${REPO}`;
     background: radial-gradient(500px circle at var(--mx) var(--my), rgba(249, 115, 22, 0.07), transparent 50%);
     pointer-events: none;
   }
-  .card-tag { margin: 0 0 0.7rem !important; font-family: var(--font-mono); font-size: 0.68rem !important; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sv-orange) !important; }
-  .card h3 { margin: 0 0 0.45rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; text-wrap: balance; }
-  .card p { margin: 0; color: var(--color-muted); font-size: 0.95rem; line-height: 1.55; }
+  .card-tag { margin: 0 0 0.6rem !important; font-family: var(--font-mono); font-size: 0.68rem !important; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sv-orange) !important; }
+  .card h3 { margin: 0 0 0.4rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; text-wrap: balance; }
+  .card p { margin: 0; color: var(--color-muted); font-size: 0.93rem; line-height: 1.5; }
+  .card-copy p:last-child { max-width: 42rem; }
   .card button { font: inherit; }
 
-  /* layout: 12 columns, three rows of cards plus the open-source strip */
-  .card--apps { grid-column: span 7; }
-  .card--styles { grid-column: span 5; }
-  .card--proof, .card--words, .card--read { grid-column: span 4; }
+  /* layout: two rows of full cards, one compact row, one strip */
+  .card--apps { grid-column: span 6; }
+  .card--styles { grid-column: span 6; }
+  .card--words { grid-column: span 5; }
   .card--models { grid-column: span 7; }
-  .card--progress { grid-column: span 5; }
-  .card--oss { grid-column: span 12; flex-direction: row; align-items: center; justify-content: space-between; gap: 2rem; }
+  .card--more { grid-column: span 12; }
+  .card--oss { grid-column: span 12; }
 
   /* shared bits */
   .dots { display: flex; gap: 5px; }
   .dots i { width: 9px; height: 9px; border-radius: 50%; background: #2a2a30; }
+  .chip {
+    min-height: 36px;
+    border-radius: 999px;
+    border: 1px solid var(--sv-line);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
 
   /* ---- 1. any app ---- */
   .apps { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
@@ -461,10 +451,10 @@ const clone = `git clone https://github.com/${REPO}`;
   .apps-pane.on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
   .apps-pane:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: -2px; border-radius: 14px; }
   .win-bar { display: flex; align-items: center; gap: 0.8rem; padding: 0.55rem 0.9rem; border-bottom: 1px solid #1b2030; background: #131722; font-size: 0.75rem; color: #8b93a7; }
-  .win-body { padding: 1.2rem 1.4rem 3.4rem; }
+  .win-body { padding: 1.1rem 1.3rem 3.4rem; }
   .apps-meta { font-size: 0.8rem !important; color: #8b93a7 !important; padding-bottom: 0.7rem; margin-bottom: 0.9rem !important; border-bottom: 1px solid #1b2030; }
-  .apps-doc { font-size: 1.35rem !important; font-weight: 600; color: #e6e9f0 !important; margin-bottom: 0.7rem !important; letter-spacing: -0.01em; }
-  .apps-line { color: #e6e9f0 !important; font-size: 1.02rem !important; line-height: 1.55 !important; min-height: 1.6em; }
+  .apps-doc { font-size: 1.3rem !important; font-weight: 600; color: #e6e9f0 !important; margin-bottom: 0.7rem !important; letter-spacing: -0.01em; }
+  .apps-line { color: #e6e9f0 !important; font-size: 1rem !important; line-height: 1.55 !important; min-height: 1.6em; }
   .apps-typed .w { display: inline-block; white-space: pre; }
   .caret { display: inline-block; width: 2px; height: 1.1em; margin-left: 1px; vertical-align: -0.18em; background: var(--sv-orange); }
   .apps-bubble { display: inline-block; padding: 0.5rem 0.9rem; border-radius: 14px 14px 14px 4px; background: #1b2030; color: #e6e9f0 !important; font-size: 0.92rem !important; margin-bottom: 0.8rem !important; }
@@ -475,7 +465,7 @@ const clone = `git clone https://github.com/${REPO}`;
   .apps-code, .apps-pane--code .apps-line { font-family: var(--font-mono); font-size: 0.85rem !important; }
   .apps-code { color: #e6e9f0 !important; }
   .apps-pane--code .apps-line { color: #8b93a7 !important; padding-left: 1.5rem; margin: 0.3rem 0 !important; }
-  .apps-quote { margin-top: 1.2rem !important; padding-left: 0.8rem; border-left: 2px solid #262c3d; font-size: 0.85rem !important; color: #8b93a7 !important; line-height: 1.5 !important; }
+  .apps-quote { margin-top: 1.1rem !important; padding-left: 0.8rem; border-left: 2px solid #262c3d; font-size: 0.85rem !important; color: #8b93a7 !important; line-height: 1.5 !important; }
   .apps-skel { display: grid; gap: 0.55rem; margin-top: 1.1rem; }
   .apps-skel i { display: block; height: 8px; border-radius: 4px; background: #1b2030; }
   .apps-skel i:nth-child(1) { width: 92%; }
@@ -528,11 +518,11 @@ const clone = `git clone https://github.com/${REPO}`;
   @keyframes blink { 50% { opacity: 0; } }
 
   /* ---- 2. writing styles ---- */
-  .styles { display: flex; flex-direction: column; gap: 1rem; flex: 1; }
+  .styles { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; }
   .styles-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .style {
     min-height: 36px;
-    padding: 0.3rem 0.8rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 999px;
     border: 1px solid var(--sv-line);
     background: transparent;
@@ -546,56 +536,20 @@ const clone = `git clone https://github.com/${REPO}`;
   .style-def { opacity: 0.75; font-weight: 400; }
   .styles-box { flex: 1; display: flex; flex-direction: column; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.07); overflow: hidden; }
   .styles-k { display: block; margin-bottom: 0.35rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
-  .styles-said { padding: 0.85rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.8rem !important; line-height: 1.55 !important; }
+  .styles-said { padding: 0.8rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.78rem !important; line-height: 1.55 !important; }
   .styles-said s { color: rgba(244, 242, 237, 0.4); text-decoration-color: rgba(249, 115, 22, 0.8); }
-  .styles-outwrap { flex: 1; padding: 0.9rem 1rem 1.1rem; min-height: 9.5rem; }
-  .styles-out { color: var(--color-text) !important; font-family: var(--font-display); font-size: 1.32rem !important; line-height: 1.3 !important; white-space: pre-line; }
+  .styles-outwrap { flex: 1; padding: 0.8rem 1rem 1rem; min-height: 6.5rem; }
+  .styles-out { color: var(--color-text) !important; font-family: var(--font-display); font-size: 1.3rem !important; line-height: 1.3 !important; white-space: pre-line; }
   .styles-out.raw { font-family: var(--font-sans); font-size: 0.98rem !important; line-height: 1.55 !important; color: rgba(244, 242, 237, 0.82) !important; }
 
-  /* ---- 3. proofreading ---- */
-  .proof-wrap { display: flex; flex-direction: column; gap: 1rem; flex: 1; justify-content: space-between; }
-  /* the suggestion popup, as the app draws it */
-  .gi { position: relative; width: min(100%, 17rem); padding: 0.85rem 0.95rem 0.7rem; border-radius: 16px; border: 1.5px solid var(--sv-orange); background: #151a26; font-family: var(--app-font); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45); }
-  .gi::before { content: ""; position: absolute; top: -7px; left: var(--ax, 2.2rem); width: 12px; height: 12px; background: #151a26; border-left: 1.5px solid var(--sv-orange); border-top: 1.5px solid var(--sv-orange); rotate: 45deg; transition: left 0.35s cubic-bezier(.22, 1, .36, 1); }
-  .gi-t { color: #e6e9f0 !important; font-size: 0.88rem !important; font-weight: 600; line-height: 1.3 !important; }
-  .gi-s { font-size: 0.74rem !important; color: #8b93a7 !important; line-height: 1.4 !important; }
-  .gi-fix { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 0.6rem; padding: 0.45rem 0.6rem 0.45rem 0.75rem; border: 0; border-radius: 10px; background: #2a1d12; color: var(--sv-orange); font-family: var(--app-font) !important; font-size: 0.9rem !important; font-weight: 600; cursor: pointer; text-align: left; }
-  .gi-fix:hover { background: #3a2715; }
-  .gi-fix kbd { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: rgba(249, 115, 22, 0.18); font: inherit; font-size: 0.75rem; }
-  .gi-fix[hidden] { display: none; }
-  .gi-foot { display: flex; gap: 1rem; margin-top: 0.55rem !important; font-size: 0.7rem !important; color: #8b93a7 !important; }
-  .proof { font-family: var(--font-display); font-size: clamp(1.45rem, 2.2vw, 1.75rem) !important; line-height: 1.5 !important; color: var(--color-text) !important; }
-  .typo {
-    position: relative;
-    padding: 0;
-    border: 0;
-    background: none;
-    font: inherit !important;
-    color: inherit;
-    cursor: pointer;
-    text-decoration: underline wavy #ef4444;
-    text-decoration-thickness: 1.5px;
-    text-underline-offset: 6px;
-    transition: color 0.3s ease, text-decoration-color 0.4s ease;
-  }
-  .typo--g { text-decoration-color: #3b82f6; }
-  .typo:hover { color: #fecaca; }
-  .typo--g:hover { color: #bfdbfe; }
-  .typo.fixed { text-decoration-color: transparent; color: var(--sv-orange); cursor: default; }
-  .proof-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 40px; }
-  .proof-hint { font-size: 0.82rem; color: var(--color-muted); }
-  .proof-reset { min-height: 40px; padding: 0 0.9rem; border-radius: 999px; border: 1px solid var(--sv-line); background: transparent; color: var(--color-text); font-size: 0.8rem !important; cursor: pointer; }
-  .proof-reset:hover { border-color: var(--sv-orange); }
-  .proof-reset[hidden] { display: none; }
-
-  /* ---- 4. words ---- */
-  .words { display: flex; flex-direction: column; gap: 1rem; flex: 1; justify-content: space-between; }
-  .words-lines { display: flex; flex-direction: column; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.07); }
+  /* ---- 3. words ---- */
+  .words { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; }
+  .words-lines { flex: 1; display: flex; flex-direction: column; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.07); }
   .words-k { display: block; margin-bottom: 0.35rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
-  .words-said { padding: 0.85rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.8rem !important; line-height: 1.7 !important; color: rgba(244, 242, 237, 0.62) !important; }
+  .words-said { padding: 0.8rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.78rem !important; line-height: 1.7 !important; color: rgba(244, 242, 237, 0.62) !important; }
   .words-said .seg[data-cat] { color: var(--c); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--c) 55%, transparent); text-underline-offset: 3px; }
   .words-said .c-filler { --c: rgba(244, 242, 237, 0.5); text-decoration: line-through !important; }
-  .words-typed { padding: 0.85rem 1rem 1rem; font-family: var(--app-font); font-size: 0.98rem !important; line-height: 1.75 !important; color: var(--color-text) !important; }
+  .words-typed { padding: 0.8rem 1rem 0.95rem; font-family: var(--app-font); font-size: 0.96rem !important; line-height: 1.75 !important; color: var(--color-text) !important; }
   .words-typed .seg[data-cat] { color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 5px; padding: 0.05rem 0.25rem; }
   .words-typed .seg-br { background: none !important; padding: 0 !important; opacity: 0.7; font-size: 0.85em; }
   .c-words { --c: var(--c-words); }
@@ -628,29 +582,106 @@ const clone = `git clone https://github.com/${REPO}`;
   .wl:hover { color: var(--color-text); border-color: color-mix(in srgb, var(--c) 60%, transparent); }
   .wl[aria-pressed="true"] { color: var(--color-text); border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
 
-  /* ---- 5. read aloud ---- */
-  .read { display: flex; flex-direction: column; gap: 1rem; flex: 1; justify-content: space-between; }
-  .read-doc { flex: 1; display: flex; align-items: center; padding: 1.1rem 1.2rem; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.07); }
-  .read-text { font-family: var(--font-display); font-size: clamp(1.4rem, 2.1vw, 1.65rem) !important; line-height: 1.45 !important; color: rgba(244, 242, 237, 0.92) !important; }
+  /* ---- 4. Model Store ---- */
+  .ms { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
+  .ms-pick { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .ms-name b, .ms-name small { min-width: 0; }
+  .ms-btn {
+    min-height: 36px;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--sv-line);
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 0.8rem !important;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+  .ms-btn:hover { color: var(--color-text); border-color: rgba(244, 242, 237, 0.25); }
+  .ms-btn[aria-pressed="true"] { background: var(--color-text); color: #0a0a0b; border-color: var(--color-text); }
+  .ms-app { display: grid; gap: 0.2rem; padding: 0.8rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); color: #e6e9f0; }
+  .ms-group + .ms-group { margin-top: 0.35rem; }
+  .ms-h { display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.35rem; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.02em; color: #8b93a7; }
+  .ms-group[data-group="well"] .ms-h { color: #4ade80; }
+  .ms-group[data-group="slow"] .ms-h { color: #facc15; }
+  .ms-group[data-group="heavy"] .ms-h { color: #f87171; }
+  .ms-n { display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; padding: 0 0.3rem; border-radius: 999px; background: #1b2030; color: #8b93a7; font-size: 0.68rem; font-variant-numeric: tabular-nums; }
+  .ms-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+  .ms-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 12px; background: #131722; border: 1px solid #262c3d; }
+  .ms-group[data-group="heavy"] .ms-row { opacity: 0.6; }
+  .ms-logo { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #1b2030; }
+  .ms-logo svg { width: 15px; height: 15px; fill: none; stroke: #8b93a7; stroke-width: 1.8; stroke-linecap: round; }
+  .ms-group[data-group="well"] .ms-logo svg { stroke: var(--sv-orange); }
+  .ms-name { display: flex; align-items: baseline; gap: 0.6rem; min-width: 0; }
+  .ms-name b { flex: 0 1 auto; font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ms-lang { font-weight: 400; color: #8b93a7; }
+  .ms-name small { flex: 0 1000 auto; font-size: 0.72rem; color: #8b93a7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ms-note { color: #fbbf24; }
+  .ms-badge { padding: 0.15rem 0.45rem; border-radius: 5px; background: rgba(249, 115, 22, 0.15); color: #fb923c; font-size: 0.66rem; font-weight: 600; }
+  .ms-badge[hidden] { display: none; }
+  .ms-size { font-size: 0.78rem; font-variant-numeric: tabular-nums; color: #e6e9f0; min-width: 3.6rem; text-align: right; }
+  .ms-empty { margin: 0 !important; padding: 0.4rem 0.75rem; border-radius: 12px; border: 1px dashed #262c3d; font-size: 0.75rem !important; color: #8b93a7 !important; }
+  .ms-empty[hidden] { display: none; }
+  .ms-read { font-size: 0.8rem !important; }
+
+  /* ---- 5. the compact card: three smaller tools side by side ---- */
+  .card--more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 0; }
+  .mini { display: flex; flex-direction: column; padding: clamp(1.2rem, 2vw, 1.6rem); min-width: 0; }
+  .mini + .mini { border-left: 1px solid var(--sv-line); }
+  .mini h3 { font-size: 1.08rem; }
+  .mini > p:not(.card-tag) { font-size: 0.86rem; }
+  .mini > :last-child { margin-top: auto; padding-top: 1rem; }
+
+  /* proofreading */
+  .proof-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+  .proof { font-family: var(--font-display); font-size: clamp(1.3rem, 1.8vw, 1.5rem) !important; line-height: 1.5 !important; color: var(--color-text) !important; }
+  .typo {
+    position: relative;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit !important;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline wavy #ef4444;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 6px;
+    transition: color 0.3s ease, text-decoration-color 0.4s ease;
+  }
+  /* a bigger hit area than the word itself */
+  .typo::after { content: ""; position: absolute; inset: -0.45rem -0.2rem; }
+  .typo--g { text-decoration-color: #3b82f6; }
+  .typo:hover { color: #fecaca; }
+  .typo--g:hover { color: #bfdbfe; }
+  .typo.fixed { text-decoration-color: transparent; color: var(--sv-orange); cursor: default; }
+  .proof-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; min-height: 40px; }
+  .proof-hint { font-size: 0.8rem; color: var(--color-muted); }
+  .proof-reset { min-height: 40px; padding: 0 0.9rem; border-radius: 999px; border: 1px solid var(--sv-line); background: transparent; color: var(--color-text); font-size: 0.78rem !important; cursor: pointer; white-space: nowrap; }
+  .proof-reset:hover { border-color: var(--sv-orange); }
+  .proof-reset[hidden] { display: none; }
+
+  /* read aloud */
+  .read { display: flex; flex-direction: column; gap: 0.8rem; }
+  .read-text { font-family: var(--font-display); font-size: clamp(1.3rem, 1.8vw, 1.5rem) !important; line-height: 1.45 !important; color: rgba(244, 242, 237, 0.92) !important; }
   /* the sentence starts out selected, the way you'd select it to hear it */
   .read:not(.playing) .read-text span { background: rgba(56, 189, 248, 0.16); border-radius: 0; box-decoration-break: clone; }
   .read-text span { border-radius: 4px; transition: color 0.2s ease, background 0.2s ease; }
   .read.playing .read-text span { color: rgba(244, 242, 237, 0.35); }
   .read.playing .read-text span.said { color: var(--color-text); }
   .read.playing .read-text span.now { color: #04131c; background: #38bdf8; box-shadow: 0 0 0 2px #38bdf8; }
-  .read-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .read-row { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
   .read-play {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
-    min-height: 46px;
-    padding: 0 1.15rem 0 0.95rem;
+    gap: 0.55rem;
+    min-height: 44px;
+    padding: 0 1.1rem 0 0.9rem;
     border-radius: 999px;
     border: 0;
     background: var(--sv-orange);
     color: #1a1200;
     font-weight: 600;
-    font-size: 0.9rem !important;
+    font-size: 0.86rem !important;
     cursor: pointer;
     transition: transform 0.2s ease, background 0.2s ease;
   }
@@ -671,68 +702,19 @@ const clone = `git clone https://github.com/${REPO}`;
     .read.playing .read-pill i:nth-child(4) { animation-delay: -0.45s; }
     .read.playing .read-pill i:nth-child(5) { animation-delay: -0.6s; }
   }
-  .read-note { font-size: 0.78rem !important; }
+  .read-note { font-size: 0.74rem !important; }
 
-  /* ---- 6. Model Store ---- */
-  .ms { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; }
-  .ms-pick { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .ms-name b, .ms-name small { min-width: 0; }
-  .ms-btn {
-    min-height: 36px;
-    padding: 0.3rem 0.85rem;
-    border-radius: 999px;
-    border: 1px solid var(--sv-line);
-    background: transparent;
-    color: var(--color-muted);
-    font-size: 0.8rem !important;
-    cursor: pointer;
-    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-  }
-  .ms-btn:hover { color: var(--color-text); border-color: rgba(244, 242, 237, 0.25); }
-  .ms-btn[aria-pressed="true"] { background: var(--color-text); color: #0a0a0b; border-color: var(--color-text); }
-  .ms-app { display: grid; gap: 0.25rem; padding: 0.9rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); color: #e6e9f0; }
-  .ms-group + .ms-group { margin-top: 0.45rem; }
-  .ms-h { display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.4rem; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.02em; color: #8b93a7; }
-  .ms-group[data-group="well"] .ms-h { color: #4ade80; }
-  .ms-group[data-group="slow"] .ms-h { color: #facc15; }
-  .ms-group[data-group="heavy"] .ms-h { color: #f87171; }
-  .ms-n { display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; padding: 0 0.3rem; border-radius: 999px; background: #1b2030; color: #8b93a7; font-size: 0.68rem; font-variant-numeric: tabular-nums; }
-  .ms-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
-  .ms-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 0.75rem; padding: 0.55rem 0.8rem; border-radius: 12px; background: #131722; border: 1px solid #262c3d; }
-  .ms-group[data-group="heavy"] .ms-row { opacity: 0.6; }
-  .ms-logo { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: #1b2030; }
-  .ms-logo svg { width: 16px; height: 16px; fill: none; stroke: #8b93a7; stroke-width: 1.8; stroke-linecap: round; }
-  .ms-group[data-group="well"] .ms-logo svg { stroke: var(--sv-orange); }
-  .ms-name { display: flex; flex-direction: column; min-width: 0; }
-  .ms-name b { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ms-lang { font-weight: 400; color: #8b93a7; }
-  .ms-name small { font-size: 0.7rem; color: #8b93a7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ms-note { color: #fbbf24; }
-  .ms-badge { padding: 0.15rem 0.45rem; border-radius: 5px; background: rgba(249, 115, 22, 0.15); color: #fb923c; font-size: 0.66rem; font-weight: 600; }
-  .ms-badge[hidden] { display: none; }
-  .ms-size { font-size: 0.78rem; font-variant-numeric: tabular-nums; color: #e6e9f0; min-width: 3.6rem; text-align: right; }
-  .ms-empty { margin: 0 !important; padding: 0.45rem 0.8rem; border-radius: 12px; border: 1px dashed #262c3d; font-size: 0.75rem !important; color: #8b93a7 !important; }
-  .ms-empty[hidden] { display: none; }
-  .ms-read { font-size: 0.8rem !important; }
-
-  /* ---- 7. progress ---- */
-  .pg { display: flex; flex-direction: column; gap: 1.1rem; flex: 1; justify-content: space-between; }
-  .pg-stats { display: grid; grid-template-columns: 1fr auto auto; gap: 0.6rem 1.4rem; align-items: end; }
-  .pg-stats b { display: block; font-family: "Inter Tight", var(--font-sans); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-  .pg-stats span { display: block; font-size: 0.76rem; color: var(--color-muted); line-height: 1.35; }
-  .pg-big b { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 3vw, 2.5rem); line-height: 1; color: var(--sv-orange); letter-spacing: -0.02em; }
-  .pg-big span { max-width: 13rem; margin-top: 0.3rem; }
-  .pg-heat { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; padding: 1rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); }
-  .pg-k { display: block; margin-bottom: 0.6rem; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: #8b93a7; }
-  .pg-grid { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 3px; }
-  .pg-map { width: 100%; max-width: 21rem; margin-inline: auto; }
-  .pg-speed { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.2rem; padding-top: 0.9rem; border-top: 1px solid #262c3d; }
-  .pg-speed .pg-k { grid-column: 1 / -1; }
-  .pg-bar { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 0.5rem; font-size: 0.74rem; color: #8b93a7; }
-  .pg-bar b { color: #e6e9f0; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
-  .pg-bar i { grid-column: 1 / -1; display: block; height: 6px; border-radius: 999px; background: linear-gradient(90deg, #f97316 var(--w), #1b2030 var(--w)); }
-  .pg-bar--type i { background: linear-gradient(90deg, #8b93a7 var(--w), #1b2030 var(--w)); }
-  .pg-grid i { aspect-ratio: 1; border-radius: 3px; }
+  /* progress */
+  .pg { display: grid; grid-template-columns: minmax(6.5rem, auto) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
+  .pg-stats { display: flex; flex-direction: column; justify-content: space-between; gap: 0.7rem; padding-block: 0.2rem; }
+  .pg-stats b { display: block; font-family: "Inter Tight", var(--font-sans); font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pg-stats span { display: block; font-size: 0.72rem; color: var(--color-muted); line-height: 1.3; }
+  .pg-big b { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.7rem, 2.3vw, 2rem); line-height: 1; color: var(--sv-orange); letter-spacing: -0.02em; }
+  .pg-big span { max-width: 7.5rem; margin-top: 0.3rem; }
+  .pg-map { padding: 0.8rem 0.9rem 0.7rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); }
+  .pg-k { display: block; margin-bottom: 0.5rem; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: #8b93a7; }
+  .pg-grid { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 3px; max-width: 14rem; }
+  .pg-grid i { aspect-ratio: 1; border-radius: 2px; }
   .l0 { background: rgba(38, 44, 61, 0.6); }
   .l1 { background: rgba(249, 115, 22, 0.25); }
   .l2 { background: rgba(249, 115, 22, 0.45); }
@@ -740,68 +722,85 @@ const clone = `git clone https://github.com/${REPO}`;
   .l4 { background: #f97316; }
   .pg-grid i.today { box-shadow: 0 0 0 1.5px #0b0e14, 0 0 0 3px rgba(249, 115, 22, 0.9); }
   .pg-grid i:hover { outline: 1.5px solid #e6e9f0; outline-offset: 1px; }
-  .pg-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-top: 0.7rem; font-size: 0.68rem; color: #8b93a7; }
+  .pg-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.3rem 0.6rem; margin-top: 0.6rem; font-size: 0.66rem; color: #8b93a7; }
   .pg-readout { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pg-legend { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
-  .pg-legend i { width: 10px; height: 10px; border-radius: 2px; }
+  .pg-legend i { width: 9px; height: 9px; border-radius: 2px; }
   @media (prefers-reduced-motion: no-preference) {
     .pg-grid i.today { animation: today 2.4s ease-in-out infinite; }
   }
   @keyframes today { 50% { box-shadow: 0 0 0 1.5px #0b0e14, 0 0 0 5px rgba(249, 115, 22, 0.35); } }
 
-  /* ---- 8. open source ---- */
-  .oss-copy { max-width: 30rem; }
+  /* ---- 6. open-source strip ---- */
+  .card--oss { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 0.8rem 1.4rem; padding-block: 0.9rem; }
+  .oss-t { display: flex; align-items: center; gap: 0.75rem; flex: 1 1 18rem; color: var(--color-muted) !important; font-size: 0.93rem !important; }
+  .oss-t strong { color: var(--color-text); font-weight: 600; }
+  .oss-t svg { flex: none; width: 1.3rem; height: 1.3rem; fill: var(--color-text); }
+  .term { display: flex; align-items: center; gap: 0.6rem; flex: 0 1 auto; min-width: 0; padding: 0.25rem 0.3rem 0.25rem 0.9rem; border-radius: 12px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.08); }
+  .term code { min-width: 0; font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text); overflow-wrap: anywhere; }
+  .term-p { color: var(--sv-orange); }
+  .term-copy { flex: none; min-height: 36px; padding: 0 0.85rem; border-radius: 8px; border: 1px solid var(--sv-line); background: rgba(244, 242, 237, 0.04); color: var(--color-text); font-size: 0.8rem !important; cursor: pointer; }
+  .term-copy:hover { border-color: var(--sv-orange); }
+  .term-copy.ok { color: #4ade80; border-color: #4ade80; }
   .oss-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
-    margin-top: 1.2rem;
     min-height: 44px;
     padding: 0 1.1rem;
     border-radius: 999px;
     border: 1px solid rgba(244, 242, 237, 0.25);
     color: var(--color-text);
     text-decoration: none;
+    font-size: 0.9rem;
     font-weight: 500;
+    white-space: nowrap;
     transition: background 0.25s ease, color 0.25s ease;
   }
   .oss-link:hover { background: var(--color-text); color: #0a0a0b; }
-  .oss-link svg { width: 1.1rem; height: 1.1rem; fill: currentColor; }
-  .term { flex: 1; max-width: 34rem; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.08); overflow: hidden; }
-  .term-bar { display: flex; align-items: center; gap: 0.8rem; padding: 0.6rem 0.9rem; border-bottom: 1px solid rgba(244, 242, 237, 0.06); font-size: 0.75rem; color: var(--color-muted); }
-  .term-body { display: flex; align-items: center; gap: 1rem; padding: 1rem 0.9rem 1rem 1.1rem; }
-  .term-body code { flex: 1; font-family: var(--font-mono); font-size: 0.82rem; color: var(--color-text); overflow-wrap: anywhere; }
-  .term-p { color: var(--sv-orange); }
-  .term-copy { flex: none; min-height: 40px; padding: 0 0.9rem; border-radius: 8px; border: 1px solid var(--sv-line); background: rgba(244, 242, 237, 0.04); color: var(--color-text); font-size: 0.8rem !important; cursor: pointer; }
-  .term-copy:hover { border-color: var(--sv-orange); }
-  .term-copy.ok { color: #4ade80; border-color: #4ade80; }
 
-  @media (max-width: 1080px) {
-    .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .card--apps, .card--models { grid-column: span 2; }
-    .card--styles, .card--proof, .card--words, .card--read, .card--progress, .card--oss { grid-column: span 1; }
-    .card--oss { flex-direction: column; align-items: stretch; }
-    .term { max-width: none; flex: none; margin-top: auto; }
-
+  /* touch: every control is at least 44px tall */
+  @media (pointer: coarse) {
+    .apps-tab, .apps-pause, .style, .wl, .ms-btn, .proof-reset, .term-copy { min-height: 44px; }
+    .apps-pause { min-width: 44px; }
   }
-  @media (max-width: 680px) {
+
+  /* loops pause while the section is off screen or the tab is hidden */
+  .svf.is-off :global(*) { animation-play-state: paused !important; }
+
+  @media (max-width: 1100px) {
+    .ms-name { flex-direction: column; align-items: stretch; gap: 0; }
+    .term { order: 3; flex: 1 1 100%; justify-content: space-between; }
+  }
+  @media (max-width: 1000px) {
+    .card--apps, .card--styles { grid-column: span 12; }
+    .card--words, .card--models { grid-column: span 6; }
+    .apps-screen { min-height: 13rem; }
+  }
+  @media (max-width: 860px) {
     .bento { grid-template-columns: minmax(0, 1fr); }
     .card { grid-column: auto !important; }
+    .card--more { grid-template-columns: minmax(0, 1fr); }
+    .mini + .mini { border-left: 0; border-top: 1px solid var(--sv-line); }
+    .mini > :last-child { margin-top: 0; }
+  }
+  @media (max-width: 680px) {
     .apps-screen { min-height: 15rem; }
     .apps-pause-t { display: none; }
-    .apps-pause { padding-inline: 0; width: 40px; justify-content: center; }
+    .apps-pause { padding-inline: 0; width: 44px; justify-content: center; }
     .apps-tab { padding-inline: 0.75rem; }
     .ms-row { grid-template-columns: auto minmax(0, 1fr) auto; }
     .ms-badge { display: none; }
+    .ms-name { flex-direction: column; align-items: stretch; gap: 0; }
     .ms-name b, .ms-name small { white-space: normal; }
-    .pg-stats { grid-template-columns: 1fr 1fr; }
-
-    .pg-big { grid-column: 1 / -1; }
+    .card--oss { flex-direction: column; align-items: stretch; padding-block: 1.2rem; }
+    .oss-t { flex: none; }
+    .oss-link { align-self: flex-start; }
   }
   @media (max-width: 420px) {
     .apps-tab { padding-inline: 0.6rem; font-size: 0.8rem !important; }
     .ms-logo { display: none; }
     .ms-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .term code { font-size: 0.74rem; }
   }
 </style>
 
@@ -819,11 +818,18 @@ const clone = `git clone https://github.com/${REPO}`;
   const whileVisible = (el: Element, on: () => void, off: () => void, threshold = 0.3) =>
     new IntersectionObserver(([e]) => (e.isIntersecting ? on() : off()), { threshold }).observe(el);
 
+  // CSS loops (pill, caret, today's square) pause off screen and in a hidden tab
+  let sectionOn = false;
+  const syncOff = () => root.classList.toggle("is-off", !sectionOn || document.hidden);
+  root.classList.add("is-off");
+  whileVisible(root, () => { sectionOn = true; syncOff(); }, () => { sectionOn = false; syncOff(); }, 0);
+  document.addEventListener("visibilitychange", syncOff);
+
   // ---- card entrance + spotlight -----------------------------------------
   const cards = [...root.querySelectorAll<HTMLElement>(".card")];
   gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
     const t = gsap.from(cards, {
-      y: 50, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.07,
+      y: 40, opacity: 0, duration: 0.9, ease: "expo.out", stagger: 0.06,
       scrollTrigger: { trigger: root.querySelector(".bento"), start: "top 85%", once: true },
     });
     return () => t.revert();
@@ -865,7 +871,7 @@ const clone = `git clone https://github.com/${REPO}`;
     };
     const run = () => {
       settle();
-      if (!motion.matches) return;
+      if (!motion.matches || document.hidden) return;
       const w = words(cur);
       gsap.set(w, { opacity: 0 });
       later(() => (pill.dataset.state = "rec"), 250);
@@ -913,6 +919,11 @@ const clone = `git clone https://github.com/${REPO}`;
     motion.addEventListener("change", applyMotion);
     applyMotion();
     whileVisible(box, () => { visible = true; if (auto) run(); }, () => { visible = false; settle(); });
+    // a hidden tab stops the loop; coming back picks it up again
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) settle();
+      else if (visible && auto) run();
+    });
   }
 
   // ---- 2. writing styles: a radio group that morphs the output ------------
@@ -944,64 +955,7 @@ const clone = `git clone https://github.com/${REPO}`;
     });
   }
 
-  // ---- 3. proofreading: tap a word or the popup's fix ------------------------
-  {
-    const wrap = root.querySelector<HTMLElement>(".proof-wrap")!;
-    const typos = [...wrap.querySelectorAll<HTMLButtonElement>(".typo")];
-    const reset = wrap.querySelector<HTMLButtonElement>(".proof-reset")!;
-    const hint = wrap.querySelector<HTMLElement>(".proof-hint")!;
-    const gi = wrap.querySelector<HTMLElement>(".gi")!;
-    const giS = gi.querySelector<HTMLElement>("[data-gi-s]")!;
-    const giFix = gi.querySelector<HTMLButtonElement>(".gi-fix")!;
-    const giFixT = gi.querySelector<HTMLElement>("[data-gi-fix]")!;
-    const orig = typos.map((b) => ({ text: b.textContent!, label: b.getAttribute("aria-label")! }));
-    let active = 0;
-    // point the popup at a marked word
-    const show = (i: number) => {
-      active = i;
-      const open = typos.findIndex((t) => !t.classList.contains("fixed"));
-      if (open < 0) {
-        giS.textContent = "Nothing left to fix";
-        giFix.hidden = true;
-        return;
-      }
-      if (typos[i].classList.contains("fixed")) return show(open);
-      giFix.hidden = false;
-      giS.textContent = typos[i].classList.contains("typo--g") ? "This sentence needs a small fix" : "This word looks misspelled";
-      giFixT.textContent = typos[i].dataset.fix!;
-      const r = typos[i].getBoundingClientRect(), g = gi.getBoundingClientRect();
-      gi.style.setProperty("--ax", `${Math.max(14, Math.min(g.width - 26, r.left + r.width / 2 - g.left - 6))}px`);
-    };
-    const fix = (b: HTMLButtonElement) => {
-      if (b.classList.contains("fixed")) return;
-      b.textContent = b.dataset.fix!;
-      b.classList.add("fixed");
-      b.setAttribute("aria-label", `${b.dataset.fix}, fixed`);
-      if (motion.matches) gsap.fromTo(b, { scale: 1.25 }, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" });
-      if (typos.every((t) => t.classList.contains("fixed"))) {
-        hint.textContent = "All fixed.";
-        reset.hidden = false;
-      }
-      show(active);
-    };
-    typos.forEach((b, i) => {
-      b.addEventListener("click", () => { active = i; fix(b); });
-      b.addEventListener("pointerenter", () => show(i));
-      b.addEventListener("focus", () => show(i));
-    });
-    giFix.addEventListener("click", () => fix(typos[active]));
-    reset.addEventListener("click", () => {
-      typos.forEach((b, i) => { b.textContent = orig[i].text; b.classList.remove("fixed"); b.setAttribute("aria-label", orig[i].label); });
-      hint.textContent = "Tap a marked word to fix it.";
-      reset.hidden = true;
-      show(0);
-      typos[0].focus();
-    });
-    show(0);
-    addEventListener("resize", () => show(active), { passive: true });
-  }
-
-  // ---- 4. your words: highlight one kind of fix; replay on first view -------
+  // ---- 3. your words: highlight one kind of fix; replay on first view -------
   {
     const box = root.querySelector<HTMLElement>("[data-words]")!;
     const chips = [...box.querySelectorAll<HTMLButtonElement>(".wl")];
@@ -1022,7 +976,81 @@ const clone = `git clone https://github.com/${REPO}`;
     });
   }
 
-  // ---- 5. read aloud: the browser's own voice if it has one ------------------
+  // ---- 4. Model Store: regroup the models for a kind of computer ------------
+  {
+    const box = root.querySelector<HTMLElement>("[data-ms]")!;
+    const btns = [...box.querySelectorAll<HTMLButtonElement>(".ms-btn")];
+    const rows = Object.fromEntries([...box.querySelectorAll<HTMLElement>(".ms-row")].map((r) => [r.dataset.model!, r]));
+    const groups = Object.fromEntries([...box.querySelectorAll<HTMLElement>(".ms-group")].map((g) => [g.dataset.group!, g]));
+    const read = box.querySelector<HTMLElement>("[data-ms-read]")!;
+    type P = { cores: number; mem: number; gpu: boolean };
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const here: P = { cores: navigator.hardwareConcurrency || 4, mem: nav.deviceMemory || 8, gpu: false };
+    const profiles: Record<string, P> = { old: { cores: 2, mem: 4, gpu: false }, this: here, gpu: { cores: 16, mem: 32, gpu: true } };
+    // a rough version of the app's own rules
+    const fit = (id: string, p: P) => {
+      if (id === "moonshine") return "well";
+      if (id === "parakeet") return p.cores >= 4 ? "well" : "slow";
+      if (id === "turbo") return p.gpu ? "well" : p.cores >= 4 && p.mem >= 4 ? "slow" : "heavy";
+      return p.gpu ? "well" : "heavy"; // Qwen3-ASR wants a strong graphics card
+    };
+    const order = ["moonshine", "parakeet", "turbo", "qwen"];
+    const apply = (key: string, animate: boolean) => {
+      const p = profiles[key];
+      btns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.profile === key)));
+      const state = animate ? Flip.getState(Object.values(rows)) : null;
+      const count: Record<string, number> = { well: 0, slow: 0, heavy: 0 };
+      order.forEach((id) => {
+        const g = fit(id, p);
+        count[g]++;
+        groups[g].querySelector("ul")!.appendChild(rows[id]);
+      });
+      Object.entries(groups).forEach(([g, el]) => {
+        el.querySelector(".ms-n")!.textContent = String(count[g]);
+        el.querySelector<HTMLElement>(".ms-empty")!.hidden = count[g] > 0;
+      });
+      // the app recommends Parakeet v2 on a 4+ core machine without a big graphics card
+      rows.parakeet.querySelector<HTMLElement>(".ms-badge")!.hidden = !(p.cores >= 4 && !p.gpu);
+      if (key === "this") {
+        const mem = nav.deviceMemory ? (nav.deviceMemory >= 8 ? "8 GB or more of memory" : `about ${nav.deviceMemory} GB of memory`) : "memory it won't say";
+        read.textContent = `Your browser reports ${navigator.hardwareConcurrency || "an unknown number of"} threads and ${mem}. It can't see your graphics card, so this is a rough guess. Nothing is sent.`;
+      } else {
+        read.textContent = key === "old" ? "An older laptop: 2 cores, 4 GB of memory, no graphics card." : "A desktop with a strong graphics card. The app turns on the graphics card by itself when it has 4 GB or more of its own memory.";
+      }
+      if (state) Flip.from(state, { duration: 0.6, ease: "power3.inOut", absolute: false, nested: true, simple: true });
+    };
+    btns.forEach((b) => b.addEventListener("click", () => apply(b.dataset.profile!, motion.matches)));
+    apply("this", false);
+  }
+
+  // ---- 5a. proofreading: tap a marked word to fix it -------------------------
+  {
+    const wrap = root.querySelector<HTMLElement>(".proof-wrap")!;
+    const typos = [...wrap.querySelectorAll<HTMLButtonElement>(".typo")];
+    const reset = wrap.querySelector<HTMLButtonElement>(".proof-reset")!;
+    const hint = wrap.querySelector<HTMLElement>(".proof-hint")!;
+    const orig = typos.map((b) => ({ text: b.textContent!, label: b.getAttribute("aria-label")! }));
+    const fix = (b: HTMLButtonElement) => {
+      if (b.classList.contains("fixed")) return;
+      b.textContent = b.dataset.fix!;
+      b.classList.add("fixed");
+      b.setAttribute("aria-label", `${b.dataset.fix}, fixed`);
+      if (motion.matches) gsap.fromTo(b, { scale: 1.25 }, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" });
+      if (typos.every((t) => t.classList.contains("fixed"))) {
+        hint.textContent = "All fixed.";
+        reset.hidden = false;
+      }
+    };
+    typos.forEach((b) => b.addEventListener("click", () => fix(b)));
+    reset.addEventListener("click", () => {
+      typos.forEach((b, i) => { b.textContent = orig[i].text; b.classList.remove("fixed"); b.setAttribute("aria-label", orig[i].label); });
+      hint.textContent = "Tap a marked word to fix it.";
+      reset.hidden = true;
+      typos[0].focus();
+    });
+  }
+
+  // ---- 5b. read aloud: the browser's own voice if it has one -----------------
   {
     const box = root.querySelector<HTMLElement>("[data-read]")!;
     const play = box.querySelector<HTMLButtonElement>(".read-play")!;
@@ -1083,75 +1111,24 @@ const clone = `git clone https://github.com/${REPO}`;
       synth.cancel();
       synth.speak(u);
     });
-    // stop talking when the card leaves the screen
+    // stop talking when the card leaves the screen or the tab is hidden
     whileVisible(box, () => {}, () => playing && stop(), 0);
+    document.addEventListener("visibilitychange", () => document.hidden && playing && stop());
   }
 
-  // ---- 6. Model Store: regroup the models for a kind of computer ------------
-  {
-    const box = root.querySelector<HTMLElement>("[data-ms]")!;
-    const btns = [...box.querySelectorAll<HTMLButtonElement>(".ms-btn")];
-    const rows = Object.fromEntries([...box.querySelectorAll<HTMLElement>(".ms-row")].map((r) => [r.dataset.model!, r]));
-    const groups = Object.fromEntries([...box.querySelectorAll<HTMLElement>(".ms-group")].map((g) => [g.dataset.group!, g]));
-    const read = box.querySelector<HTMLElement>("[data-ms-read]")!;
-    type P = { cores: number; mem: number; gpu: boolean };
-    const nav = navigator as Navigator & { deviceMemory?: number };
-    const here: P = { cores: navigator.hardwareConcurrency || 4, mem: nav.deviceMemory || 8, gpu: false };
-    const profiles: Record<string, P> = { old: { cores: 2, mem: 4, gpu: false }, this: here, gpu: { cores: 16, mem: 32, gpu: true } };
-    // a rough version of the app's own rules
-    const fit = (id: string, p: P) => {
-      if (id === "moonshine") return "well";
-      if (id === "parakeet") return p.cores >= 4 ? "well" : "slow";
-      if (id === "turbo") return p.gpu ? "well" : p.cores >= 4 && p.mem >= 4 ? "slow" : "heavy";
-      return p.gpu ? "well" : "heavy"; // Qwen3-ASR wants a strong graphics card
-    };
-    const order = ["moonshine", "parakeet", "turbo", "qwen"];
-    const apply = (key: string, animate: boolean) => {
-      const p = profiles[key];
-      btns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.profile === key)));
-      const state = animate ? Flip.getState(Object.values(rows)) : null;
-      const count: Record<string, number> = { well: 0, slow: 0, heavy: 0 };
-      order.forEach((id) => {
-        const g = fit(id, p);
-        count[g]++;
-        groups[g].querySelector("ul")!.appendChild(rows[id]);
-      });
-      Object.entries(groups).forEach(([g, el]) => {
-        el.querySelector(".ms-n")!.textContent = String(count[g]);
-        el.querySelector<HTMLElement>(".ms-empty")!.hidden = count[g] > 0;
-      });
-      // the app recommends Parakeet v2 on a 4+ core machine without a big graphics card
-      rows.parakeet.querySelector<HTMLElement>(".ms-badge")!.hidden = !(p.cores >= 4 && !p.gpu);
-      if (key === "this") {
-        const mem = nav.deviceMemory ? (nav.deviceMemory >= 8 ? "8 GB or more of memory" : `about ${nav.deviceMemory} GB of memory`) : "memory it won't say";
-        read.textContent = `Your browser reports ${navigator.hardwareConcurrency || "an unknown number of"} threads and ${mem}. It can't see your graphics card, so this is a rough guess. Nothing is sent.`;
-      } else {
-        read.textContent = key === "old" ? "An older laptop: 2 cores, 4 GB of memory, no graphics card." : "A desktop with a strong graphics card. The app turns on the graphics card by itself when it has 4 GB or more of its own memory.";
-      }
-      if (state) Flip.from(state, { duration: 0.6, ease: "power3.inOut", absolute: false, nested: true, simple: true });
-    };
-    btns.forEach((b) => b.addEventListener("click", () => apply(b.dataset.profile!, motion.matches)));
-    apply("this", false);
-  }
-
-  // ---- 7. progress: the heatmap fills in, hover a day to read it -------------
+  // ---- 5c. progress: the 12 weeks fill in, hover a day to read it ------------
   {
     const box = root.querySelector<HTMLElement>("[data-pg]")!;
     const cells = [...box.querySelectorAll<HTMLElement>(".pg-grid i")];
-    const bars = [...box.querySelectorAll<HTMLElement>(".pg-bar i")];
     const readout = box.querySelector<HTMLElement>("[data-pg-readout]")!;
     const base = readout.textContent!;
     gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
       const t = gsap.from(cells, {
         scale: 0, opacity: 0, duration: 0.5, ease: "back.out(2)",
-        stagger: { each: 0.012, from: "start" },
-        scrollTrigger: { trigger: box, start: "top 80%", once: true },
+        stagger: { each: 0.01, from: "start" },
+        scrollTrigger: { trigger: box, start: "top 85%", once: true },
       });
-      const b = gsap.fromTo(bars, { "--w": "0%" }, {
-        "--w": (i: number) => bars[i].dataset.w!, duration: 1.4, ease: "expo.out", stagger: 0.15, delay: 0.5,
-        scrollTrigger: { trigger: box, start: "top 80%", once: true },
-      });
-      return () => { t.revert(); b.revert(); };
+      return () => t.revert();
     });
     box.querySelector(".pg-grid")!.addEventListener("pointerover", (e) => {
       const c = e.target as HTMLElement;
@@ -1162,7 +1139,7 @@ const clone = `git clone https://github.com/${REPO}`;
     box.querySelector(".pg-grid")!.addEventListener("pointerleave", () => (readout.textContent = base));
   }
 
-  // ---- 8. copy the clone command --------------------------------------------
+  // ---- 6. copy the clone command --------------------------------------------
   root.querySelector<HTMLButtonElement>(".term-copy")?.addEventListener("click", async (e) => {
     const b = e.currentTarget as HTMLButtonElement;
     try {
@@ -1170,7 +1147,7 @@ const clone = `git clone https://github.com/${REPO}`;
       b.textContent = "Copied";
       b.classList.add("ok");
     } catch {
-      b.textContent = "Select it above";
+      b.textContent = "Select it";
     }
     setTimeout(() => { b.textContent = "Copy"; b.classList.remove("ok"); }, 1800);
   });
