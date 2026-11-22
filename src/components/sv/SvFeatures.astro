@@ -1,22 +1,11 @@
 ---
-// Feature bento (v0.2.0). Every card shows its feature working instead of
-// describing it. Base markup is the finished frame; scripts only add motion.
-// Four full cards (any app, writing styles, your words, Model Store) and one
-// compact card with three smaller tools. (The open-source line lives in the
-// download section and the footer, so it isn't repeated here.)
+// Features (v0.2.0). Three cards that show their feature working (writing
+// styles, your words, the Model Store), then a plain "Also in the box" list
+// with one line per tool and no widgets. Base markup is the finished frame;
+// scripts only add motion and the controls.
 
-// 1. any app: one pasted line per app
-const apps = [
-  { id: "mail", tab: "Email", title: "Mail", meta: "To: Sam · Re: Thursday", text: "Thursday works for me. I'll send the notes before the call." },
-  { id: "docs", tab: "Docs", title: "Docs", meta: "Plan for next week", text: "First, finish the new price list. Then call the three people who asked for a quote." },
-  { id: "chat", tab: "Chat", title: "Chat", meta: "Are we still on for lunch?", text: "Yes, see you at one. I'll be a few minutes late." },
-  { id: "code", tab: "Code", title: "cart.ts", meta: "", text: "// add up the prices and skip anything that's out of stock" },
-];
-
-// 2. writing styles: the app's own preview sample, run through eight of the
-// nine built-in styles, in the app's order (src/services/modes.ts). The ninth,
-// "Whisper Flow Style", reads like jargon here and comes out like Clean Up, so
-// it is left to "plus more".
+// writing styles: the app's own preview sample, run through six of the nine
+// built-in styles, in the app's order (src/services/modes.ts)
 const sample = "um so i think we should like push the release to friday you know cause the uh login thing is still broken";
 const styles = [
   { id: "raw", label: "Raw Transcription", ai: false, text: "So I think we should like push the release to Friday, you know, cause the login thing is still broken." },
@@ -24,27 +13,23 @@ const styles = [
   { id: "formal", label: "Formal", ai: true, text: "I recommend moving the release to Friday, as the login issue has not been resolved yet." },
   { id: "casual", label: "Casual", ai: true, text: "Let's push the release to Friday. The login thing is still broken." },
   { id: "email", label: "Email", ai: true, text: "Hi team,\nI think we should move the release to Friday, since the login issue is still broken.\nThanks" },
-  { id: "summary", label: "Summary", ai: true, text: "• Push the release to Friday\n• Login is still broken" },
   { id: "translate", label: "Translate (Spanish)", ai: true, text: "Creo que deberíamos pasar el lanzamiento al viernes, porque el inicio de sesión sigue fallando." },
-  { id: "code", label: "Code Comment", ai: true, text: "// Release moved to Friday: login is still broken." },
 ];
 const startStyle = 1;
 
-// read aloud
-const readWords = "Select any text, press Ctrl + Alt + S, and Silent Voice reads it out loud.".split(" ");
-
-// Model Store: real catalogue rows. The base frame is an average 8-thread
-// laptop with no graphics card; the script regroups for the visitor.
+// Model Store: real catalogue rows (src/services/catalog.ts). The base frame is
+// an 8-thread laptop with no graphics card; the script regroups for a profile.
 const models = [
-  { id: "moonshine", name: "Moonshine Base", lang: "English", by: "Useful Sensors", size: "251 MB", note: "" },
+  { id: "tiny", name: "Tiny", lang: "English", by: "OpenAI", size: "75 MB", note: "" },
   { id: "parakeet", name: "Parakeet TDT 0.6B v2", lang: "English", by: "NVIDIA", size: "640 MB", note: "" },
-  { id: "turbo", name: "Whisper large-v3-turbo", lang: "Multilingual", by: "OpenAI", size: "1.6 GB", note: "" },
+  { id: "distil", name: "Distil Large v3.5", lang: "English", by: "Hugging Face", size: "756 MB", note: "" },
+  { id: "turbo", name: "Large v3 Turbo", lang: "Multilingual", by: "OpenAI", size: "1.6 GB", note: "" },
   { id: "qwen", name: "Qwen3-ASR 1.7B", lang: "52 languages", by: "Qwen", size: "2.4 GB", note: "Needs a strong graphics card" },
 ];
 const groups = [
-  { id: "well", label: "Runs well on this PC", start: ["moonshine", "parakeet"] },
-  { id: "slow", label: "Runs, but may be slow", start: ["turbo"] },
-  { id: "heavy", label: "Too heavy for this PC", start: ["qwen"] },
+  { id: "well", label: "Runs well", start: ["tiny", "parakeet"] },
+  { id: "slow", label: "Runs, but may be slow", start: ["distil", "turbo"] },
+  { id: "heavy", label: "Too heavy", start: ["qwen"] },
 ];
 const byId = Object.fromEntries(models.map((m) => [m.id, m]));
 
@@ -69,27 +54,15 @@ const cats = [
   { id: "filler", label: "Fillers dropped" },
 ];
 
-// progress: 12 weeks of example activity (seeded, so it never changes)
-let seed = 7;
-const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-const days = Array.from({ length: 84 }, (_, i) => {
-  const dow = i % 7; // 0 = Monday
-  const weekend = dow >= 5;
-  const ramp = 0.45 + (i / 84) * 0.75; // more use as the weeks go on
-  const r = rnd();
-  if (r < (weekend ? 0.55 : 0.12)) return 0;
-  return Math.round((weekend ? 110 : 300) * ramp * (0.35 + rnd() * 1.6));
-});
-// the last nine days in a row, ending today
-for (let i = 75; i < 84; i++) days[i] = Math.max(days[i], 120 + ((i * 37) % 260));
-days[83] = 740;
-const level = (w: number) => (w === 0 ? 0 : w < 100 ? 1 : w < 300 ? 2 : w < 700 ? 3 : 4);
-const totalWords = days.reduce((a, b) => a + b, 0);
-let streak = 0;
-for (let i = days.length - 1; i >= 0 && days[i] > 0; i--) streak++;
-const savedMin = Math.round(totalWords / 40 - totalWords / 150); // typing at 40 wpm vs speaking at ~150
-const saved = savedMin % 60 ? `${Math.floor(savedMin / 60)} h ${savedMin % 60} min` : `${savedMin / 60} hours`;
-const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+// also in the box: one line each, no widgets
+const box = [
+  { t: "Works in any app", d: "Email, docs, chat, code: if you can type there, you can talk there.", i: "M3.5 5.5h17v13h-17zM3.5 9h17M12 11.5v4.5M10.5 11.5h3M10.5 16h3" },
+  { t: "Catches typos where you type", d: "Optional spelling and grammar underlines in your other apps. English only.", i: "M5 7h14M5 11h9M4 17c1.4-1.6 2.8-1.6 4.2 0s2.8 1.6 4.2 0 2.8-1.6 4.2 0 2.8 1.6 3.4 0.6" },
+  { t: "Reads text out loud", d: "Select text and press Ctrl + Alt + S. Natural voices that run on your computer.", i: "M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" },
+  { t: "Watch the minutes add up", d: "Time saved against typing, speaking speed and streaks, worked out on your computer.", i: "M5 20v-6M12 20V8M19 20V4" },
+  { t: "History, with the audio", d: "Search, edit and replay what you said. Fixing a word teaches it.", i: "M12 7.5V12l3 2M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9z" },
+  { t: "Your own cloud key, if you want", d: "OpenAI, Anthropic, Gemini, Groq and more. Off until you add one.", i: "M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.2 4.5 4.5 0 0 0 7 18Z" },
+];
 ---
 
 <section class="svf" id="features" aria-labelledby="svf-title">
@@ -98,62 +71,11 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       <p class="sv-eyebrow">What it does</p>
       <h2 class="h2" id="svf-title">The tools around <em>the words.</em></h2>
     </div>
-    <p class="svf-lead">Styles that reshape what you said, your own words, a model picked for your PC and a few small helpers. All on your computer by default.</p>
+    <p class="svf-lead">Reshape what you said, teach it your words, and get a model that fits your computer. All on your computer by default.</p>
   </div>
 
   <div class="bento">
-    <!-- 1. any app ---------------------------------------------------------->
-    <article class="card card--apps">
-      <div class="card-copy">
-        <h3>Works in any app</h3>
-        <p>If you can type there, you can talk there. Pick one.</p>
-      </div>
-      <div class="apps" data-apps>
-        <div class="apps-bar">
-          <div class="apps-tabs" role="tablist" aria-label="Example apps">
-            {apps.map((a, i) => (
-              <button type="button" role="tab" class="apps-tab" id={`svf-tab-${a.id}`} aria-controls={`svf-pane-${a.id}`} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>{a.tab}</button>
-            ))}
-          </div>
-          <button type="button" class="apps-pause" aria-label="Pause the demo" hidden>
-            <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" /></svg>
-            <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" /></svg>
-            <span class="apps-pause-t" aria-hidden="true">Pause</span>
-          </button>
-        </div>
-        <div class="apps-screen">
-          {apps.map((a, i) => (
-            <div class:list={["apps-pane", `apps-pane--${a.id}`, { on: i === 0 }]} role="tabpanel" id={`svf-pane-${a.id}`} aria-labelledby={`svf-tab-${a.id}`} tabindex="0">
-              <div class="win-bar" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span>{a.title}</span></div>
-              <div class="win-body">
-                {a.id === "mail" && <p class="apps-meta">{a.meta}</p>}
-                {a.id === "docs" && <p class="apps-doc">{a.meta}</p>}
-                {a.id === "chat" && <p class="apps-bubble">{a.meta}</p>}
-                {a.id === "code" && <p class="apps-code" aria-hidden="true"><span class="c-k">function</span> <span class="c-f">total</span>(items) {"{"}</p>}
-                <p class="apps-line">
-                  <span class="sr-only">{a.text}</span>
-                  <span class="apps-typed" aria-hidden="true">{a.text.split(" ").map((w) => <span class="w">{w} </span>)}</span><span class="caret" aria-hidden="true"></span>
-                </p>
-                {a.id === "mail" && <p class="apps-quote">On Monday, Sam wrote:<br />Could we move our call to Thursday?</p>}
-                {a.id === "docs" && <div class="apps-skel" aria-hidden="true"><i></i><i></i><i></i></div>}
-                {a.id === "code" && <Fragment>
-                  <p class="apps-code" aria-hidden="true">&nbsp;&nbsp;<span class="c-k">return</span> items</p>
-                  <p class="apps-code" aria-hidden="true">&nbsp;&nbsp;&nbsp;&nbsp;.<span class="c-f">filter</span>((i) =&gt; i.inStock)</p>
-                  <p class="apps-code" aria-hidden="true">&nbsp;&nbsp;&nbsp;&nbsp;.<span class="c-f">reduce</span>((s, i) =&gt; s + i.price, 0);</p>
-                  <p class="apps-code" aria-hidden="true">{"}"}</p>
-                </Fragment>}
-              </div>
-            </div>
-          ))}
-          <span class="apps-pill" data-state="idle" aria-hidden="true">
-            <i></i><i></i><i></i><i></i><i></i>
-            <svg class="apps-check" viewBox="0 0 24 24"><path d="M5 12.5 10 17 19 7" /></svg>
-          </span>
-        </div>
-      </div>
-    </article>
-
-    <!-- 2. writing styles ---------------------------------------------------->
+    <!-- 1. writing styles ---------------------------------------------------->
     <article class="card card--styles">
       <div class="card-copy">
         <h3>Say it once, shape it after</h3>
@@ -166,7 +88,7 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
               {s.label}{i === 0 && <span class="style-def"> (default)</span>}
             </button>
           ))}
-          <span class="styles-more">plus more, and your own</span>
+          <span class="styles-more">plus 3 more, and your own</span>
         </div>
         <div class="styles-box">
           <p class="styles-said"><span class="styles-k">You said</span>{sample.split(" ").map((w, i) => <Fragment>{i > 0 && " "}{["um", "uh"].includes(w) ? <s>{w}</s> : w}</Fragment>)}</p>
@@ -178,11 +100,11 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       </div>
     </article>
 
-    <!-- 3. your words + spoken formatting ------------------------------------>
+    <!-- 2. your words + spoken formatting ------------------------------------>
     <article class="card card--words">
       <div class="card-copy">
         <h3>Gets your words right</h3>
-        <p>Teach it names and jargon. Say “my email” and it types your address. Numbers and web addresses come out formatted.</p>
+        <p>Teach it names and jargon. Say “my email” and it types your address.</p>
       </div>
       <div class="words" data-words>
         <div class="words-legend" role="group" aria-label="Highlight one kind of fix">
@@ -202,17 +124,17 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       </div>
     </article>
 
-    <!-- 4. Model Store -------------------------------------------------------->
+    <!-- 3. Model Store -------------------------------------------------------->
     <article class="card card--models">
       <div class="card-copy">
         <h3>Picks a model that fits your computer</h3>
-        <p>22 voice models, grouped by how well they run on your PC, with one picked for you.</p>
+        <p>22 voice models, grouped by how well they run, with one picked for you.</p>
       </div>
       <div class="ms" data-ms>
         <div class="ms-pick" role="group" aria-label="Show the grouping for">
           <button type="button" class="ms-btn" aria-pressed="false" data-profile="old">Older laptop</button>
-          <button type="button" class="ms-btn" aria-pressed="true" data-profile="this">This computer</button>
-          <button type="button" class="ms-btn" aria-pressed="false" data-profile="gpu">PC with a graphics card</button>
+          <button type="button" class="ms-btn" aria-pressed="true" data-profile="this"><span data-ms-this>Typical laptop</span></button>
+          <button type="button" class="ms-btn" aria-pressed="false" data-profile="gpu">Gaming PC</button>
         </div>
         <div class="ms-app">
           {groups.map((g) => (
@@ -225,11 +147,11 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
                     <li class="ms-row" data-model={m.id}>
                       <span class="ms-logo" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3 6.5v3M6.5 4v8M10 5.5v5M13.5 7v2" /></svg></span>
                       <span class="ms-name">
-                        <b>{m.name} <span class="ms-lang">({m.lang})</span></b>
-                        <small>{m.by}{m.note && <span class="ms-note"> · {m.note}</span>}</small>
+                        <b>{m.name}</b>
+                        <small>{m.lang}{m.note ? <span class="ms-note"> · {m.note}</span> : ` · ${m.by}`}</small>
                       </span>
-                      <span class="ms-badge" hidden={m.id !== "parakeet"}>Recommended</span>
                       <span class="ms-size">{m.size}</span>
+                      <span class="ms-badge" hidden={m.id !== "parakeet"}>Recommended</span>
                     </li>
                   );
                 })}
@@ -238,70 +160,22 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             </section>
           ))}
         </div>
-        <p class="ms-read" data-ms-read>The app reads your processor, memory and graphics card. This shows a typical laptop.</p>
+        <p class="ms-read" data-ms-read>The app reads your processor, memory and graphics card. This shows a typical laptop with no graphics card.</p>
       </div>
     </article>
 
-    <!-- 5. three smaller tools in one card ------------------------------------>
-    <div class="card card--more">
-      <!-- proofreading -->
-      <article class="mini mini--proof">
-        <h3>Catches typos where you type</h3>
-        <p>Red for spelling, blue for grammar, in the apps you write in. Optional, English only, and it skips code editors.</p>
-        <div class="proof-wrap">
-          <p class="proof" data-proof>
-            I{" "}<button type="button" class="typo" data-fix="received" aria-label="recieved: spelling mistake, fix it">recieved</button>{" "}the notes from{" "}<button type="button" class="typo typo--g" data-fix="their" aria-label="there: grammar mistake, fix it">there</button>{" "}meeting and will reply{" "}<button type="button" class="typo" data-fix="tomorrow" aria-label="tomorow: spelling mistake, fix it">tomorow</button>.
-          </p>
-          <div class="proof-foot">
-            <span class="proof-hint">Tap a marked word to fix it.</span>
-            <button type="button" class="proof-reset" hidden>Mark them again</button>
-          </div>
-        </div>
-      </article>
-
-      <!-- read aloud -->
-      <article class="mini mini--read">
-        <h3>Reads text out loud</h3>
-        <p>The other direction. Natural voices from Piper and Kokoro, downloaded once, running on your computer.</p>
-        <div class="read" data-read>
-          <p class="read-text">{readWords.map((w) => <span>{w} </span>)}</p>
-          <div class="read-row">
-            <button type="button" class="read-play" aria-pressed="false">
-              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5-11-6.5Z" /></svg>
-              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z" /></svg>
-              <span class="read-label">Show the example</span>
-            </button>
-            <span class="read-pill" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-          </div>
-          <p class="read-note" hidden>This uses your browser's voice. The app's voices sound more natural.</p>
-        </div>
-      </article>
-
-      <!-- progress -->
-      <article class="mini mini--progress">
-        <h3>Watch the minutes add up</h3>
-        <p>Time saved against typing, speaking speed, streaks and your last 12 weeks, worked out on your computer.</p>
-        <div class="pg" data-pg>
-          <div class="pg-stats">
-            <div class="pg-big"><b>{saved}</b><span>saved against typing at 40 words a minute</span></div>
-            <div class="pg-small"><b>{streak} days</b><span>streak</span></div>
-            <div class="pg-small"><b>142</b><span>words a minute</span></div>
-          </div>
-          <div class="pg-map" aria-hidden="true">
-            <span class="pg-k">Last 12 weeks</span>
-            <div class="pg-grid">
-              {days.map((w, i) => <i class:list={[`l${level(w)}`, { today: i === days.length - 1 }]} data-w={w} data-d={dayNames[i % 7]}></i>)}
-            </div>
-            <div class="pg-foot">
-              <span class="pg-readout" data-pg-readout>Example numbers</span>
-              <span class="pg-legend">Fewer <i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> More</span>
-            </div>
-          </div>
-          <p class="sr-only">Example numbers: {saved} saved, a {streak}-day streak, 142 words a minute when speaking, and a map of the last 12 weeks with one square per day, darker on days with more words dictated.</p>
-        </div>
-      </article>
+    <!-- also in the box: a plain list --------------------------------------->
+    <div class="card card--box">
+      <h3 class="box-h">Also in the box</h3>
+      <ul class="box">
+        {box.map((b) => (
+          <li>
+            <span class="box-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d={b.i} /></svg></span>
+            <span class="box-t"><b>{b.t}</b>{b.d}</span>
+          </li>
+        ))}
+      </ul>
     </div>
-
   </div>
 </section>
 
@@ -317,14 +191,12 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     /* padding comes from the page (--sv-space / --sv-gutter) */
   }
   /* heading left, lead beside it on wide screens: same left edge as every section */
-  .svf-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); align-items: end; gap: 1rem 3rem; margin-bottom: clamp(1.75rem, 3.4vw, 2.5rem); }
+  .svf-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); align-items: end; gap: 1rem 3rem; margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
   .svf-head .h2 { margin: 0.9rem 0 0; font-size: clamp(2.3rem, 5.2vw, 4rem); line-height: 1.04; letter-spacing: -0.03em; text-wrap: balance; }
   .svf-head em { color: var(--sv-orange); }
   .svf-lead { margin: 0; max-width: 40rem; color: var(--color-muted); font-size: 1.05rem; line-height: 1.55; text-wrap: pretty; }
 
-  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-
-  .bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 1rem; }
+  .bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
   .card {
     --mx: -400px;
     --my: -400px;
@@ -332,7 +204,7 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     isolation: isolate;
     display: flex;
     flex-direction: column;
-    gap: 1.1rem;
+    gap: 1rem;
     padding: clamp(1.2rem, 2vw, 1.45rem);
     border-radius: 22px;
     background: rgba(17, 17, 20, 0.8);
@@ -360,154 +232,16 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     background: radial-gradient(500px circle at var(--mx) var(--my), rgba(249, 115, 22, 0.07), transparent 50%);
     pointer-events: none;
   }
-  .card h3 { margin: 0 0 0.4rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; text-wrap: balance; }
-  .card p { margin: 0; color: var(--color-muted); font-size: 0.93rem; line-height: 1.5; }
-  .card-copy p:last-child { max-width: 42rem; }
+  .card h3 { margin: 0 0 0.4rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; text-wrap: balance; }
+  .card p { margin: 0; color: var(--color-muted); font-size: 0.92rem; line-height: 1.5; }
   .card button { font: inherit; }
+  /* the copy block is the same height in every card, so the demos share a top line */
+  .card-copy { min-height: 4.6rem; }
+  .card--box { grid-column: 1 / -1; }
 
-  /* layout: two rows of full cards, one compact row, one strip */
-  .card--apps { grid-column: span 6; }
-  .card--styles { grid-column: span 6; }
-  .card--words { grid-column: span 5; }
-  .card--models { grid-column: span 7; }
-  .card--more { grid-column: span 12; }
+  :global(html:not(.js)) .svf :is(.styles-chips, .words-legend, .ms-pick) { display: none; }
 
-  /* shared bits */
-  .dots { display: flex; gap: 5px; }
-  .dots i { width: 9px; height: 9px; border-radius: 50%; background: #2a2a30; }
-  .chip {
-    min-height: 36px;
-    border-radius: 999px;
-    border: 1px solid var(--sv-line);
-    background: transparent;
-    color: var(--color-muted);
-    cursor: pointer;
-    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-  }
-
-  /* ---- 1. any app ---- */
-  .apps { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
-  .apps-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
-  .apps-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-  :global(html:not(.js)) .apps-tabs { visibility: hidden; }
-  :global(html:not(.js)) .styles-chips,
-  :global(html:not(.js)) .words-legend,
-  :global(html:not(.js)) .ms-pick,
-  :global(html:not(.js)) .proof-foot,
-  :global(html:not(.js)) .read-row { display: none; }
-  :global(html:not(.js)) .typo { pointer-events: none; }
-  .apps-tab, .apps-pause {
-    min-height: 40px;
-    padding: 0.35rem 0.95rem;
-    border-radius: 999px;
-    border: 1px solid var(--sv-line);
-    background: transparent;
-    color: var(--color-muted);
-    font-size: 0.85rem !important;
-    cursor: pointer;
-    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
-  }
-  .apps-tab:hover, .apps-pause:hover { color: var(--color-text); border-color: rgba(244, 242, 237, 0.25); }
-  .apps-tab[aria-selected="true"] { background: var(--color-text); color: #0a0a0b; border-color: var(--color-text); }
-  .apps-pause { display: inline-flex; align-items: center; gap: 0.4rem; padding-inline: 0.8rem; }
-  .apps-pause[hidden] { display: none; }
-  .apps-pause svg { width: 0.85rem; height: 0.85rem; fill: currentColor; }
-  .apps-pause .i-play, .apps-pause[data-state="paused"] .i-pause { display: none; }
-  .apps-pause[data-state="paused"] .i-play { display: block; }
-
-  .apps-screen {
-    position: relative;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    flex: 1;
-    min-height: 12rem;
-    border-radius: 14px;
-    background: #0b0e14;
-    border: 1px solid #262c3d;
-    overflow: hidden;
-    font-family: var(--app-font);
-  }
-  .apps-pane {
-    grid-area: 1 / 1;
-    display: flex;
-    flex-direction: column;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(8px);
-    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(.22, 1, .36, 1), visibility 0s linear 0.4s;
-  }
-  .apps-pane.on { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
-  .apps-pane:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: -2px; border-radius: 14px; }
-  .win-bar { display: flex; align-items: center; gap: 0.8rem; padding: 0.55rem 0.9rem; border-bottom: 1px solid #1b2030; background: #131722; font-size: 0.75rem; color: #8b93a7; }
-  /* bottom padding = the pill (28px) + its 0.9rem offset + 12px of air */
-  .win-body { padding: 1.1rem 1.3rem calc(28px + 0.9rem + 12px); }
-  .apps-meta { font-size: 0.8rem !important; color: #8b93a7 !important; padding-bottom: 0.7rem; margin-bottom: 0.9rem !important; border-bottom: 1px solid #1b2030; }
-  .apps-doc { font-size: 1.3rem !important; font-weight: 600; color: #e6e9f0 !important; margin-bottom: 0.7rem !important; letter-spacing: -0.01em; }
-  .apps-line { color: #e6e9f0 !important; font-size: 1rem !important; line-height: 1.55 !important; min-height: 1.6em; }
-  .apps-typed .w { display: inline-block; white-space: pre; }
-  .caret { display: inline-block; width: 2px; height: 1.1em; margin-left: 1px; vertical-align: -0.18em; background: var(--sv-orange); }
-  .apps-bubble { display: inline-block; padding: 0.5rem 0.9rem; border-radius: 14px 14px 14px 4px; background: #1b2030; color: #e6e9f0 !important; font-size: 0.92rem !important; margin-bottom: 0.8rem !important; }
-  .apps-pane--chat .apps-line { margin-left: auto; width: fit-content; max-width: 85%; padding: 0.5rem 0.9rem; border-radius: 14px 14px 4px 14px; background: var(--sv-orange); color: #1a1200 !important; font-size: 0.92rem !important; }
-  .apps-pane--chat .win-body { display: flex; flex-direction: column; align-items: flex-start; }
-  .apps-pane--chat .apps-line { align-self: flex-end; }
-  .apps-pane--chat .caret { background: #1a1200; }
-  .apps-code, .apps-pane--code .apps-line { font-family: var(--font-mono); font-size: 0.85rem !important; }
-  .apps-code { color: #e6e9f0 !important; }
-  .apps-pane--code .apps-line { color: #8b93a7 !important; padding-left: 1.5rem; margin: 0.3rem 0 !important; }
-  .apps-quote { margin-top: 1.1rem !important; padding-left: 0.8rem; border-left: 2px solid #262c3d; font-size: 0.85rem !important; color: #8b93a7 !important; line-height: 1.5 !important; }
-  .apps-skel { display: grid; gap: 0.55rem; margin-top: 1.1rem; }
-  .apps-skel i { display: block; height: 8px; border-radius: 4px; background: #1b2030; }
-  .apps-skel i:nth-child(1) { width: 92%; }
-  .apps-skel i:nth-child(2) { width: 78%; }
-  .apps-skel i:nth-child(3) { width: 55%; }
-  .apps-code { line-height: 1.7 !important; white-space: nowrap; }
-  .c-k { color: #c084fc; }
-  .c-f { color: #fdba74; }
-
-  /* the real recording pill, scaled up: idle line, bars, processing, check */
-  .apps-pill {
-    position: absolute;
-    z-index: 1;
-    left: 50%;
-    bottom: 0.9rem;
-    translate: -50% 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    width: 76px;
-    height: 28px;
-    border-radius: 999px;
-    background: #0e1116;
-    border: 1px solid #262c3d;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  }
-  .apps-pill i { width: 3px; height: 3px; border-radius: 2px; background: #8b93a7; transition: height 0.3s ease-out, width 0.3s ease-out, opacity 0.3s ease, background 0.3s ease; }
-  .apps-pill[data-state="idle"] i { opacity: 0; }
-  .apps-pill[data-state="idle"] i:nth-child(3) { opacity: 1; width: 26px; height: 2px; }
-  .apps-pill[data-state="rec"] i { background: var(--sv-orange); }
-  .apps-pill[data-state="rec"] i:nth-child(1) { height: 8px; }
-  .apps-pill[data-state="rec"] i:nth-child(2) { height: 13px; }
-  .apps-pill[data-state="rec"] i:nth-child(3) { height: 17px; }
-  .apps-pill[data-state="rec"] i:nth-child(4) { height: 12px; }
-  .apps-pill[data-state="rec"] i:nth-child(5) { height: 7px; }
-  .apps-pill[data-state="proc"] i { height: 9px; }
-  .apps-pill[data-state="done"] i { opacity: 0; height: 2px; }
-  .apps-check { position: absolute; width: 18px; height: 18px; fill: none; stroke: #22c55e; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transform: scale(0.6); transition: opacity 0.2s ease, transform 0.3s cubic-bezier(.22, 1.4, .36, 1); }
-  .apps-pill[data-state="done"] .apps-check { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: no-preference) {
-    .apps-pill[data-state="rec"] i { animation: sv-pulse 0.9s ease-in-out infinite alternate; }
-    .apps-pill[data-state="proc"] i { animation: sv-pulse 1.6s ease-in-out infinite alternate; }
-    .apps-pill i:nth-child(2) { animation-delay: -0.1s !important; }
-    .apps-pill i:nth-child(3) { animation-delay: -0.2s !important; }
-    .apps-pill i:nth-child(4) { animation-delay: -0.3s !important; }
-    .apps-pill i:nth-child(5) { animation-delay: -0.4s !important; }
-    .caret { animation: blink 1s steps(1) infinite; }
-  }
-  @keyframes sv-pulse { from { transform: scaleY(0.4); } to { transform: scaleY(1); } }
-  @keyframes blink { 50% { opacity: 0; } }
-
-  /* ---- 2. writing styles ---- */
+  /* ---- writing styles ---- */
   .styles { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; }
   .styles-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .style {
@@ -523,30 +257,30 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   }
   .style:hover { color: var(--color-text); border-color: rgba(249, 115, 22, 0.5); }
   .style[aria-checked="true"] { background: var(--sv-orange); border-color: var(--sv-orange); color: #1a1200; font-weight: 600; }
-  .style-def { opacity: 0.75; font-weight: 400; }
+  .style-def { opacity: 0.8; font-weight: 400; }
   .styles-more { display: inline-flex; align-items: center; min-height: 36px; padding: 0 0.3rem; font-size: 0.8rem; color: var(--color-muted); }
   .styles-box { flex: 1; display: flex; flex-direction: column; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.07); overflow: hidden; }
   .styles-k { display: block; margin-bottom: 0.3rem; font-family: var(--font-sans); font-size: 0.75rem; color: var(--color-muted); }
   .styles-said { padding: 0.8rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.78rem !important; line-height: 1.55 !important; }
-  .styles-said s { color: rgba(244, 242, 237, 0.4); text-decoration-color: rgba(249, 115, 22, 0.8); }
-  .styles-outwrap { flex: 1; padding: 0.8rem 1rem 1rem; min-height: 6.5rem; }
-  .styles-out { color: var(--color-text) !important; font-family: var(--font-display); font-size: 1.3rem !important; line-height: 1.3 !important; white-space: pre-line; }
-  .styles-out.raw { font-family: var(--font-sans); font-size: 0.98rem !important; line-height: 1.55 !important; color: rgba(244, 242, 237, 0.82) !important; }
+  .styles-said s { color: rgba(244, 242, 237, 0.5); text-decoration-color: rgba(249, 115, 22, 0.8); }
+  .styles-outwrap { flex: 1; padding: 0.8rem 1rem 1rem; min-height: 7.5rem; }
+  .styles-out { color: var(--color-text) !important; font-family: var(--app-font); font-size: 1rem !important; line-height: 1.55 !important; white-space: pre-line; }
+  .styles-out.raw { color: rgba(244, 242, 237, 0.82) !important; }
 
-  /* ---- 3. words ---- */
+  /* ---- words ---- */
   .words { display: flex; flex-direction: column; gap: 0.9rem; flex: 1; }
   .words-lines { flex: 1; display: flex; flex-direction: column; border-radius: 14px; background: #0a0a0b; border: 1px solid rgba(244, 242, 237, 0.07); }
   .words-k { display: block; margin-bottom: 0.3rem; font-family: var(--font-sans); font-size: 0.75rem; color: var(--color-muted); }
-  .words-said { padding: 0.8rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.78rem !important; line-height: 1.7 !important; color: rgba(244, 242, 237, 0.62) !important; }
+  .words-said { padding: 0.8rem 1rem; border-bottom: 1px dashed rgba(244, 242, 237, 0.1); font-family: var(--font-mono); font-size: 0.78rem !important; line-height: 1.7 !important; color: rgba(244, 242, 237, 0.66) !important; }
   .words-said .seg[data-cat] { color: var(--c); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--c) 55%, transparent); text-underline-offset: 3px; }
-  .words-said .c-filler { --c: rgba(244, 242, 237, 0.5); text-decoration: line-through !important; }
+  .words-said .c-filler { --c: rgba(244, 242, 237, 0.55); text-decoration: line-through !important; }
   .words-typed { padding: 0.8rem 1rem 0.95rem; font-family: var(--app-font); font-size: 0.96rem !important; line-height: 1.75 !important; color: var(--color-text) !important; }
   .words-typed .seg[data-cat] { color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border-radius: 5px; padding: 0.05rem 0.25rem; }
   .words-typed .seg-br { background: none !important; padding: 0 !important; opacity: 0.7; font-size: 0.85em; }
   .c-words { --c: var(--c-words); }
   .c-short { --c: var(--c-short); }
   .c-format { --c: var(--c-format); }
-  .c-filler { --c: rgba(244, 242, 237, 0.55); }
+  .c-filler { --c: rgba(244, 242, 237, 0.6); }
   .seg { transition: opacity 0.3s ease, filter 0.3s ease; }
   .words[data-focus] .seg { opacity: 0.28; }
   .words[data-focus="words"] .seg.c-words,
@@ -573,13 +307,12 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   .wl:hover { color: var(--color-text); border-color: color-mix(in srgb, var(--c) 60%, transparent); }
   .wl[aria-pressed="true"] { color: var(--color-text); border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); }
 
-  /* ---- 4. Model Store ---- */
+  /* ---- Model Store ---- */
   .ms { display: flex; flex-direction: column; gap: 0.8rem; flex: 1; }
   .ms-pick { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .ms-name b, .ms-name small { min-width: 0; }
   .ms-btn {
     min-height: 36px;
-    padding: 0.3rem 0.85rem;
+    padding: 0.3rem 0.8rem;
     border-radius: 999px;
     border: 1px solid var(--sv-line);
     background: transparent;
@@ -590,173 +323,59 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   }
   .ms-btn:hover { color: var(--color-text); border-color: rgba(244, 242, 237, 0.25); }
   .ms-btn[aria-pressed="true"] { background: var(--color-text); color: #0a0a0b; border-color: var(--color-text); }
-  .ms-app { display: grid; gap: 0.2rem; padding: 0.65rem 0.8rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); color: #e6e9f0; }
+  .ms-app { display: grid; gap: 0.2rem; padding: 0.65rem 0.7rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); color: #e6e9f0; }
   .ms-group + .ms-group { margin-top: 0.35rem; }
-  .ms-h { display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.35rem; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.02em; color: #8b93a7; }
+  .ms-h { display: flex; align-items: center; gap: 0.45rem; margin: 0 0 0.3rem; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.02em; color: #9aa2b5; }
   .ms-group[data-group="well"] .ms-h { color: #4ade80; }
   .ms-group[data-group="slow"] .ms-h { color: #facc15; }
   .ms-group[data-group="heavy"] .ms-h { color: #f87171; }
-  .ms-n { display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; padding: 0 0.3rem; border-radius: 999px; background: #1b2030; color: #8b93a7; font-size: 0.68rem; font-variant-numeric: tabular-nums; }
+  .ms-n { display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; padding: 0 0.3rem; border-radius: 999px; background: #1b2030; color: #9aa2b5; font-size: 0.68rem; font-variant-numeric: tabular-nums; }
   .ms-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
-  .ms-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 0.75rem; padding: 0.22rem 0.75rem; border-radius: 12px; background: #131722; border: 1px solid #262c3d; }
-  .ms-group[data-group="heavy"] .ms-row { opacity: 0.6; }
-  .ms-logo { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #1b2030; }
+  /* name and size on the first row; the Recommended badge (when shown) under the size */
+  .ms-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; column-gap: 0.6rem; padding: 0.3rem 0.65rem; border-radius: 12px; background: #131722; border: 1px solid #262c3d; }
+  .ms-logo { grid-row: 1 / span 2; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #1b2030; }
   .ms-logo svg { width: 15px; height: 15px; fill: none; stroke: #8b93a7; stroke-width: 1.8; stroke-linecap: round; }
   .ms-group[data-group="well"] .ms-logo svg { stroke: var(--sv-orange); }
-  .ms-name { display: flex; align-items: baseline; gap: 0.6rem; min-width: 0; }
-  .ms-name b { flex: 0 1 auto; font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ms-lang { font-weight: 400; color: #8b93a7; }
-  .ms-name small { flex: 0 1000 auto; font-size: 0.72rem; color: #8b93a7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ms-group[data-group="heavy"] .ms-logo { background: transparent; box-shadow: inset 0 0 0 1px #262c3d; }
+  .ms-name { grid-row: 1 / span 2; display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+  .ms-name b { font-size: 0.8rem; font-weight: 600; }
+  .ms-name small { font-size: 0.72rem; color: #9aa2b5; }
   .ms-note { color: #fbbf24; }
-  .ms-badge { padding: 0.15rem 0.45rem; border-radius: 5px; background: rgba(249, 115, 22, 0.15); color: #fb923c; font-size: 0.66rem; font-weight: 600; }
+  .ms-size { font-size: 0.76rem; font-variant-numeric: tabular-nums; color: #e6e9f0; text-align: right; white-space: nowrap; }
+  .ms-badge { justify-self: end; margin-top: 0.15rem; padding: 0.1rem 0.4rem; border-radius: 5px; background: rgba(249, 115, 22, 0.16); color: #fb923c; font-size: 0.66rem; font-weight: 600; white-space: nowrap; }
   .ms-badge[hidden] { display: none; }
-  .ms-size { font-size: 0.78rem; font-variant-numeric: tabular-nums; color: #e6e9f0; min-width: 3.6rem; text-align: right; }
-  .ms-empty { margin: 0 !important; padding: 0.4rem 0.75rem; border-radius: 12px; border: 1px dashed #262c3d; font-size: 0.75rem !important; color: #8b93a7 !important; }
+  .ms-empty { margin: 0 !important; padding: 0.35rem 0.7rem; border-radius: 12px; border: 1px dashed #262c3d; font-size: 0.75rem !important; color: #9aa2b5 !important; }
   .ms-empty[hidden] { display: none; }
   .ms-read { font-size: 0.8rem !important; }
 
-  /* ---- 5. the compact card: three smaller tools side by side ---- */
-  .card--more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 0; }
-  .mini { display: flex; flex-direction: column; padding: clamp(1.2rem, 2vw, 1.45rem); min-width: 0; }
-  .mini + .mini { border-left: 1px solid var(--sv-line); }
-  .mini h3 { font-size: 1.08rem; }
-  .mini > p { font-size: 0.86rem; }
-  .mini > :last-child { margin-top: auto; padding-top: 0.75rem; }
-
-  /* proofreading */
-  .proof-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
-  .proof { font-family: var(--font-display); font-size: clamp(1.3rem, 1.8vw, 1.5rem) !important; line-height: 1.5 !important; color: var(--color-text) !important; }
-  .typo {
-    position: relative;
-    padding: 0;
-    border: 0;
-    background: none;
-    font: inherit !important;
-    color: inherit;
-    cursor: pointer;
-    text-decoration: underline wavy #ef4444;
-    text-decoration-thickness: 1.5px;
-    text-underline-offset: 6px;
-    transition: color 0.3s ease, text-decoration-color 0.4s ease;
-  }
-  /* a bigger hit area than the word itself */
-  .typo::after { content: ""; position: absolute; inset: -0.45rem -0.2rem; }
-  .typo--g { text-decoration-color: #3b82f6; }
-  .typo:hover { color: #fecaca; }
-  .typo--g:hover { color: #bfdbfe; }
-  .typo.fixed { text-decoration-color: transparent; color: var(--sv-orange); cursor: default; }
-  .proof-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; min-height: 40px; }
-  .proof-hint { font-size: 0.8rem; color: var(--color-muted); }
-  .proof-reset { min-height: 40px; padding: 0 0.9rem; border-radius: 999px; border: 1px solid var(--sv-line); background: transparent; color: var(--color-text); font-size: 0.78rem !important; cursor: pointer; white-space: nowrap; }
-  .proof-reset:hover { border-color: var(--sv-orange); }
-  .proof-reset[hidden] { display: none; }
-
-  /* read aloud */
-  .read { display: flex; flex-direction: column; gap: 0.8rem; }
-  .read-text { font-family: var(--font-display); font-size: clamp(1.3rem, 1.8vw, 1.5rem) !important; line-height: 1.45 !important; color: rgba(244, 242, 237, 0.92) !important; }
-  /* the sentence starts out selected, the way you'd select it to hear it */
-  .read:not(.playing) .read-text span { background: rgba(56, 189, 248, 0.16); border-radius: 0; box-decoration-break: clone; }
-  .read-text span { border-radius: 4px; transition: color 0.2s ease, background 0.2s ease; }
-  .read.playing .read-text span { color: rgba(244, 242, 237, 0.35); }
-  .read.playing .read-text span.said { color: var(--color-text); }
-  .read.playing .read-text span.now { color: #04131c; background: #38bdf8; box-shadow: 0 0 0 2px #38bdf8; }
-  .read-row { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
-  .read-play {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    min-height: 44px;
-    padding: 0 1.1rem 0 0.9rem;
-    border-radius: 999px;
-    border: 0;
-    background: var(--sv-orange);
-    color: #1a1200;
-    font-weight: 600;
-    font-size: 0.86rem !important;
-    cursor: pointer;
-    transition: transform 0.2s ease, background 0.2s ease;
-  }
-  .read-play:hover { background: #fb923c; }
-  .read-play svg { width: 1rem; height: 1rem; fill: currentColor; }
-  .read-play .i-pause, .read-play[aria-pressed="true"] .i-play { display: none; }
-  .read-play[aria-pressed="true"] .i-pause { display: block; }
-  /* the read-aloud pill turns sky blue in the app */
-  .read-pill { display: flex; align-items: center; justify-content: center; gap: 3px; width: 64px; height: 26px; border-radius: 999px; background: #0e1116; border: 1px solid #262c3d; }
-  .read-pill i { width: 3px; height: 5px; border-radius: 2px; background: #38bdf8; opacity: 0.45; transition: opacity 0.3s ease; }
-  .read-pill i:nth-child(2), .read-pill i:nth-child(4) { height: 9px; }
-  .read-pill i:nth-child(3) { height: 13px; }
-  .read.playing .read-pill i { opacity: 1; }
-  @media (prefers-reduced-motion: no-preference) {
-    .read.playing .read-pill i { animation: sv-pulse 0.7s ease-in-out infinite alternate; }
-    .read.playing .read-pill i:nth-child(2) { animation-delay: -0.15s; }
-    .read.playing .read-pill i:nth-child(3) { animation-delay: -0.3s; }
-    .read.playing .read-pill i:nth-child(4) { animation-delay: -0.45s; }
-    .read.playing .read-pill i:nth-child(5) { animation-delay: -0.6s; }
-  }
-  .read-note { font-size: 0.74rem !important; }
-
-  /* progress */
-  .pg { display: grid; grid-template-columns: minmax(6.5rem, auto) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
-  .pg-stats { display: flex; flex-direction: column; justify-content: space-between; gap: 0.7rem; padding-block: 0.2rem; }
-  .pg-stats b { display: block; font-family: "Inter Tight", var(--font-sans); font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .pg-stats span { display: block; font-size: 0.72rem; color: var(--color-muted); line-height: 1.3; }
-  .pg-big b { font-family: var(--font-display); font-weight: 400; font-size: clamp(1.7rem, 2.3vw, 2rem); line-height: 1; color: var(--sv-orange); letter-spacing: -0.02em; }
-  .pg-big span { max-width: 7.5rem; margin-top: 0.3rem; }
-  .pg-map { padding: 0.8rem 0.9rem 0.7rem; border-radius: 14px; background: #0b0e14; border: 1px solid #262c3d; font-family: var(--app-font); }
-  .pg-k { display: block; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 600; color: #8b93a7; }
-  .pg-grid { display: grid; grid-template-rows: repeat(7, 1fr); grid-auto-flow: column; gap: 3px; max-width: 11.5rem; }
-  .pg-grid i { aspect-ratio: 1; border-radius: 2px; }
-  .l0 { background: rgba(38, 44, 61, 0.6); }
-  .l1 { background: rgba(249, 115, 22, 0.25); }
-  .l2 { background: rgba(249, 115, 22, 0.45); }
-  .l3 { background: rgba(249, 115, 22, 0.7); }
-  .l4 { background: #f97316; }
-  .pg-grid i.today { box-shadow: 0 0 0 1.5px #0b0e14, 0 0 0 3px rgba(249, 115, 22, 0.9); }
-  .pg-grid i:hover { outline: 1.5px solid #e6e9f0; outline-offset: 1px; }
-  .pg-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.3rem 0.6rem; margin-top: 0.6rem; font-size: 0.75rem; color: #8b93a7; }
-  .pg-readout { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pg-legend { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
-  .pg-legend i { width: 9px; height: 9px; border-radius: 2px; }
-  @media (prefers-reduced-motion: no-preference) {
-    .pg-grid i.today { animation: today 2.4s ease-in-out infinite; }
-  }
-  @keyframes today { 50% { box-shadow: 0 0 0 1.5px #0b0e14, 0 0 0 5px rgba(249, 115, 22, 0.35); } }
+  /* ---- also in the box ---- */
+  .box-h { margin: 0 !important; font-size: 1rem !important; }
+  .box { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.1rem 1.75rem; }
+  .box li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.8rem; align-items: start; }
+  .box-ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: rgba(249, 115, 22, 0.1); box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.22); }
+  .box-ic svg { width: 17px; height: 17px; fill: none; stroke: var(--sv-orange); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .box-t { font-size: 0.86rem; line-height: 1.45; color: var(--color-muted); }
+  .box-t b { display: block; margin-bottom: 0.1rem; font-size: 0.92rem; font-weight: 600; color: var(--color-text); }
 
   /* touch: every control is at least 44px tall */
   @media (pointer: coarse) {
-    .apps-tab, .apps-pause, .style, .wl, .ms-btn, .proof-reset { min-height: 44px; }
-    .apps-pause { min-width: 44px; }
+    .style, .wl, .ms-btn { min-height: 44px; }
   }
 
-  /* loops pause while the section is off screen or the tab is hidden */
-  .svf.is-off :global(*) { animation-play-state: paused !important; }
-
   @media (max-width: 1100px) {
-    .ms-name { flex-direction: column; align-items: stretch; gap: 0; }
+    .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .card--models { grid-column: 1 / -1; }
+    .box { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (max-width: 1000px) {
     .svf-head { grid-template-columns: minmax(0, 1fr); }
-    .card--apps, .card--styles { grid-column: span 12; }
-    .card--words, .card--models { grid-column: span 6; }
   }
-  @media (max-width: 860px) {
+  @media (max-width: 760px) {
     .bento { grid-template-columns: minmax(0, 1fr); }
-    .card { grid-column: auto !important; }
-    .card--more { grid-template-columns: minmax(0, 1fr); }
-    .mini + .mini { border-left: 0; border-top: 1px solid var(--sv-line); }
-    .mini > :last-child { margin-top: 0; }
-  }
-  @media (max-width: 680px) {
-    .apps-pause-t { display: none; }
-    .apps-pause { padding-inline: 0; width: 44px; justify-content: center; }
-    .apps-tab { padding-inline: 0.75rem; }
-    .ms-row { grid-template-columns: auto minmax(0, 1fr) auto; }
-    .ms-badge { display: none; }
-    .ms-name { flex-direction: column; align-items: stretch; gap: 0; }
-    .ms-name b, .ms-name small { white-space: normal; }
+    .card-copy { min-height: 0; }
+    .box { grid-template-columns: minmax(0, 1fr); gap: 0.9rem; }
   }
   @media (max-width: 420px) {
-    .apps-tab { padding-inline: 0.6rem; font-size: 0.8rem !important; }
     .ms-logo { display: none; }
     .ms-row { grid-template-columns: minmax(0, 1fr) auto; }
   }
@@ -771,17 +390,6 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const root = document.querySelector<HTMLElement>(".svf")!;
   const motion = matchMedia("(prefers-reduced-motion: no-preference)");
   const fine = matchMedia("(hover: hover)").matches;
-
-  // run `on` while `el` is on screen, `off` when it leaves
-  const whileVisible = (el: Element, on: () => void, off: () => void, threshold = 0.3) =>
-    new IntersectionObserver(([e]) => (e.isIntersecting ? on() : off()), { threshold }).observe(el);
-
-  // CSS loops (pill, caret, today's square) pause off screen and in a hidden tab
-  let sectionOn = false;
-  const syncOff = () => root.classList.toggle("is-off", !sectionOn || document.hidden);
-  root.classList.add("is-off");
-  whileVisible(root, () => { sectionOn = true; syncOff(); }, () => { sectionOn = false; syncOff(); }, 0);
-  document.addEventListener("visibilitychange", syncOff);
 
   // ---- card entrance + spotlight -----------------------------------------
   const cards = [...root.querySelectorAll<HTMLElement>(".card")];
@@ -802,89 +410,7 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     });
   }
 
-  // ---- 1. any app: hold, speak, the pill works, the line is pasted --------
-  {
-    const box = root.querySelector<HTMLElement>("[data-apps]")!;
-    const tabs = [...box.querySelectorAll<HTMLButtonElement>("[role=tab]")];
-    const panes = [...box.querySelectorAll<HTMLElement>("[role=tabpanel]")];
-    const pill = box.querySelector<HTMLElement>(".apps-pill")!;
-    const pauseBtn = box.querySelector<HTMLButtonElement>(".apps-pause")!;
-    const pauseT = pauseBtn.querySelector<HTMLElement>(".apps-pause-t")!;
-    let cur = 0, timers: number[] = [], auto = motion.matches, visible = false;
-    let tween: gsap.core.Tween | null = null;
-
-    const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
-    const words = (i: number) => [...panes[i].querySelectorAll<HTMLElement>(".apps-typed .w")];
-    // stop everything and leave the current pane finished
-    const settle = () => {
-      timers.forEach(clearTimeout); timers = [];
-      tween?.kill(); tween = null;
-      panes.forEach((_, i) => gsap.set(words(i), { clearProps: "opacity,transform,filter" }));
-      pill.dataset.state = "idle";
-    };
-    const syncPause = () => {
-      pauseBtn.dataset.state = auto ? "playing" : "paused";
-      pauseBtn.setAttribute("aria-label", auto ? "Pause the demo" : "Play the demo");
-      pauseT.textContent = auto ? "Pause" : "Play";
-    };
-    const run = () => {
-      settle();
-      if (!motion.matches || document.hidden) return;
-      const w = words(cur);
-      gsap.set(w, { opacity: 0 });
-      later(() => (pill.dataset.state = "rec"), 250);
-      later(() => (pill.dataset.state = "proc"), 1700);
-      later(() => {
-        pill.dataset.state = "done";
-        // pasted in one go, like the app does
-        tween = gsap.fromTo(w, { opacity: 0, y: 6, filter: "blur(4px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "expo.out", stagger: 0.02 });
-      }, 2400);
-      later(() => (pill.dataset.state = "idle"), 3100);
-      later(() => { if (auto && visible) select((cur + 1) % panes.length); }, 5600);
-    };
-    const select = (i: number, focus = false) => {
-      cur = i;
-      tabs.forEach((t, k) => { t.setAttribute("aria-selected", String(k === i)); t.tabIndex = k === i ? 0 : -1; });
-      panes.forEach((p, k) => p.classList.toggle("on", k === i));
-      if (focus) tabs[i].focus();
-      run();
-    };
-    const stopAuto = () => { auto = false; syncPause(); };
-
-    tabs.forEach((t, i) => t.addEventListener("click", () => { stopAuto(); select(i); }));
-    box.querySelector(".apps-tabs")!.addEventListener("keydown", (e) => {
-      const k = (e as KeyboardEvent).key;
-      const n = tabs.length;
-      const to = k === "ArrowRight" ? (cur + 1) % n : k === "ArrowLeft" ? (cur + n - 1) % n : k === "Home" ? 0 : k === "End" ? n - 1 : -1;
-      if (to < 0) return;
-      e.preventDefault();
-      stopAuto();
-      select(to, true);
-    });
-    pauseBtn.addEventListener("click", () => {
-      auto = !auto;
-      syncPause();
-      if (auto) select((cur + 1) % panes.length); else settle();
-    });
-
-    const applyMotion = () => {
-      pauseBtn.hidden = !motion.matches;
-      auto = motion.matches;
-      syncPause();
-      if (!motion.matches) settle();
-      else if (visible) run();
-    };
-    motion.addEventListener("change", applyMotion);
-    applyMotion();
-    whileVisible(box, () => { visible = true; if (auto) run(); }, () => { visible = false; settle(); });
-    // a hidden tab stops the loop; coming back picks it up again
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) settle();
-      else if (visible && auto) run();
-    });
-  }
-
-  // ---- 2. writing styles: a radio group that morphs the output ------------
+  // ---- 1. writing styles: a radio group that morphs the output ------------
   {
     const box = root.querySelector<HTMLElement>("[data-styles]")!;
     const chips = [...box.querySelectorAll<HTMLButtonElement>(".style")];
@@ -915,7 +441,7 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     });
   }
 
-  // ---- 3. your words: highlight one kind of fix; replay on first view -------
+  // ---- 2. your words: highlight one kind of fix; replay on first view -------
   {
     const box = root.querySelector<HTMLElement>("[data-words]")!;
     const chips = [...box.querySelectorAll<HTMLButtonElement>(".wl")];
@@ -936,7 +462,7 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     });
   }
 
-  // ---- 4. Model Store: regroup the models for a kind of computer ------------
+  // ---- 3. Model Store: regroup the models for a kind of computer ------------
   {
     const box = root.querySelector<HTMLElement>("[data-ms]")!;
     const btns = [...box.querySelectorAll<HTMLButtonElement>(".ms-btn")];
@@ -944,159 +470,54 @@ const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const groups = Object.fromEntries([...box.querySelectorAll<HTMLElement>(".ms-group")].map((g) => [g.dataset.group!, g]));
     const read = box.querySelector<HTMLElement>("[data-ms-read]")!;
     type P = { cores: number; mem: number; gpu: boolean };
-    const nav = navigator as Navigator & { deviceMemory?: number };
-    const here: P = { cores: navigator.hardwareConcurrency || 4, mem: nav.deviceMemory || 8, gpu: false };
+    const nav = navigator as Navigator & { deviceMemory?: number; userAgentData?: { mobile?: boolean } };
+    // A phone or tablet can't run the desktop app, so its own numbers say
+    // nothing useful: show a plain example computer instead, and say so.
+    const ua = navigator.userAgent;
+    const phone = /Android|iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) || !!nav.userAgentData?.mobile;
+    if (!phone) box.querySelector("[data-ms-this]")!.textContent = "This computer";
+    else box.querySelector("[data-ms-this]")!.textContent = "Example computer";
+    // a browser never sees the graphics card, so "this computer" assumes none
+    const here: P = phone ? { cores: 8, mem: 16, gpu: false } : { cores: navigator.hardwareConcurrency || 4, mem: nav.deviceMemory || 8, gpu: false };
     const profiles: Record<string, P> = { old: { cores: 2, mem: 4, gpu: false }, this: here, gpu: { cores: 16, mem: 32, gpu: true } };
-    // a rough version of the app's own rules
+    // a rough version of the app's own rules (Model Store fit, onboarding pick)
     const fit = (id: string, p: P) => {
-      if (id === "moonshine") return "well";
+      if (id === "tiny") return "well";
       if (id === "parakeet") return p.cores >= 4 ? "well" : "slow";
+      if (id === "distil") return p.gpu ? "well" : p.cores >= 4 ? "slow" : "heavy";
       if (id === "turbo") return p.gpu ? "well" : p.cores >= 4 && p.mem >= 4 ? "slow" : "heavy";
       return p.gpu ? "well" : "heavy"; // Qwen3-ASR wants a strong graphics card
     };
-    const order = ["moonshine", "parakeet", "turbo", "qwen"];
+    // the app's pick: Distil Large v3.5 with a 4 GB graphics card, Parakeet v2 on 4+ cores, else Tiny
+    const pick = (p: P) => (p.gpu ? "distil" : p.cores >= 4 ? "parakeet" : "tiny");
+    const order = ["tiny", "parakeet", "distil", "turbo", "qwen"];
     const apply = (key: string, animate: boolean) => {
       const p = profiles[key];
       btns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.profile === key)));
       const state = animate ? Flip.getState(Object.values(rows)) : null;
       const count: Record<string, number> = { well: 0, slow: 0, heavy: 0 };
+      const rec = pick(p);
       order.forEach((id) => {
         const g = fit(id, p);
         count[g]++;
         groups[g].querySelector("ul")!.appendChild(rows[id]);
+        rows[id].querySelector<HTMLElement>(".ms-badge")!.hidden = id !== rec;
       });
       Object.entries(groups).forEach(([g, el]) => {
         el.querySelector(".ms-n")!.textContent = String(count[g]);
         el.querySelector<HTMLElement>(".ms-empty")!.hidden = count[g] > 0;
       });
-      // the app recommends Parakeet v2 on a 4+ core machine without a big graphics card
-      rows.parakeet.querySelector<HTMLElement>(".ms-badge")!.hidden = !(p.cores >= 4 && !p.gpu);
-      if (key === "this") {
+      if (key === "this" && phone) {
+        read.textContent = "A phone can't run the desktop app, so this shows an example computer: 8 threads, 16 GB of memory, no graphics card.";
+      } else if (key === "this") {
         const mem = nav.deviceMemory ? (nav.deviceMemory >= 8 ? "8 GB or more of memory" : `about ${nav.deviceMemory} GB of memory`) : "memory it won't say";
-        read.textContent = `A rough guess from what your browser reports: ${navigator.hardwareConcurrency || "an unknown number of"} threads, ${mem}. Nothing is sent.`;
+        read.textContent = `A guess from your browser: ${navigator.hardwareConcurrency || "an unknown number of"} threads, ${mem}. It can't see the graphics card, so this assumes none. The app checks properly.`;
       } else {
-        read.textContent = key === "old" ? "An older laptop: 2 cores, 4 GB of memory, no graphics card." : "A desktop with a strong graphics card. The app turns on the graphics card by itself when it has 4 GB or more of its own memory.";
+        read.textContent = key === "old" ? "An older laptop: 2 cores, 4 GB of memory, no graphics card." : "A desktop whose graphics card has 4 GB or more of its own memory. The app turns the card on by itself.";
       }
       if (state) Flip.from(state, { duration: 0.6, ease: "power3.inOut", absolute: false, nested: true, simple: true });
     };
     btns.forEach((b) => b.addEventListener("click", () => apply(b.dataset.profile!, motion.matches)));
     apply("this", false);
   }
-
-  // ---- 5a. proofreading: tap a marked word to fix it -------------------------
-  {
-    const wrap = root.querySelector<HTMLElement>(".proof-wrap")!;
-    const typos = [...wrap.querySelectorAll<HTMLButtonElement>(".typo")];
-    const reset = wrap.querySelector<HTMLButtonElement>(".proof-reset")!;
-    const hint = wrap.querySelector<HTMLElement>(".proof-hint")!;
-    const orig = typos.map((b) => ({ text: b.textContent!, label: b.getAttribute("aria-label")! }));
-    const fix = (b: HTMLButtonElement) => {
-      if (b.classList.contains("fixed")) return;
-      b.textContent = b.dataset.fix!;
-      b.classList.add("fixed");
-      b.setAttribute("aria-label", `${b.dataset.fix}, fixed`);
-      if (motion.matches) gsap.fromTo(b, { scale: 1.25 }, { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.4)" });
-      if (typos.every((t) => t.classList.contains("fixed"))) {
-        hint.textContent = "All fixed.";
-        reset.hidden = false;
-      }
-    };
-    typos.forEach((b) => b.addEventListener("click", () => fix(b)));
-    reset.addEventListener("click", () => {
-      typos.forEach((b, i) => { b.textContent = orig[i].text; b.classList.remove("fixed"); b.setAttribute("aria-label", orig[i].label); });
-      hint.textContent = "Tap a marked word to fix it.";
-      reset.hidden = true;
-      typos[0].focus();
-    });
-  }
-
-  // ---- 5b. read aloud: the browser's own voice if it has one -----------------
-  {
-    const box = root.querySelector<HTMLElement>("[data-read]")!;
-    const play = box.querySelector<HTMLButtonElement>(".read-play")!;
-    const label = box.querySelector<HTMLElement>(".read-label")!;
-    const note = box.querySelector<HTMLElement>(".read-note")!;
-    const spans = [...box.querySelectorAll<HTMLElement>(".read-text span")];
-    const synth = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window ? window.speechSynthesis : null;
-    const text = spans.map((s) => s.textContent).join("");
-    // character offset where each word starts, to follow the voice's boundary events
-    const starts: number[] = [];
-    spans.reduce((pos, s) => { starts.push(pos); return pos + s.textContent!.length; }, 0);
-    const idle = synth ? "Hear the example" : "Show the example";
-    label.textContent = idle;
-    note.hidden = !synth;
-
-    let timer = 0, fallback = 0, playing = false, idx = -1;
-    const mark = (i: number) => { idx = i; spans.forEach((s, k) => { s.classList.toggle("said", k < i); s.classList.toggle("now", k === i); }); };
-    const stop = () => {
-      playing = false;
-      clearInterval(timer); clearTimeout(fallback); timer = fallback = 0;
-      synth?.cancel();
-      box.classList.remove("playing");
-      play.setAttribute("aria-pressed", "false");
-      label.textContent = idle;
-      spans.forEach((s) => s.classList.remove("said", "now"));
-    };
-    // timed highlight, used with no voice or when the voice sends no word events
-    const tick = (ms: number) => {
-      clearInterval(timer);
-      timer = window.setInterval(() => {
-        if (idx + 1 >= spans.length) { clearInterval(timer); timer = 0; if (!synth || !speechSynthesis.speaking) setTimeout(() => playing && stop(), 600); return; }
-        mark(idx + 1);
-      }, ms);
-    };
-    play.addEventListener("click", () => {
-      if (playing) return stop();
-      playing = true;
-      box.classList.add("playing");
-      play.setAttribute("aria-pressed", "true");
-      label.textContent = "Stop";
-      mark(0);
-      if (!synth) return tick(motion.matches ? 300 : 450);
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US";
-      u.rate = 1;
-      let gotBoundary = false;
-      u.onboundary = (e) => {
-        if (e.name && e.name !== "word") return;
-        gotBoundary = true;
-        clearInterval(timer);
-        let i = starts.findIndex((s) => s > e.charIndex) - 1;
-        if (i < 0) i = e.charIndex >= starts[starts.length - 1] ? spans.length - 1 : 0;
-        mark(i);
-      };
-      u.onend = () => { if (playing) { mark(spans.length); setTimeout(() => playing && stop(), 700); } };
-      u.onerror = () => { if (playing && !gotBoundary) tick(380); };
-      fallback = window.setTimeout(() => { if (playing && !gotBoundary) tick(380); }, 700);
-      synth.cancel();
-      synth.speak(u);
-    });
-    // stop talking when the card leaves the screen or the tab is hidden
-    whileVisible(box, () => {}, () => playing && stop(), 0);
-    document.addEventListener("visibilitychange", () => document.hidden && playing && stop());
-  }
-
-  // ---- 5c. progress: the 12 weeks fill in, hover a day to read it ------------
-  {
-    const box = root.querySelector<HTMLElement>("[data-pg]")!;
-    const cells = [...box.querySelectorAll<HTMLElement>(".pg-grid i")];
-    const readout = box.querySelector<HTMLElement>("[data-pg-readout]")!;
-    const base = readout.textContent!;
-    gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", () => {
-      const t = gsap.from(cells, {
-        scale: 0, opacity: 0, duration: 0.5, ease: "back.out(2)",
-        stagger: { each: 0.01, from: "start" },
-        scrollTrigger: { trigger: box, start: "top 85%", once: true },
-      });
-      return () => t.revert();
-    });
-    box.querySelector(".pg-grid")!.addEventListener("pointerover", (e) => {
-      const c = e.target as HTMLElement;
-      if (c.tagName !== "I") return;
-      const w = Number(c.dataset.w);
-      readout.textContent = `${c.dataset.d}${c.classList.contains("today") ? " (today)" : ""} · ${w ? `${w.toLocaleString("en-US")} words` : "no dictation"}`;
-    });
-    box.querySelector(".pg-grid")!.addEventListener("pointerleave", () => (readout.textContent = base));
-  }
-
 </script>

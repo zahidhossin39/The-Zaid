@@ -34,9 +34,9 @@ const NAV = [
 ];
 
 const STEPS = [
-  { n: 1, t: "Both sides, live", d: "Your mic is \"You\", the computer's sound is \"Others\". Lines appear as people talk." },
-  { n: 2, t: "Voices told apart", d: "After you stop, \"Others\" becomes Speaker 1, Speaker 2. About 15 s per minute of meeting." },
-  { n: 3, t: "Summarize, in one click", d: "Key points, decisions and action items, from a summary model you pick: a local AI model (about 0.8 to 4.9 GB) or your own cloud key." },
+  { n: 1, t: "Who said what, live", d: "You and Others, line by line." },
+  { n: 2, t: "Every voice told apart", d: "Others becomes Speaker 1, Speaker 2." },
+  { n: 3, t: "Action items, per person", d: "One click on Summarize." },
 ];
 
 // Echo picture: the mic hears your voice (orange) plus the call from your
@@ -65,11 +65,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
     <div class="svn-hero">
       <!-- left: what it does, and the controls that play the demo -->
       <div class="svn-side">
-        <p class="svn-lead">
-          Notetaker records your side and the other side of any call. The words show up while people talk,
-          and after the call it tells the voices apart. Click Summarize for the notes. All on your computer,
-          unless you choose a cloud provider.
-        </p>
+        <p class="svn-lead">Record any call and get who said what, then the action items, without taking notes.</p>
 
         <button type="button" class="svn-play" hidden>
           <span class="svn-play-ic" aria-hidden="true">
@@ -96,7 +92,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
           ))}
         </ol>
 
-        <p class="svn-hint">Try it in the window: set <b>People</b> to 1, or <span class="h-fine">click</span><span class="h-coarse">tap</span> a time to jump to that line. The demo has no sound.</p>
+        <p class="svn-hint">Try it: set <b>People</b> to 1, or <span class="h-fine">click</span><span class="h-coarse">tap</span> a time. The demo has no sound.</p>
       </div>
 
       <!-- ===================== the Notetaker window ===================== -->
@@ -288,20 +284,17 @@ const PLAY = "M3.5 2v8l6.5-4z";
       <article class="svn-card svn-card--echo">
         <div class="svn-card-copy">
           <h3>No headphones? The echo comes out.</h3>
-          <p>
-            On laptop speakers your mic also hears the call. Where it only hears the speakers, that part is muted.
-            Where you talk over them, their sound is taken out of your side.
-          </p>
+          <p>On laptop speakers your mic also hears the call. Notetaker takes that echo out of your side.</p>
         </div>
         <div class="svn-echo" data-echo="on">
           <div class="svn-echo-top">
+            <div class="svn-echo-seg" role="group" aria-label="Your side of the call">
+              <button type="button" class="svn-echo-b" data-echo-set="off" aria-pressed="false">Before</button>
+              <button type="button" class="svn-echo-b" data-echo-set="on" aria-pressed="true">After</button>
+            </div>
             <p class="svn-echo-state" aria-live="polite">
-              <span class="svn-echo-tag" data-when="off">Before</span><span class="svn-echo-tag svn-echo-tag--on" data-when="on">After</span>
               <span data-when="off">Echo mixed into your side</span><span data-when="on">Echo taken out, voice kept</span>
             </p>
-            <button type="button" class="svn-echo-tg" aria-pressed="true">
-              <span class="svn-sw" aria-hidden="true"><i></i></span>Echo removal
-            </button>
           </div>
           <svg class="svn-wave" viewBox="0 0 720 120" preserveAspectRatio="none" aria-hidden="true">
             <line x1="0" y1="60" x2="720" y2="60" />
@@ -319,7 +312,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
             <p class="svn-echo-k"><span><i class="v"></i>Your voice</span><span><i class="e"></i>Echo from your speakers</span></p>
             <p class="svn-echo-num">
               <span class="svn-echo-meter" aria-hidden="true"><i></i></span>
-              <span data-when="off"><b>0 dB</b> removed</span><span data-when="on"><b>about 8 dB</b> less, on a real call</span>
+              <span data-when="off"><b>0 dB</b> removed</span><span data-when="on"><b>about 8 dB</b> less on a real call</span>
             </p>
           </div>
         </div>
@@ -329,10 +322,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
         <div class="svn-card-copy">
           <p class="svn-file-k">Also new: Transcribe</p>
           <h3>Got a recording already? Drop it in.</h3>
-          <p>
-            Lectures, calls, voice memos, videos. Drop an audio or video file and get a transcript with times,
-            ready to save as .txt, .md or .srt. Files are always transcribed on your computer.
-          </p>
+          <p>Lectures, calls, voice memos, videos. Get a transcript with times, saved as .txt, .md or .srt. Always on your computer.</p>
         </div>
         <div class="svn-file-ui" aria-hidden="true">
           <div class="svn-file-row">
@@ -343,7 +333,6 @@ const PLAY = "M3.5 2v8l6.5-4z";
           <span class="svn-file-bar"><i></i></span>
           <div class="svn-file-lines">
             <p><span>0:00</span>Thanks for making the time. Let's start with how the shop began.</p>
-            <p><span>0:07</span>It started as a stall at the Friday market, about six years ago.</p>
           </div>
         </div>
         <p class="svn-file-fmt">mp3 · m4a · aac · mp4 · mov · wav · flac · ogg · mkv</p>
@@ -354,13 +343,13 @@ const PLAY = "M3.5 2v8l6.5-4z";
     <details class="svn-more">
       <summary>
         <span class="svn-more-t">More about Notetaker</span>
-        <span class="svn-more-d">Two languages in one call · on your computer or the cloud · search, playback, export · where it records the other side</span>
+        <span class="svn-more-d">Two languages in one call · on your computer or the cloud · what it needs · search and export · where it records the other side</span>
         <svg class="svn-more-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
       </summary>
       <div class="svn-more-body">
         <section class="svn-mi">
           <h3>Two languages, one meeting</h3>
-          <p>Tell it every language people speak, for example Bangla and English. A piece that comes back in the wrong script is done again in the right language.</p>
+          <p>Tell it every language people speak, for example Bangla and English. A piece that comes back in the wrong script is done again in the right language. This needs a multilingual voice model, such as Whisper, or a cloud provider; the default English model hears English only.</p>
           <div class="svn-lang" aria-hidden="true">
             <span class="svn-lang-sel">Bangla <svg viewBox="0 0 12 12"><path d="M3 4.5l3 3 3-3" /></svg></span>
             <span class="svn-chip">+ English</span>
@@ -373,7 +362,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
           <p>Notetaker transcribes on your computer and works offline. If you add your own cloud provider you can use it instead, and then the audio is sent to that provider.</p>
           <div class="svn-where">
             <div class="svn-where-opts" role="group" aria-label="Where the meeting is transcribed">
-              <button type="button" class="svn-opt" aria-pressed="true" data-where="local"><b>On this PC · offline</b></button>
+              <button type="button" class="svn-opt" aria-pressed="true" data-where="local"><b>This PC (offline)</b></button>
               <button type="button" class="svn-opt" aria-pressed="false" data-where="cloud"><b>Cloud, your own key</b></button>
             </div>
             <p class="svn-where-out" aria-live="polite">
@@ -382,6 +371,14 @@ const PLAY = "M3.5 2v8l6.5-4z";
               <span data-where-text="cloud" hidden>Audio is sent to your provider to transcribe; recordings and text stay on this PC.</span>
             </p>
           </div>
+        </section>
+
+        <section class="svn-mi">
+          <h3>What it needs</h3>
+          <dl class="svn-tools">
+            <div><dt>Telling voices apart</dt><dd>A one-time download of about 30 MB. It takes about 15 s per minute of meeting, on a typical laptop.</dd></div>
+            <div><dt>Summaries</dt><dd>A summary model: a local AI model from the Model Store (about 0.8 to 4.9 GB) or your own cloud key.</dd></div>
+          </dl>
         </section>
 
         <section class="svn-mi">
@@ -398,7 +395,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
           <h3>Where it records the other side</h3>
           <dl class="svn-tools">
             <div><dt>Windows</dt><dd>Records both sides.</dd></div>
-            <div><dt>macOS 13 or later</dt><dd>Both sides once you allow Screen &amp; System Audio Recording. Not yet tested on a real Mac, so <a href="https://github.com/zahidhossin39/Silent-Voice/issues" target="_blank" rel="noopener noreferrer">tell me if it works<span class="sr-only"> (opens in a new tab)</span></a>. On macOS 12, your side only.</dd></div>
+            <div><dt>macOS 13 or later</dt><dd>Both sides once you allow Screen &amp; System Audio Recording. The Mac app is early and not fully tested on a real Mac yet, so <a href="https://github.com/zahidhossin39/Silent-Voice/issues" target="_blank" rel="noopener noreferrer">tell me if it works<span class="sr-only"> (opens in a new tab)</span></a>. On macOS 12, your side only.</dd></div>
             <div><dt>Linux</dt><dd>Both sides with PulseAudio or PipeWire.</dd></div>
           </dl>
           <p class="svn-mi-note">If it can't record the computer's sound, it tells you before you start and keeps your side.</p>
@@ -455,7 +452,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .svn-play-ic svg { width: 13px; height: 13px; fill: currentColor; grid-area: 1 / 1; }
   .svn-play-ic .i-s, .svn.is-playing .svn-play-ic .i-p { display: none; }
   .svn.is-playing .svn-play-ic .i-s { display: block; }
-  .svn-play-d { font-weight: 400; font-size: 0.82rem; opacity: 0.7; }
+  .svn-play-d { font-weight: 500; font-size: 0.82rem; opacity: 0.85; }
   .svn.is-playing .svn-play-d { display: none; }
 
   .svn-chapters { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
@@ -507,6 +504,8 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .svn-hint { visibility: hidden; margin: 0.2rem 0 0; font-size: 0.86rem; line-height: 1.5; color: var(--color-muted); }
   .svn-hint b { color: var(--color-text); font-weight: 500; }
   .svn.is-ready:not(.is-playing) .svn-hint { visibility: visible; }
+  /* once the visitor has watched the call, the window speaks for itself */
+  .svn.was-played .svn-hint { display: none; }
   .h-coarse { display: none; }
   @media (pointer: coarse) { .h-fine { display: none; } .h-coarse { display: inline; } }
 
@@ -539,7 +538,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
        when it is taller than that, the transcript scrolls inside */
     display: flex;
     flex-direction: column;
-    max-height: calc(100svh - 6.5rem);
+    max-height: min(calc(100svh - 6.5rem), 44rem);
   }
   .nt:focus { outline: none; }
   .nt[data-phase="rec"] { box-shadow: 0 50px 120px -40px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(239, 68, 68, 0.35), 0 0 140px -40px rgba(239, 68, 68, 0.35); }
@@ -680,6 +679,11 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt-ov[data-state="done"] .nt-ov-empty { display: none; }
   .nt-ov-notes { display: none; max-width: 72ch; padding-right: 5.5rem; }
   .nt-ov[data-state="done"] .nt-ov-notes { display: grid; gap: 10px; }
+  /* a wide panel puts the action items beside the key points, so more of the transcript shows */
+  @container (min-width: 560px) {
+    .nt-ov[data-state="done"] .nt-ov-notes { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 22px; max-width: none; padding-right: 0; margin-top: 4px; }
+    .ov-sec:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; }
+  }
   .ov-sh { font-size: 13.5px; font-weight: 600; margin-bottom: 3px !important; }
   .ov-sec p:not(.ov-sh), .ov-sec li { font-size: 14px; line-height: 1.55; color: var(--a-tx); }
   .ov-sec ul { margin: 0; padding-left: 18px; list-style: disc; }
@@ -689,6 +693,9 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .ov-tag { display: inline-block; margin-right: 8px; padding: 0 6px; border-radius: 4px; background: var(--a-s2); color: var(--a-mu); font-size: 11px; font-weight: 600; line-height: 18px; vertical-align: 1px; }
   .ov-tag--you { background: rgba(249, 115, 22, 0.14); color: var(--a-ac); }
   .nt-ov.is-reveal .ov-sec { animation: nt-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  /* the payoff: a soft glow on the Overview when the story writes it */
+  .nt-ov::before { content: ""; position: absolute; inset: -8px -10px 2px; border-radius: 12px; background: radial-gradient(70% 90% at 30% 60%, rgba(249, 115, 22, 0.13), transparent 75%); box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.8s ease; }
+  .nt-ov.is-glow::before { opacity: 1; }
   .nt-ov.is-reveal .ov-sec:nth-child(2) { animation-delay: 0.18s; }
   .nt-ov.is-reveal .ov-sec:nth-child(3) { animation-delay: 0.36s; }
   .nt-ov-ctrl { display: none; margin-top: 12px; }
@@ -742,6 +749,8 @@ const PLAY = "M3.5 2v8l6.5-4z";
     transition: color 0.2s ease;
   }
   .ln-time svg { width: 10px; height: 10px; fill: currentColor; flex: none; }
+  /* a 24px-plus target around the small time label */
+  .ln-time::before { content: ""; position: absolute; inset: -6px -4px; }
   .ln-time:hover { color: var(--a-ac) !important; }
   .ln-time:disabled { cursor: default; }
   .ln-time:disabled:hover { color: var(--a-mu) !important; }
@@ -781,7 +790,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt-play .i-pause, .nt-player.is-playing .nt-play .i-play { display: none; }
   .nt-player.is-playing .nt-play .i-pause { display: block; }
   .nt-pos, .nt-dur { font-size: 11px; color: var(--a-mu); font-variant-numeric: tabular-nums; min-width: 2.2em; }
-  .nt-range { flex: 1; min-width: 0; accent-color: var(--a-ac); height: 4px; cursor: pointer; }
+  .nt-range { flex: 1; min-width: 0; accent-color: var(--a-ac); height: 24px; margin: 0; cursor: pointer; }
   .nt-silent { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 0 8px; height: 22px; border-radius: 999px; background: var(--a-s2); color: var(--a-mu); font-size: 11px; white-space: nowrap; }
   .nt-silent svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .nt-player.is-playing .nt-silent { color: var(--a-tx); box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.45); }
@@ -800,39 +809,30 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .nt.is-redoing .ln-text { opacity: 0.4; transition: opacity 0.3s ease; }
 
   /* ================= echo + transcribe ================= */
-  .svn-pair { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 1rem; margin-top: clamp(2.5rem, 4.5vw, 3.25rem); }
+  .svn-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; margin-top: clamp(2rem, 3.6vw, 2.75rem); }
   .svn-card {
-    display: flex; flex-direction: column; gap: 1.25rem;
+    display: flex; flex-direction: column; gap: 1.1rem;
     padding: clamp(1.3rem, 2.2vw, 1.6rem);
     border: 1px solid var(--sv-line); border-radius: 22px;
     background: rgba(17, 17, 20, 0.8);
   }
   .svn-card h3 { margin: 0 0 0.45rem; font-family: "Inter Tight", var(--font-sans); font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
-  .svn-card-copy p { margin: 0; color: var(--color-muted); font-size: 0.95rem; line-height: 1.55; max-width: 40rem; }
+  .svn-card-copy p { margin: 0; color: var(--color-muted); font-size: 0.92rem; line-height: 1.5; max-width: 40rem; }
 
   /* echo */
-  .svn-echo { margin-top: auto; padding: 1rem 1.1rem 0.9rem; border-radius: 16px; background: #0b0e14; border: 1px solid #262c3d; }
-  .svn-echo-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
-  .svn-echo-state { display: flex; align-items: center; gap: 0.6rem; margin: 0; font-size: 0.9rem; color: #e6e9f0; font-weight: 500; }
-  .svn-echo-tag { display: inline-grid; place-items: center; height: 24px; padding: 0 0.6rem; border-radius: 999px; background: #262c3d; color: #e6e9f0; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; }
-  .svn-echo-tag--on { background: var(--sv-orange); color: #1a1200; }
+  .svn-echo { margin-top: auto; padding: 0.85rem 0.95rem 0.8rem; border-radius: 16px; background: #0b0e14; border: 1px solid #262c3d; }
+  .svn-echo-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; flex-wrap: wrap; }
+  .svn-echo-state { display: flex; align-items: center; gap: 0.6rem; margin: 0; font-size: 0.88rem; color: #e6e9f0; font-weight: 500; }
+  .svn-echo-seg { display: inline-flex; padding: 3px; border-radius: 999px; background: #131722; border: 1px solid #262c3d; }
+  .svn-echo-b { min-height: 34px; min-width: 4.6rem; padding: 0 0.9rem; border: 0; border-radius: 999px; background: none; color: #9aa2b5; font: inherit; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: background 0.25s ease, color 0.25s ease; }
+  .svn-echo-b:hover { color: #e6e9f0; }
+  .svn-echo-b[aria-pressed="true"] { background: #e6e9f0; color: #0b0e14; }
+  .svn-echo-b[data-echo-set="on"][aria-pressed="true"] { background: var(--sv-orange); color: #1a1200; }
+  .svn-echo-b:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
+  @media (pointer: coarse) { .svn-echo-b { min-height: 44px; } }
   .svn-echo [data-when] { display: none; }
   .svn-echo[data-echo="on"] [data-when="on"], .svn-echo[data-echo="off"] [data-when="off"] { display: inline; }
-  .svn-echo[data-echo="on"] .svn-echo-tag[data-when="on"], .svn-echo[data-echo="off"] .svn-echo-tag[data-when="off"] { display: inline-grid; }
-  .svn-echo-tg {
-    display: inline-flex; align-items: center; gap: 0.6rem;
-    min-height: 44px; padding: 0 0.9rem 0 0.6rem;
-    border: 1px solid #262c3d; border-radius: 999px;
-    background: #131722; color: #e6e9f0; font: inherit; font-size: 0.85rem;
-    cursor: pointer;
-  }
-  .svn-echo-tg:hover { border-color: #3a4258; }
-  .svn-echo-tg:focus-visible { outline: 2px solid var(--sv-orange); outline-offset: 2px; }
-  .svn-sw { position: relative; width: 34px; height: 20px; border-radius: 999px; background: #262c3d; transition: background 0.3s ease; }
-  .svn-sw i { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #e6e9f0; transition: transform 0.3s cubic-bezier(0.3, 1.4, 0.5, 1); }
-  .svn-echo-tg[aria-pressed="true"] .svn-sw { background: var(--sv-orange); }
-  .svn-echo-tg[aria-pressed="true"] .svn-sw i { transform: translateX(14px); background: #1a1200; }
-  .svn-wave { display: block; width: 100%; height: 5.75rem; margin: 0.7rem 0 0.5rem; }
+  .svn-wave { display: block; width: 100%; height: 4rem; margin: 0.55rem 0 0.35rem; }
   .svn-wave line { stroke: #262c3d; stroke-width: 1; }
   .svn-wave .vb { fill: var(--sv-orange); }
   .svn-wave .eg { fill: none; stroke: #64748b; stroke-width: 1; stroke-dasharray: 2 2; opacity: 0; transition: opacity 0.6s ease 0.3s; }
@@ -869,7 +869,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .svn-file-lines { display: grid; gap: 0.4rem; }
   .svn-file-lines p { display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: 0.5rem; margin: 0; font-size: 13.5px; line-height: 1.5; }
   .svn-file-lines span { padding-top: 1px; text-align: right; font-size: 11px; color: #8b93a7; font-variant-numeric: tabular-nums; }
-  .svn-file-fmt { margin: -0.4rem 0 0; font-family: var(--font-mono); font-size: 0.72rem; color: rgba(244, 242, 237, 0.55); }
+  .svn-file-fmt { margin: -0.3rem 0 0; font-family: var(--font-mono); font-size: 0.72rem; color: rgba(244, 242, 237, 0.55); }
 
   /* ================= more about Notetaker ================= */
   .svn-more { margin-top: 1rem; border: 1px solid var(--sv-line); border-radius: 22px; background: rgba(17, 17, 20, 0.8); }
@@ -887,7 +887,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .svn-more-d { font-size: 0.86rem; color: var(--color-muted); }
   .svn-more-ch { width: 30px; height: 30px; padding: 6px; border-radius: 50%; border: 1px solid var(--sv-line); fill: none; stroke: var(--sv-orange); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s ease; }
   .svn-more[open] .svn-more-ch { transform: rotate(180deg); }
-  .svn-more-body { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem 1.75rem; padding: 0.6rem 1.4rem 1.4rem; border-top: 1px solid var(--sv-line); padding-top: 1.4rem; }
+  .svn-more-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem 1.75rem; padding: 0.6rem 1.4rem 1.4rem; border-top: 1px solid var(--sv-line); padding-top: 1.4rem; }
   .svn-mi h3 { margin: 0 0 0.5rem; font-family: "Inter Tight", var(--font-sans); font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; color: var(--color-text); }
   .svn-mi > p { margin: 0; font-size: 0.88rem; line-height: 1.5; color: var(--color-muted); }
   .svn-mi-note { margin-top: 0.6rem !important; font-size: 0.82rem !important; }
@@ -919,7 +919,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
   .svn-tools dt { font-size: 0.86rem; font-weight: 600; color: var(--color-text); }
   .svn-tools dd { margin: 0.1rem 0 0; font-size: 0.82rem; line-height: 1.45; color: var(--color-muted); }
   .svn-tools dd a { color: var(--color-text); text-decoration: underline; text-decoration-color: rgba(249, 115, 22, 0.6); text-underline-offset: 3px; }
-  .svn-consent { grid-column: 1 / -1; display: flex; gap: 0.75rem; align-items: flex-start; margin: 0; padding: 0.8rem 1rem; border-radius: 14px; background: rgba(249, 115, 22, 0.06); border: 1px solid rgba(249, 115, 22, 0.2); font-size: 0.88rem; color: var(--color-muted); }
+  .svn-consent { align-self: start; display: flex; gap: 0.75rem; align-items: flex-start; margin: 0; padding: 0.8rem 1rem; border-radius: 14px; background: rgba(249, 115, 22, 0.06); border: 1px solid rgba(249, 115, 22, 0.2); font-size: 0.88rem; color: var(--color-muted); }
   .svn-consent b { color: var(--color-text); font-weight: 600; }
   .svn-consent svg { width: 20px; height: 20px; flex: none; margin-top: 0.05rem; fill: none; stroke: var(--sv-orange); stroke-width: 1.8; stroke-linecap: round; }
 
@@ -1056,7 +1056,7 @@ const PLAY = "M3.5 2v8l6.5-4z";
     .nt-sum, .nt-ov[data-state="done"] .nt-sum { height: 44px; }
   }
   /* JS off: the finished meeting as a still picture, with no controls that do nothing */
-  :global(html:not(.js)) .svn :is(.nt-start, .nt-player, .nt-again, .nt-ov-ctrl, .svn-echo-tg, .svn-where-opts) { display: none; }
+  :global(html:not(.js)) .svn :is(.nt-start, .nt-player, .nt-again, .nt-ov-ctrl, .svn-echo-seg, .svn-where-opts) { display: none; }
   :global(html:not(.js)) .svn .nt-people-l, :global(html:not(.js)) .svn .nt-details--post .nt-sep { display: none; }
   :global(html:not(.js)) .svn .ln-time { pointer-events: none; }
   :global(html:not(.js)) .svn .ln-time svg { display: none; }
@@ -1392,6 +1392,8 @@ const PLAY = "M3.5 2v8l6.5-4z";
       await sleep(1400); if (!alive(g)) return;
       setOv("done");
       if (motion) ov.classList.add("is-reveal");
+      ov.classList.add("is-glow");
+      window.setTimeout(() => ov.classList.remove("is-glow"), 2600);
       announce("Overview written: key points, decisions and action items.");
     }
 
@@ -1509,25 +1511,28 @@ const PLAY = "M3.5 2v8l6.5-4z";
     // ---- steps + play the call ----
     chapters.forEach((c) => {
       c.disabled = false;
-      c.addEventListener("click", () => play(Number(c.dataset.ch) as 1 | 2 | 3));
+      c.addEventListener("click", () => { root.classList.add("was-played"); play(Number(c.dataset.ch) as 1 | 2 | 3); });
     });
     playCall.hidden = false;
     playCall.addEventListener("click", () => {
       if (storyOn) { revealTok++; finishNow(); announce("Skipped to the finished meeting."); }
-      else play(1);
+      else { root.classList.add("was-played"); play(1); }
     });
 
     // ---- echo ----
     const echo = $(".svn-echo");
-    const echoTg = $<HTMLButtonElement>(".svn-echo-tg");
-    const setEcho = (on: boolean) => { echo.dataset.echo = on ? "on" : "off"; echoTg.setAttribute("aria-pressed", String(on)); };
+    const echoBs = $$<HTMLButtonElement>(".svn-echo-b");
+    const setEcho = (on: boolean) => {
+      echo.dataset.echo = on ? "on" : "off";
+      echoBs.forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.echoSet === "on") === on)));
+    };
     let echoTimer = 0;
     let echoTouched = false;
-    echoTg.addEventListener("click", () => {
+    echoBs.forEach((b) => b.addEventListener("click", () => {
       clearTimeout(echoTimer);
       echoTouched = true;
-      setEcho(echo.dataset.echo !== "on");
-    });
+      setEcho(b.dataset.echoSet === "on");
+    }));
 
     // ---- local or cloud (also changes the window's subtitle and the redo prompt) ----
     const opts = $$<HTMLButtonElement>(".svn-opt");

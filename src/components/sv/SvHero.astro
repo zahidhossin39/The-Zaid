@@ -8,6 +8,18 @@ import SvDownload from "./SvDownload.astro";
   <div class="svh-grain" aria-hidden="true"></div>
 
   <div class="svh-inner">
+    <p class="svh-brand" data-hero-in>
+      <svg class="svh-logo" viewBox="0 0 1024 1024" aria-hidden="true">
+        <rect width="1024" height="1024" rx="224" fill="#0d0f14" />
+        <rect class="b" x="232" y="432" width="80" height="160" rx="40" />
+        <rect class="b" x="360" y="352" width="80" height="320" rx="40" />
+        <rect class="b b-mid" x="488" y="252" width="80" height="520" rx="40" />
+        <rect class="b" x="616" y="352" width="80" height="320" rx="40" />
+        <rect class="b" x="744" y="432" width="80" height="160" rx="40" />
+      </svg>
+      <span class="svh-name">Silent <em>Voice</em></span>
+    </p>
+
     <!-- what's new: Notetaker on a computer, the Android beta on an Android phone -->
     <div class="svh-news" data-hero-in>
       <a class="svh-chip svh-os-desk-flex" href="#notetaker">
@@ -25,18 +37,6 @@ import SvDownload from "./SvDownload.astro";
         <span aria-hidden="true">→</span>
       </a>
     </div>
-
-    <p class="svh-brand" data-hero-in>
-      <svg class="svh-logo" viewBox="0 0 1024 1024" aria-hidden="true">
-        <rect width="1024" height="1024" rx="224" fill="#0d0f14" />
-        <rect class="b" x="232" y="432" width="80" height="160" rx="40" />
-        <rect class="b" x="360" y="352" width="80" height="320" rx="40" />
-        <rect class="b b-mid" x="488" y="252" width="80" height="520" rx="40" />
-        <rect class="b" x="616" y="352" width="80" height="320" rx="40" />
-        <rect class="b" x="744" y="432" width="80" height="160" rx="40" />
-      </svg>
-      <span class="svh-name">Silent <em>Voice</em></span>
-    </p>
 
     <h1 class="svh-title" id="svh-title">
       <span class="svh-os-desk">
@@ -113,7 +113,7 @@ import SvDownload from "./SvDownload.astro";
   }
 
   /* ---- what's new ---- */
-  .svh-news { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+  .svh-news { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: clamp(1rem, 2.6svh, 1.7rem); }
   .svh-chip {
     display: inline-flex;
     align-items: center;
@@ -151,7 +151,7 @@ import SvDownload from "./SvDownload.astro";
     display: inline-flex;
     align-items: center;
     gap: 0.7rem;
-    margin: clamp(1.4rem, 3.2svh, 2.2rem) 0 clamp(0.6rem, 1.6svh, 1.1rem);
+    margin: 0 0 clamp(0.9rem, 2.2svh, 1.4rem);
     font-family: var(--font-display);
     font-weight: 400;
     font-size: clamp(1.6rem, 2.2vw, 2.15rem);
@@ -251,10 +251,12 @@ import SvDownload from "./SvDownload.astro";
 
   // ---- waveform field -------------------------------------------------------
   // The one ambient motion on the hero: a row of bars that breathes like a
-  // voice. Hover the Download button (or press anywhere) and it gets louder,
-  // and the bars in the logo speak along with it. It never draws behind the
-  // download block: the bars sit below it when there's room, and fade out
-  // across its width when there isn't.
+  // voice. Point at the Download button and it gets louder, and the bars in
+  // the logo speak along with it. After 10 s with no pointer or keyboard
+  // input it settles and stops drawing (the last frame stays), so it doesn't
+  // keep the main thread busy. It never draws behind the download block: the
+  // bars sit below it when there's room, and fade out across its width when
+  // there isn't.
   let w = 0, h = 0, dpr = 1, n = 0, gap = 0, bw = 0;
   let px = -1, tx = 0.5;                   // pointer x and smoothed focus (0..1)
   let energy = 0.18, targetEnergy = 0.18;
@@ -396,9 +398,17 @@ import SvDownload from "./SvDownload.astro";
     });
   };
 
+  const REST_AFTER = 10000;
+  let lastInput = performance.now();
   const loop = (t: number) => {
     frame(t);
-    raf = vis ? requestAnimationFrame(loop) : 0;
+    const resting = t - lastInput > REST_AFTER && Math.abs(energy - targetEnergy) < 0.01;
+    raf = vis && !resting ? requestAnimationFrame(loop) : 0;
+  };
+  // any input near the hero wakes the field up again
+  const wake = () => {
+    lastInput = performance.now();
+    if (vis && !raf && !still) raf = requestAnimationFrame(loop);
   };
 
   // the release script fills in the caveat and the button's text after load,
@@ -413,20 +423,17 @@ import SvDownload from "./SvDownload.astro";
   if (!still) {
     new IntersectionObserver(([e]) => {
       vis = e.isIntersecting;
-      if (vis && !raf) raf = requestAnimationFrame(loop);
+      if (vis) wake();
     }).observe(hero);
 
-    hero.addEventListener("pointermove", (e) => { px = e.clientX - hero.getBoundingClientRect().left; });
-    hero.addEventListener("pointerleave", () => { px = -1; });
-    // press and hold anywhere in the hero to "talk"
-    hero.addEventListener("pointerdown", () => (targetEnergy = 1));
-    addEventListener("pointerup", () => (targetEnergy = IDLE));
-    addEventListener("pointercancel", () => (targetEnergy = IDLE));
+    hero.addEventListener("pointermove", (e) => { px = e.clientX - hero.getBoundingClientRect().left; wake(); });
+    hero.addEventListener("pointerleave", () => { px = -1; wake(); });
+    addEventListener("keydown", wake, { passive: true });
     // the field listens when you point at the Download button
     const btn = hero.querySelector(".svdl-btn");
-    btn?.addEventListener("pointerenter", () => (targetEnergy = 0.75));
-    btn?.addEventListener("pointerleave", () => (targetEnergy = IDLE));
-    btn?.addEventListener("focus", () => (targetEnergy = 0.6));
-    btn?.addEventListener("blur", () => (targetEnergy = IDLE));
+    btn?.addEventListener("pointerenter", () => { targetEnergy = 0.75; wake(); });
+    btn?.addEventListener("pointerleave", () => { targetEnergy = IDLE; wake(); });
+    btn?.addEventListener("focus", () => { targetEnergy = 0.6; wake(); });
+    btn?.addEventListener("blur", () => { targetEnergy = IDLE; wake(); });
   }
 </script>

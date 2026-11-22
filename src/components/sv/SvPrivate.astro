@@ -172,9 +172,11 @@ const facts = [
   .node--pc { grid-area: pc; border-color: rgba(249, 115, 22, 0.55); background: rgba(249, 115, 22, 0.08); box-shadow: 0 0 60px -20px rgba(249, 115, 22, 0.5); }
   .node--txt { grid-area: txt; }
   .node--cloud { grid-area: cloud; border-style: dashed; transition: border-color 0.4s ease, background 0.4s ease, box-shadow 0.4s ease; }
-  .node--cloud > * { opacity: 0.6; transition: opacity 0.4s ease; }
+  /* "off" reads as dimmed, but its words stay readable (AA) */
+  .node--cloud .node-ic { opacity: 0.6; transition: opacity 0.4s ease; }
+  .node--cloud :is(.node-t, .node-s) { opacity: 0.86; transition: opacity 0.4s ease; }
   .svp-demo:has(.switch-in:checked) .node--cloud { border-style: solid; border-color: var(--sv-orange); background: rgba(249, 115, 22, 0.1); box-shadow: 0 0 50px -18px rgba(249, 115, 22, 0.6); }
-  .svp-demo:has(.switch-in:checked) .node--cloud > * { opacity: 1; }
+  .svp-demo:has(.switch-in:checked) .node--cloud :is(.node-ic, .node-t, .node-s) { opacity: 1; }
   .svp-demo:has(.switch-in:checked) .node--cloud .node-ic { background: var(--sv-orange); color: #140a02; }
 
   .node-ic {
