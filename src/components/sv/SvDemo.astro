@@ -1,9 +1,22 @@
 ---
 // "Try it" section: a mock app window plus a holdable Ctrl + Shift + Space.
 // Hold → the recording overlay appears, release → a sample line lands at the
-// caret. Works with the pointer, the focused button (Space / Enter), and the
-// real Ctrl + Shift + Space shortcut while the section is on screen.
+// caret. Tap twice → hands-free until the next tap. Esc cancels. Works with the
+// pointer, the focused button (Space / Enter), and the real Ctrl + Shift +
+// Space shortcut while the section is on screen.
+// Before it, phone visitors get a divider: everything from here is the
+// desktop app (the phone app's own section comes earlier for them).
 ---
+
+<div class="sv-desk" aria-labelledby="sv-desk-t">
+  <div class="sv-desk-in">
+    <span class="sv-desk-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="10.5" rx="1.6" /><path d="M2.5 18.5h19" /></svg>
+    </span>
+    <p class="sv-desk-k">On your computer</p>
+    <p class="sv-desk-t" id="sv-desk-t">The next sections are the desktop app for Windows, Mac and Linux.</p>
+  </div>
+</div>
 
 <section class="svd" id="try" aria-labelledby="svd-title">
   <div class="svd-inner">
@@ -11,17 +24,10 @@
       <p class="sv-eyebrow">Try it here</p>
       <h2 class="h2" id="svd-title">Hold. Speak. <em>Let go.</em></h2>
       <p class="svd-lead">
-        In the app you hold <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Space</kbd>, say what you want to write,
-        and let go. The text appears where your cursor is, in any app.
+        Hold <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Space</kbd>, talk, let go: the text lands at your cursor.
+        Tap twice for hands-free. <kbd>Esc</kbd> cancels.
       </p>
-      <p class="svd-lead svd-lead--muted">
-        This page can't hear you, so it fills in a sample line instead. Press and hold the keys to see how it feels.
-      </p>
-      <ol class="svd-steps" aria-hidden="true">
-        <li data-step="hold"><span>01</span> Hold the keys</li>
-        <li data-step="speak"><span>02</span> Speak</li>
-        <li data-step="let"><span>03</span> Let go, the text is typed</li>
-      </ol>
+      <p class="svd-lead svd-lead--muted svd-js-only">This page can't hear you, so it types a sample line. Hold the keys, or tap them twice.</p>
     </div>
 
     <div class="svd-stage">
@@ -34,17 +40,20 @@
         <div class="svd-doc">
           <p class="svd-doc-h">Friday</p>
           <div class="svd-text"><span class="svd-typed"></span><span class="svd-caret"></span></div>
+          <!-- JS off: show the finished result instead of an empty note -->
+          <p class="svd-text svd-nojs">Hi Maya, thanks for the photos. Friday at ten works for me, and I'll bring the signed copy.</p>
         </div>
 
         <div class="svd-overlay" data-state="idle">
           <span class="svd-rec"></span>
           <span class="svd-bars">{Array.from({ length: 18 }, () => <i></i>)}</span>
           <span class="svd-time">0:00</span>
+          <span class="svd-free">Hands-free</span>
           <span class="svd-busy">Typing<i>.</i><i>.</i><i>.</i></span>
         </div>
       </div>
 
-      <button class="svd-hold" type="button" aria-describedby="svd-hint">
+      <button class="svd-hold svd-js-only" type="button" aria-label="Try dictation: hold Ctrl + Shift + Space, or tap twice for hands-free" aria-describedby="svd-hint">
         <span class="key">Ctrl</span>
         <span class="plus" aria-hidden="true">+</span>
         <span class="key">Shift</span>
@@ -52,16 +61,60 @@
         <span class="key key--space">Space</span>
         <span class="svd-ring" aria-hidden="true"></span>
       </button>
-      <p class="svd-hint" id="svd-hint" aria-live="polite">Press and hold</p>
+      <p class="svd-hint svd-js-only" id="svd-hint">Press and hold, or tap twice</p>
       <p class="sr-only" aria-live="polite" data-svd-announce></p>
     </div>
   </div>
 </section>
 
 <style>
-  .svd { position: relative; padding: clamp(6rem, 12vw, 10rem) 1.25rem; }
+  /* ---- "On your computer" divider: phones only (desktop visitors are already there) ---- */
+  .sv-desk { display: none; padding: var(--sv-space) var(--sv-gutter) 0; }
+  :global(html[data-sv-phone]) .sv-desk,
+  :global(html[data-sv-os="android"]) .sv-desk,
+  :global(html[data-sv-os="ios"]) .sv-desk { display: block; }
+  /* JS off on a small touch screen: the same frame */
+  @media (hover: none) and (pointer: coarse) and (max-width: 760px) {
+    :global(html:not(.js)) .sv-desk { display: block; }
+  }
+  .sv-desk-in {
+    position: relative;
+    max-width: var(--sv-max);
+    margin: 0 auto;
+    display: grid;
+    justify-items: center;
+    gap: 0.55rem;
+    text-align: center;
+  }
+  /* a hairline across the container with the laptop mark sitting on it */
+  .sv-desk-in::before {
+    content: "";
+    position: absolute;
+    top: 1.375rem;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.45) 30%, rgba(249, 115, 22, 0.45) 70%, transparent);
+  }
+  .sv-desk-mark {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-bottom: 0.35rem;
+    border-radius: 50%;
+    background: var(--color-bg);
+    box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.5), 0 0 0 0.6rem var(--color-bg), 0 0 30px -6px rgba(249, 115, 22, 0.45);
+  }
+  .sv-desk-mark svg { width: 1.3rem; height: 1.3rem; fill: none; stroke: var(--sv-orange); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .sv-desk-k { margin: 0; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sv-orange); }
+  .sv-desk-t { margin: 0; max-width: 22rem; font-family: var(--font-display); font-size: clamp(1.45rem, 5.4vw, 1.9rem); line-height: 1.15; letter-spacing: -0.02em; color: var(--color-text); text-wrap: balance; }
+
+  /* vertical rhythm and side gutter come from the page (silent-voice.astro) */
+  .svd { position: relative; }
   .svd-inner {
-    max-width: 76rem;
+    max-width: var(--sv-max);
     margin: 0 auto;
     display: grid;
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
@@ -70,8 +123,13 @@
   }
   .svd-copy .h2 { margin: 0.9rem 0 1.4rem; font-size: clamp(2.6rem, 6vw, 4.5rem); line-height: 1; }
   .svd-copy em { color: var(--sv-orange); }
-  .svd-lead { color: var(--color-text); max-width: 30rem; margin: 0 0 1rem; }
-  .svd-lead--muted { color: var(--color-muted); font-size: 0.95rem; }
+  .svd-lead { color: var(--color-text); max-width: 28rem; margin: 0 0 1rem; line-height: 1.7; }
+  .svd-lead--muted { color: var(--color-muted); font-size: 0.95rem; line-height: 1.6; }
+  /* without JS the keys can't do anything: hide them, show a finished note */
+  .svd-nojs { display: none; margin: 0; }
+  :global(html:not(.js)) .svd .svd-js-only { display: none; }
+  :global(html:not(.js)) .svd .svd-nojs { display: block; }
+  :global(html:not(.js)) .svd .svd-text:has(.svd-typed) { display: none; }
   kbd {
     display: inline-block;
     padding: 0.05rem 0.45rem;
@@ -82,22 +140,6 @@
     font-size: 0.8em;
     background: rgba(244, 242, 237, 0.05);
   }
-
-  .svd-steps { list-style: none; margin: 2rem 0 0; padding: 0; display: grid; gap: 0.5rem; }
-  .svd-steps li {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    padding: 0.7rem 1rem;
-    border-radius: 12px;
-    border: 1px solid var(--sv-line);
-    color: var(--color-muted);
-    font-size: 0.95rem;
-    transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
-  }
-  .svd-steps li span { font-family: var(--font-mono); font-size: 0.72rem; color: rgba(244, 242, 237, 0.4); transition: color 0.3s ease; }
-  .svd-steps li.on { color: var(--color-text); border-color: rgba(249, 115, 22, 0.5); background: rgba(249, 115, 22, 0.07); transform: translateX(6px); }
-  .svd-steps li.on span { color: var(--sv-orange); }
 
   /* ---- stage ---- */
   .svd-stage { display: flex; flex-direction: column; align-items: center; gap: 1.4rem; }
@@ -130,7 +172,7 @@
   .svd-offline { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; }
   .svd-offline .ok { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; }
 
-  .svd-doc { padding: 1.6rem clamp(1.2rem, 3vw, 2.2rem) 6.5rem; min-height: 21rem; }
+  .svd-doc { padding: 1.5rem clamp(1.2rem, 3vw, 2.2rem) 5.5rem; min-height: 19rem; }
   .svd-doc-h { margin: 0 0 0.8rem; font-family: var(--font-display); font-size: 1.9rem; line-height: 1.1; }
   .svd-text { font-size: clamp(1rem, 1.6vw, 1.12rem); line-height: 1.7; color: var(--color-text); }
   .svd-typed :global(p) { margin: 0 0 0.8rem; }
@@ -149,6 +191,8 @@
     animation: svd-blink 1.05s steps(1) infinite;
   }
   @keyframes svd-blink { 50% { opacity: 0; } }
+  /* the caret lives inside the line being typed, so it always sits after the last word */
+  .svd-typed :global(.svd-caret) { margin-left: 2px; }
   .svd-typed:empty + .svd-caret::before {
     content: "Your words land here.";
     position: absolute;
@@ -183,6 +227,8 @@
   .svd-bars i { width: 3px; height: 4px; border-radius: 2px; background: var(--sv-orange); transition: height 0.08s linear; }
   .svd-bars i:nth-child(9), .svd-bars i:nth-child(10) { background: #fff; }
   .svd-time { font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-text); min-width: 2.4rem; }
+  .svd-free { display: none; padding: 0.1rem 0.5rem; border-radius: 999px; background: rgba(249, 115, 22, 0.16); color: #fdba74; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.04em; }
+  .svd.is-free .svd-free { display: inline-block; }
   .svd-busy { display: none; font-family: var(--font-mono); font-size: 0.78rem; color: var(--color-text); }
   .svd-busy i { font-style: normal; animation: svd-dot 1s infinite; }
   .svd-busy i:nth-child(2) { animation-delay: 0.15s; }
@@ -249,18 +295,22 @@
     0% { opacity: 0.7; transform: scale(1); }
     70%, 100% { opacity: 0; transform: scale(1.12); }
   }
-  .svd-hint { margin: 0; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-muted); min-height: 1.2em; }
+  .svd-hint { margin: 0; max-width: 100%; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-muted); min-height: 1.2em; text-align: center; text-wrap: balance; }
   .svd-hint.warn { color: var(--sv-orange); animation: svd-shake 0.4s ease; }
+  .svd-hint.free { color: var(--sv-orange); }
+  .svd.is-free .svd-rec { background: #fff; }
+  @media (prefers-reduced-motion: reduce) {
+    .svd-caret, .svd-rec, .svd-busy i, .svd-ring, .svd-hint.warn { animation: none !important; }
+  }
   @keyframes svd-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
   @media (max-width: 900px) {
     .svd-inner { grid-template-columns: minmax(0, 1fr); }
-    .svd-steps { display: none; }
   }
   @media (max-width: 520px) {
-    .svd-doc { min-height: 18rem; padding-bottom: 5.5rem; }
+    .svd-doc { min-height: 15rem; padding-bottom: 5rem; }
     .svd-hold { gap: 0.35rem; padding: 0.6rem; }
     .key { min-width: 0; height: 3.1rem; padding: 0 0.7rem; font-size: 0.75rem; }
     .key--space { min-width: 6.5rem; }
@@ -275,9 +325,9 @@
   const bars = [...section.querySelectorAll<HTMLElement>(".svd-bars i")];
   const timeEl = section.querySelector<HTMLElement>(".svd-time")!;
   const typed = section.querySelector<HTMLElement>(".svd-typed")!;
+  const caret = section.querySelector<HTMLElement>(".svd-caret")!;
   const hint = section.querySelector<HTMLElement>(".svd-hint")!;
   const announce = section.querySelector<HTMLElement>("[data-svd-announce]")!;
-  const steps = [...section.querySelectorAll<HTMLElement>(".svd-steps li")];
   const win = section.querySelector<HTMLElement>(".svd-window")!;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -287,11 +337,22 @@
     "Notes for Monday: order more paper bags, fix the opening hours on the website, reply to the two new reviews.",
     "The booking page is ready to test. Can you try it on your phone tonight and tell me what feels slow?",
   ];
-  let next = 0;
-  let state: "idle" | "rec" | "busy" = "idle";
-  let started = 0, raf = 0, used = false, autoplayed = false;
+  const TAP = 300;      // a press shorter than this is a tap
+  const SECOND = 380;   // how long to wait for the second tap
+  const FREE_MAX = 20000; // a forgotten hands-free run stops by itself
 
-  const setStep = (k: string | null) => steps.forEach((s) => s.classList.toggle("on", s.dataset.step === k));
+  let next = 0;
+  let quickTap = false; // the line now typing came from a lone quick tap
+  let state: "idle" | "rec" | "busy" = "idle";
+  // while recording: held down, waiting for a second tap, or hands-free
+  let mode: "hold" | "pending" | "free" = "hold";
+  let started = 0, raf = 0, used = false, autoplayed = false, pendT = 0, freeT = 0;
+
+  const say = (msg: string, cls = "") => {
+    hint.classList.remove("warn", "free");
+    if (cls) { void hint.offsetWidth; hint.classList.add(cls); } // restart the nudge
+    hint.textContent = msg;
+  };
 
   const animateBars = () => {
     const t = performance.now() / 1000;
@@ -309,42 +370,80 @@
     if (state !== "idle") return;
     if (byUser) { used = true; section.classList.add("was-used"); }
     state = "rec";
+    mode = "hold";
     started = performance.now();
     section.classList.add("is-rec");
     overlay.dataset.state = "rec";
-    hint.classList.remove("warn");
-    hint.textContent = "Listening. Let go when you're done";
-    setStep("speak");
+    say("Listening. Let go when you're done");
     raf = requestAnimationFrame(animateBars);
   };
 
-  const stop = () => {
-    if (state !== "rec") return;
+  const endRec = () => {
     cancelAnimationFrame(raf);
-    section.classList.remove("is-rec");
-    const held = performance.now() - started;
-    if (held < 350) {
-      state = "idle";
-      overlay.dataset.state = "idle";
-      hint.textContent = "Hold it a little longer";
-      hint.classList.remove("warn"); void hint.offsetWidth; hint.classList.add("warn");
-      setStep(null);
-      return;
-    }
+    clearTimeout(pendT);
+    clearTimeout(freeT);
+    section.classList.remove("is-rec", "is-free");
+  };
+
+  // stop listening and type the line
+  const finish = (quick: boolean) => {
+    if (state !== "rec") return;
+    endRec();
     state = "busy";
     overlay.dataset.state = "busy";
-    hint.textContent = "Turning speech into text";
-    setStep("let");
+    quickTap = quick;
+    say(quick ? "Quick tap: a sample anyway" : "Turning speech into text");
     setTimeout(type, still ? 50 : 650);
+  };
+
+  // Esc: stop listening, type nothing
+  const cancel = () => {
+    if (state !== "rec") return;
+    endRec();
+    state = "idle";
+    mode = "hold";
+    overlay.dataset.state = "idle";
+    say("Cancelled. Nothing typed", "warn");
+    announce.textContent = "Cancelled. Nothing typed.";
+  };
+
+  // a press: start, turn a quick second tap into hands-free, or stop hands-free
+  const press = () => {
+    if (state === "idle") return start();
+    if (state !== "rec") return;
+    if (!used) { used = true; section.classList.add("was-used"); } // took over the ghost run
+    if (mode === "pending") {
+      clearTimeout(pendT);
+      mode = "free";
+      used = true;
+      section.classList.add("is-free", "was-used");
+      say("Hands-free. Tap once to stop", "free");
+      announce.textContent = "Hands-free. Listening until you tap once more.";
+      freeT = window.setTimeout(() => finish(false), FREE_MAX);
+    } else if (mode === "free") {
+      finish(false);
+    }
+  };
+
+  // a release: after a hold, type; after a quick tap, wait for a second one
+  const release = () => {
+    if (state !== "rec" || mode !== "hold") return;
+    if (performance.now() - started < TAP) {
+      mode = "pending";
+      pendT = window.setTimeout(() => { if (mode === "pending") finish(true); }, SECOND);
+    } else {
+      finish(false);
+    }
   };
 
   const type = () => {
     overlay.dataset.state = "idle";
     // keep the note short: after three lines, start a fresh one
-    if (typed.children.length >= 3) typed.innerHTML = "";
+    if (typed.children.length >= 3) { caret.remove(); typed.innerHTML = ""; }
     const line = LINES[next++ % LINES.length];
     const p = document.createElement("p");
     typed.appendChild(p);
+    p.appendChild(caret);
     const words = line.split(/(\s+)/);
     let i = 0;
     const step = () => {
@@ -353,7 +452,7 @@
       const s = document.createElement("span");
       s.className = still ? "w" : "w new";
       s.textContent = chunk;
-      p.appendChild(s);
+      p.insertBefore(s, caret);
       if (i < words.length) setTimeout(step, still ? 0 : 38);
       else done(p, line);
     };
@@ -364,43 +463,66 @@
     p.classList.add("flash");
     announce.textContent = `Typed: ${line}`;
     state = "idle";
-    hint.textContent = used ? "Hold again for another line" : "Press and hold";
-    setTimeout(() => setStep(null), 1400);
+    mode = "hold";
+    // a lone quick tap still types a sample here; the hint says why, and what the app does
+    if (quickTap) { quickTap = false; say("In the app, a tap types nothing"); }
+    else say(used ? "Hold again for another line" : "Press and hold, or tap twice");
   };
+
+  // Reduced motion: no ghost run, so the note starts with a finished line
+  // (the same one the JS-off frame shows) instead of an empty page.
+  if (still) {
+    const p = document.createElement("p");
+    p.textContent = LINES[next++];
+    typed.appendChild(p);
+    p.appendChild(caret);
+  }
 
   // pointer: hold anywhere on the keys
   btn.addEventListener("pointerdown", (e) => {
     if (e.button !== 0) return;
     btn.setPointerCapture(e.pointerId);
-    start();
+    press();
   });
-  btn.addEventListener("pointerup", stop);
-  btn.addEventListener("pointercancel", stop);
-  btn.addEventListener("lostpointercapture", stop);
+  btn.addEventListener("pointerup", release);
+  btn.addEventListener("pointercancel", release);
+  btn.addEventListener("lostpointercapture", release);
   btn.addEventListener("contextmenu", (e) => e.preventDefault()); // long-press menu on touch
 
-  // keyboard on the focused button
+  // keyboard on the focused button: Space / Enter work like the shortcut
   btn.addEventListener("keydown", (e) => {
     if (e.key !== " " && e.key !== "Enter") return;
     e.preventDefault();
-    if (!e.repeat) start();
+    if (!e.repeat) press();
   });
   btn.addEventListener("keyup", (e) => {
-    if (e.key === " " || e.key === "Enter") { e.preventDefault(); stop(); }
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); release(); }
   });
-  btn.addEventListener("click", (e) => e.preventDefault());
+  // Screen readers in browse mode (and other assistive tech) send a bare click
+  // with no pointer or key events before it: play one sample line for them.
+  let pressed = 0;
+  btn.addEventListener("pointerdown", () => (pressed = performance.now()), { capture: true });
+  btn.addEventListener("keydown", () => (pressed = performance.now()), { capture: true });
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (performance.now() - pressed < 2000 || state !== "idle") return;
+    start();
+    setTimeout(() => finish(false), still ? 400 : 1200);
+  });
 
-  // the real shortcut, while the demo is on screen
+  // the real shortcut, while the demo is on screen; Esc cancels any recording
   let inView = false;
   new IntersectionObserver(([e]) => (inView = e.isIntersecting), { threshold: 0.3 }).observe(section);
   addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && state === "rec") { e.preventDefault(); cancel(); return; }
     if (!inView || e.repeat || document.activeElement === btn) return;
-    if (e.code === "Space" && e.ctrlKey && e.shiftKey) { e.preventDefault(); start(); }
+    if (e.code === "Space" && e.ctrlKey && e.shiftKey) { e.preventDefault(); press(); }
   });
   addEventListener("keyup", (e) => {
-    if (state === "rec" && document.activeElement !== btn && ["Space", "ControlLeft", "ControlRight", "ShiftLeft", "ShiftRight"].includes(e.code)) stop();
+    if (state === "rec" && document.activeElement !== btn && ["Space", "ControlLeft", "ControlRight", "ShiftLeft", "ShiftRight"].includes(e.code)) release();
   });
-  addEventListener("blur", stop);
+  // leaving the window mid-hold counts as letting go; hands-free keeps listening
+  addEventListener("blur", () => { if (state === "rec" && mode === "hold") finish(false); });
 
   // one ghost run the first time the demo comes into view, so it's clear what happens
   if (!still) {
@@ -410,13 +532,9 @@
       io.disconnect();
       setTimeout(() => {
         if (used || state !== "idle") return;
-        setStep("hold");
-        setTimeout(() => {
-          if (used || state !== "idle") return;
-          start(false);
-          setTimeout(() => { if (!used) stop(); }, 1700);
-        }, 500);
-      }, 700);
+        start(false);
+        setTimeout(() => { if (!used && state === "rec" && mode === "hold") finish(false); }, 1700);
+      }, 1000);
     }, { threshold: 0.55 }).observe(win);
   }
 

@@ -5,25 +5,43 @@ import Footer from "../components/Footer.astro";
 import SvHero from "../components/sv/SvHero.astro";
 import SvDemo from "../components/sv/SvDemo.astro";
 import SvPrivate from "../components/sv/SvPrivate.astro";
-import SvMarquee from "../components/sv/SvMarquee.astro";
 import SvFeatures from "../components/sv/SvFeatures.astro";
-import SvSteps from "../components/sv/SvSteps.astro";
 import SvFinal from "../components/sv/SvFinal.astro";
+import SvAndroid from "../components/sv/SvAndroid.astro";
+import SvNotetaker from "../components/sv/SvNotetaker.astro";
+
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Silent Voice",
+  description:
+    "Free, open-source voice-to-text. Hold a key, speak, and the text is typed at your cursor. Records and transcribes meetings on your computer.",
+  applicationCategory: "ProductivityApplication",
+  operatingSystem: "Windows, macOS, Linux, Android",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  license: "https://opensource.org/licenses/MIT",
+  url: "https://zaidhossain.com/silent-voice/",
+  downloadUrl: "https://github.com/zahidhossin39/Silent-Voice/releases",
+  author: { "@type": "Person", name: "Zaid Hossain", url: "https://zaidhossain.com" },
+};
 ---
 <Base
-  title="Silent Voice | Free voice-to-text that runs on your computer"
-  description="Hold a key, speak, let go. Silent Voice types your words wherever your cursor is. Free, open source, unlimited, and private: it all runs on your own computer."
+  title="Silent Voice | Free voice-to-text and meeting notes that run on your computer"
+  description="Hold a key, speak, let go: Silent Voice types your words wherever your cursor is, and its Notetaker writes down your calls. Free, open source and unlimited, for Windows, macOS, Linux and Android."
+  ogImage="/og-silent-voice.png"
+  ogImageAlt="Silent Voice: hold a key, speak, let go. Free voice-to-text that runs on your computer."
 >
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(ld)} />
   <a href="#main" class="skip-link">Skip to content</a>
   <div class="sv-progress" aria-hidden="true"><i></i></div>
   <Navbar variant="app" />
   <main id="main" tabindex="-1" class="sv">
     <SvHero />
     <SvDemo />
-    <SvPrivate />
-    <SvMarquee />
+    <SvNotetaker />
     <SvFeatures />
-    <SvSteps />
+    <SvPrivate />
+    <SvAndroid />
     <SvFinal />
   </main>
   <Footer variant="app" />
@@ -35,8 +53,35 @@ import SvFinal from "../components/sv/SvFinal.astro";
     --sv-orange: #f97316;
     --sv-orange-deep-ish: #ea580c;
     --sv-line: rgba(244, 242, 237, 0.09);
+    /* one container for every section: content width and side gutter */
+    --sv-max: 76rem;
+    --sv-gutter: clamp(1.25rem, 4vw, 2.5rem);
+    /* vertical padding of every section after the hero */
+    --sv-space: clamp(3.75rem, 5.8vw, 5.25rem);
   }
   .sv { overflow-x: clip; }
+  /* Android visitors: the phone app comes straight after the hero */
+  html[data-sv-os="android"] main.sv { display: flex; flex-direction: column; }
+  html[data-sv-os="android"] main.sv > * { order: 2; }
+  html[data-sv-os="android"] main.sv > .svh { order: 0; }
+  html[data-sv-os="android"] main.sv > .and { order: 1; }
+
+  /* One section rhythm and one container for the whole page. Every section
+     after the hero gets the same vertical padding and the same side gutter
+     here; its inner wrapper takes max-width: var(--sv-max) and margin: 0 auto,
+     so section headings share one left edge. (This beats each section's own
+     scoped padding on purpose: one place to tune the rhythm.) */
+  main.sv > section:is(.svd, .svn, .svf, .svp, .and, .svx) {
+    padding: var(--sv-space) var(--sv-gutter);
+  }
+  /* Phones: the "On your computer" divider (SvDemo) opens the desktop part of
+     the page, so the first desktop section sits close under it */
+  html:is([data-sv-phone], [data-sv-os="android"], [data-sv-os="ios"]) main.sv > .sv-desk + section {
+    padding-top: clamp(2.25rem, 6vw, 3rem);
+  }
+  @media (hover: none) and (pointer: coarse) and (max-width: 760px) {
+    html:not(.js) main.sv > .sv-desk + section { padding-top: clamp(2.25rem, 6vw, 3rem); }
+  }
   .sv ::selection { background: var(--sv-orange); color: #140a02; }
   .sv :focus-visible { outline-color: var(--sv-orange); }
   .sv-eyebrow {
@@ -95,36 +140,27 @@ import SvFinal from "../components/sv/SvFinal.astro";
   addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(progress); } }, { passive: true });
   progress();
 
-  // Download buttons: lean toward the pointer, light up where it is.
-  const fine = matchMedia("(hover: hover)").matches;
+  // Download buttons stay put (a moving target is harder to hit); the light
+  // inside follows the pointer, and a click sends out one soft, small ring
+  // (the "Your download has started" panel under the button is the real answer).
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   document.querySelectorAll<HTMLElement>("[data-magnetic]").forEach((el) => {
-    const xTo = gsap.quickTo(el, "x", { duration: 0.6, ease: "elastic.out(1, 0.5)" });
-    const yTo = gsap.quickTo(el, "y", { duration: 0.6, ease: "elastic.out(1, 0.5)" });
     el.addEventListener("pointermove", (e) => {
       const r = el.getBoundingClientRect();
       el.style.setProperty("--mx", `${e.clientX - r.left}px`);
       el.style.setProperty("--my", `${e.clientY - r.top}px`);
-      if (fine && !still) {
-        xTo((e.clientX - (r.left + r.width / 2)) * 0.18);
-        yTo((e.clientY - (r.top + r.height / 2)) * 0.3);
-      }
     });
-    el.addEventListener("pointerleave", () => { xTo(0); yTo(0); });
-    // a burst of rings on click, like a voice going out
     el.addEventListener("click", (e) => {
       if (still) return;
       const r = el.getBoundingClientRect();
-      for (let i = 0; i < 3; i++) {
-        const ring = document.createElement("span");
-        Object.assign(ring.style, {
-          position: "fixed", left: `${e.clientX || r.left + r.width / 2}px`, top: `${e.clientY || r.top + r.height / 2}px`,
-          width: "20px", height: "20px", margin: "-10px 0 0 -10px", borderRadius: "50%",
-          border: "2px solid #f97316", pointerEvents: "none", zIndex: "70",
-        });
-        document.body.appendChild(ring);
-        gsap.to(ring, { scale: 9 + i * 4, opacity: 0, duration: 1 + i * 0.25, delay: i * 0.08, ease: "expo.out", onComplete: () => ring.remove() });
-      }
+      const ring = document.createElement("span");
+      Object.assign(ring.style, {
+        position: "fixed", left: `${e.clientX || r.left + r.width / 2}px`, top: `${e.clientY || r.top + r.height / 2}px`,
+        width: "20px", height: "20px", margin: "-10px 0 0 -10px", borderRadius: "50%",
+        border: "1.5px solid #f97316", pointerEvents: "none", zIndex: "70", opacity: "0.7",
+      });
+      document.body.appendChild(ring);
+      gsap.to(ring, { scale: 4.5, opacity: 0, duration: 0.7, ease: "power2.out", onComplete: () => ring.remove() });
     });
   });
 </script>
